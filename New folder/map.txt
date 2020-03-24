@@ -1,0 +1,31 @@
+a=(uint16_t*)&this->a
+b=(uint16_t*)&this->b
+c=(uint16_t*)&this->c
+d=(uint16_t*)&this->d
+e=(uint16_t*)&this->e
+f=(uint16_t*)&this->f
+l=(uint16_t*)&this->l
+h=(uint16_t*)&this->h
+(hl)=(uint16_t*)&this->h,(uint16_t*)&this->ram.mem + (this->h << 8 | this->l)
+(af)=(uint16_t*)&this->h,(uint16_t*)&this->ram.mem + (this->a << 8 | this->f)
+(bc)=(uint16_t*)&this->h,(uint16_t*)&this->ram.mem + (this->b << 8 | this->c)
+(de)=(uint16_t*)&this->h,(uint16_t*)&this->ram.mem + (this->d << 8 | this->e)
+sp=&this->sp
+nz=(uint16_t*)&this->f
+z=(uint16_t*)&this->f
+nc=(uint16_t*)&this->f
+*=NULL
+n=NULL
+nn=NULL
+(n)=NULL
+(nn)=NULL
+#=NULL
+(#)=NULL
+%00h=(uint16_t)
+%08h=0x08
+%10h
+%318h
+%20h
+%28h
+%30h
+%38h
