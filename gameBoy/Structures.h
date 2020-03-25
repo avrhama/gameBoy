@@ -15,3 +15,9 @@ public:
 	uint8_t msb;
 	uint8_t lsb;
 };
+struct Byte
+{
+public:
+	uint8_t msn;
+	uint8_t lsn;
+};

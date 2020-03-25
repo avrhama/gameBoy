@@ -19,7 +19,7 @@ int main(void) {
 	//a((uint16_t*)((uint16_t)0x08));
 	Cpu cpu;
 	
-	uint16_t* u = cpu.get$DE();
+	uint16_t* u = (uint16_t*) cpu.get$DE();
 	printf("%d\n", *u);
 	cpu.Execute(6);
 	uint8_t d = 2;
