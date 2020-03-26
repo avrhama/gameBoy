@@ -1,0 +1,152 @@
+void Cpu::LD_nn_n(char* nn,char* n){
+}
+void Cpu::LD_r1_r2(char* r1,char* r2){
+}
+void Cpu::LD_A_n(char* A,char* n){
+}
+void Cpu::LD_n_A(char* n,char* A){
+}
+void Cpu::LD_A_$C(char* A,char* $C){
+}
+void Cpu::LD_$C_A(char* $C,char* A){
+}
+void Cpu::LD_A_$HLD(char* A,char* $HLD){
+}
+void Cpu::LD_A_$HLminus(char* A,char* $HLminus){
+}
+void Cpu::LDD_A_$HL(char* A,char* $HL){
+}
+void Cpu::LD_$HLD_A(char* $HLD,char* A){
+}
+void Cpu::LD_$HLminus_A(char* $HLminus,char* A){
+}
+void Cpu::LDD_$HL_A(char* $HL,char* A){
+}
+void Cpu::LD_A_$HLI(char* A,char* $HLI){
+}
+void Cpu::LD_A_$HLplus(char* A,char* $HLplus){
+}
+void Cpu::LDI_A_$HL(char* A,char* $HL){
+}
+void Cpu::LD_$HLI_A(char* $HLI,char* A){
+}
+void Cpu::LD_$HLplus_A(char* $HLplus,char* A){
+}
+void Cpu::LDI_$HL_A(char* $HL,char* A){
+}
+void Cpu::LDH_n_A(char* n,char* A){
+}
+void Cpu::LDH_A_n(char* A,char* n){
+}
+void Cpu::LD_n_nn(char* n,char* nn){
+}
+void Cpu::LD_SP_HL(char* SP,char* HL){
+}
+void Cpu::LD_HL_SP(char* none,char* none){
+}
+void Cpu::LDHL_SP_$n(char* SP,char* $n){
+}
+void Cpu::LD_$nn_SP(char* $nn,char* SP){
+}
+void Cpu::PUSH_nn(char* nn,char* none){
+}
+void Cpu::POP_nn(char* nn,char* none){
+}
+void Cpu::ADD_A_n(char* A,char* n){
+}
+void Cpu::ADC_A_n(char* A,char* n){
+}
+void Cpu::SUB_n(char* n,char* none){
+}
+void Cpu::SBC_A_n(char* A,char* n){
+}
+void Cpu::AND_n(char* n,char* none){
+}
+void Cpu::OR_n(char* n,char* none){
+}
+void Cpu::XOR_n(char* n,char* none){
+}
+void Cpu::CP_n(char* n,char* none){
+}
+void Cpu::INC_n(char* n,char* none){
+}
+void Cpu::DEC_n(char* n,char* none){
+}
+void Cpu::ADD_HL_n(char* HL,char* n){
+}
+void Cpu::ADD_SP_n(char* SP,char* n){
+}
+void Cpu::INC_nn(char* nn,char* none){
+}
+void Cpu::DEC_nn(char* nn,char* none){
+}
+void Cpu::SWAP_n(char* n,char* none){
+}
+void Cpu::DAA(char* none,char* none){
+}
+void Cpu::CPL(char* none,char* none){
+}
+void Cpu::CCF(char* none,char* none){
+}
+void Cpu::SCF(char* none,char* none){
+}
+void Cpu::NOP(char* none,char* none){
+}
+void Cpu::HALT(char* none,char* none){
+}
+void Cpu::STOP(char* none,char* none){
+}
+void Cpu::DI(char* none,char* none){
+}
+void Cpu::EI(char* none,char* none){
+}
+void Cpu::RLCA(char* none,char* none){
+}
+void Cpu::RLA(char* none,char* none){
+}
+void Cpu::RRCA(char* none,char* none){
+}
+void Cpu::RRA(char* none,char* none){
+}
+void Cpu::RLC_n(char* n,char* none){
+}
+void Cpu::RL_n(char* n,char* none){
+}
+void Cpu::RRC_n(char* n,char* none){
+}
+void Cpu::RR_n(char* n,char* none){
+}
+void Cpu::SLA_n(char* n,char* none){
+}
+void Cpu::SRA_n(char* n,char* none){
+}
+void Cpu::SRL_n(char* n,char* none){
+}
+void Cpu::BIT_$n_r(char* $n,char* r){
+}
+void Cpu::SET_$n_r(char* $n,char* r){
+}
+void Cpu::RES_$n_r(char* $n,char* r){
+}
+void Cpu::JP_nn(char* nn,char* none){
+}
+void Cpu::JP_cc_nn(char* cc,char* nn){
+}
+void Cpu::JP_HL(char* HL,char* none){
+}
+void Cpu::JR_n(char* n,char* none){
+}
+void Cpu::JR_cc_n(char* cc,char* n){
+}
+void Cpu::CALL_nn(char* nn,char* none){
+}
+void Cpu::CALL_cc_nn(char* cc,char* nn){
+}
+void Cpu::RST_n(char* n,char* none){
+}
+void Cpu::RET(char* none,char* none){
+}
+void Cpu::RET_cc(char* cc,char* none){
+}
+void Cpu::RETI(char* none,char* none){
+}
