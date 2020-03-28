@@ -2,12 +2,12 @@
 Cpu::Cpu()
 {
 	//LD nn,n
-	opcodes[0x06] = { "LD_nn_n",&Cpu::LD_nn_n,&Cpu::getB,&Cpu::getN,8 };
-	opcodes[0x0E] = { "LD_nn_n",&Cpu::LD_nn_n,&Cpu::getC,&Cpu::getN,8 };
-	opcodes[0x16] = { "LD_nn_n",&Cpu::LD_nn_n,&Cpu::getD,&Cpu::getN,8 };
-	opcodes[0x1E] = { "LD_nn_n",&Cpu::LD_nn_n,&Cpu::getE,&Cpu::getN,8 };
-	opcodes[0x26] = { "LD_nn_n",&Cpu::LD_nn_n,&Cpu::getH,&Cpu::getN,8 };
-	opcodes[0x2E] = { "LD_nn_n",&Cpu::LD_nn_n,&Cpu::getL,&Cpu::getN,8 };
+	opcodes[0x06] = { "LD_nn_N",&Cpu::LD_nn_N,&Cpu::getB,&Cpu::getN,8 };
+	opcodes[0x0E] = { "LD_nn_N",&Cpu::LD_nn_N,&Cpu::getC,&Cpu::getN,8 };
+	opcodes[0x16] = { "LD_nn_N",&Cpu::LD_nn_N,&Cpu::getD,&Cpu::getN,8 };
+	opcodes[0x1E] = { "LD_nn_N",&Cpu::LD_nn_N,&Cpu::getE,&Cpu::getN,8 };
+	opcodes[0x26] = { "LD_nn_N",&Cpu::LD_nn_N,&Cpu::getH,&Cpu::getN,8 };
+	opcodes[0x2E] = { "LD_nn_N",&Cpu::LD_nn_N,&Cpu::getL,&Cpu::getN,8 };
 	//LD r1,r2
 	opcodes[0x7F] = { "LD_r1_r2",&Cpu::LD_r1_r2,&Cpu::getA,&Cpu::getA,4 };
 	opcodes[0x78] = { "LD_r1_r2",&Cpu::LD_r1_r2,&Cpu::getA,&Cpu::getB,4 };
@@ -83,9 +83,9 @@ Cpu::Cpu()
 	opcodes[0x77] = { "LD_n_A",&Cpu::LD_n_A,&Cpu::get$HL,&Cpu::getA,8 };
 	opcodes[0xEA] = { "LD_n_A",&Cpu::LD_n_A,&Cpu::get$NN,&Cpu::getA,16 };
 	//LD A,(C)
-	opcodes[0xF2] = { "LD_A_$C",&Cpu::LD_A_$C,&Cpu::getA,&Cpu::getF,8 };
+	opcodes[0xF2] = { "LD_A_C",&Cpu::LD_A_C,&Cpu::getA,&Cpu::getC,8 };
 	//LD (C),A
-	opcodes[0xE2] = { "LD_$C_A",&Cpu::LD_$C_A,&Cpu::getF,&Cpu::getA,8 };
+	opcodes[0xE2] = { "LD_C_A",&Cpu::LD_C_A,&Cpu::getC,&Cpu::getA,8 };
 	//LD A,(HLD)
 	//LD A,(HLminus)
 	//LDD A,(HL)
@@ -118,7 +118,7 @@ Cpu::Cpu()
 	//LDHL SP,(n)
 	opcodes[0xF8] = { "LDHL_SP_$n",&Cpu::LDHL_SP_$n,&Cpu::getSP,&Cpu::get$N,12 };
 	//LD nn,SP
-	opcodes[0x08] = { "LD_nn_SP",&Cpu::LD_nn_SP,&Cpu::getNN,&Cpu::getSP,20 };
+	opcodes[0x08] = { "LD_$NN_SP",&Cpu::LD_$NN_SP,&Cpu::get$NN,&Cpu::getSP,20 };
 	//PUSH nn
 	opcodes[0xF5] = { "PUSH_nn",&Cpu::PUSH_nn,&Cpu::getAF,&Cpu::getSP,16 };
 	opcodes[0xC5] = { "PUSH_nn",&Cpu::PUSH_nn,&Cpu::getBC,&Cpu::getSP,16 };
@@ -232,7 +232,7 @@ Cpu::Cpu()
 	opcodes[0x29] = { "ADD_HL_n",&Cpu::ADD_HL_n,&Cpu::getHL,&Cpu::getHL,8 };
 	opcodes[0x39] = { "ADD_HL_n",&Cpu::ADD_HL_n,&Cpu::getHL,&Cpu::getSP,8 };
 	//ADD SP,n
-	opcodes[0xE8] = { "ADD_SP_n",&Cpu::ADD_SP_n,&Cpu::getSP,&Cpu::get$N,16 };
+	opcodes[0xE8] = { "ADD_SP_n",&Cpu::ADD_SP_n,&Cpu::getSP,&Cpu::getN,16 };
 	//INC nn
 	opcodes[0x03] = { "INC_nn",&Cpu::INC_nn,&Cpu::getBC,NULL,8 };
 	opcodes[0x13] = { "INC_nn",&Cpu::INC_nn,&Cpu::getDE,NULL,8 };
@@ -380,17 +380,17 @@ Cpu::Cpu()
 	//JR n
 	opcodes[0x18] = { "JR_n",&Cpu::JR_n,&Cpu::getN,NULL,8 };
 	//JR cc,n
-	opcodes[0x20] = { "JR_cc_n",&Cpu::JR_cc_n,&Cpu::getF,&Cpu::getN,8 };
-	opcodes[0x28] = { "JR_cc_n",&Cpu::JR_cc_n,&Cpu::getF,&Cpu::getN,8 };
-	opcodes[0x30] = { "JR_cc_n",&Cpu::JR_cc_n,&Cpu::getF,&Cpu::getN,8 };
-	opcodes[0x38] = { "JR_cc_n",&Cpu::JR_cc_n,&Cpu::getC,&Cpu::getN,8 };
+	opcodes[0x20] = { "JR_cc_n",&Cpu::JR_cc_n,&Cpu::NZFlag,&Cpu::getN,8 };
+	opcodes[0x28] = { "JR_cc_n",&Cpu::JR_cc_n,&Cpu::ZFlag,&Cpu::getN,8 };
+	opcodes[0x30] = { "JR_cc_n",&Cpu::JR_cc_n,&Cpu::NCFlag,&Cpu::getN,8 };
+	opcodes[0x38] = { "JR_cc_n",&Cpu::JR_cc_n,&Cpu::CFlag,&Cpu::getN,8 };
 	//CALL nn
 	opcodes[0xCD] = { "CALL_nn",&Cpu::CALL_nn,&Cpu::getNN,NULL,12 };
 	//CALL cc,nn
-	opcodes[0xC4] = { "CALL_cc_nn",&Cpu::CALL_cc_nn,&Cpu::getF,&Cpu::getNN,12 };
-	opcodes[0xCC] = { "CALL_cc_nn",&Cpu::CALL_cc_nn,&Cpu::getF,&Cpu::getNN,12 };
-	opcodes[0xD4] = { "CALL_cc_nn",&Cpu::CALL_cc_nn,&Cpu::getF,&Cpu::getNN,12 };
-	opcodes[0xDC] = { "CALL_cc_nn",&Cpu::CALL_cc_nn,&Cpu::getC,&Cpu::getNN,12 };
+	opcodes[0xC4] = { "CALL_cc_nn",&Cpu::CALL_cc_nn,&Cpu::NZFlag,&Cpu::getNN,12 };
+	opcodes[0xCC] = { "CALL_cc_nn",&Cpu::CALL_cc_nn,&Cpu::ZFlag,&Cpu::getNN,12 };
+	opcodes[0xD4] = { "CALL_cc_nn",&Cpu::CALL_cc_nn,&Cpu::NCFlag,&Cpu::getNN,12 };
+	opcodes[0xDC] = { "CALL_cc_nn",&Cpu::CALL_cc_nn,&Cpu::CFlag,&Cpu::getNN,12 };
 	//RST n
 	opcodes[0xC7] = { "RST_n",&Cpu::RST_n,&Cpu::getRST00,NULL,32 };
 	opcodes[0xCF] = { "RST_n",&Cpu::RST_n,&Cpu::getRST08,NULL,32 };
@@ -403,10 +403,10 @@ Cpu::Cpu()
 	//RET
 	opcodes[0xC9] = { "RET",&Cpu::RET,NULL,NULL,8 };
 	//RET cc
-	opcodes[0xC0] = { "RET_cc",&Cpu::RET_cc,&Cpu::getF,NULL,8 };
-	opcodes[0xC8] = { "RET_cc",&Cpu::RET_cc,&Cpu::getF,NULL,8 };
-	opcodes[0xD0] = { "RET_cc",&Cpu::RET_cc,&Cpu::getF,NULL,8 };
-	opcodes[0xD8] = { "RET_cc",&Cpu::RET_cc,&Cpu::getC,NULL,8 };
+	opcodes[0xC0] = { "RET_cc",&Cpu::RET_cc,&Cpu::NZFlag,NULL,8 };
+	opcodes[0xC8] = { "RET_cc",&Cpu::RET_cc,&Cpu::ZFlag,NULL,8 };
+	opcodes[0xD0] = { "RET_cc",&Cpu::RET_cc,&Cpu::NCFlag,NULL,8 };
+	opcodes[0xD8] = { "RET_cc",&Cpu::RET_cc,&Cpu::CFlag,NULL,8 };
 	//RETI
 	opcodes[0xD9] = { "RETI",&Cpu::RETI,NULL,NULL,8 };
 
@@ -472,9 +472,8 @@ char* Cpu::getN()
 }
 char* Cpu::getNN()
 {
-	
-	char msb = ram.read(PC++);
 	char lsb = ram.read(PC++);
+	char msb = ram.read(PC++);
 	uint16_t nn = msb << 8 | lsb;
 	return (char*)&nn;
 }
@@ -500,6 +499,14 @@ char* Cpu::getSP()
 {
 	return(char*)&SP;
 }
+
+void Cpu::InsertCartridge(Cartridge cartridge)
+{
+	this->cartridge = cartridge;
+	memcpy(ram.mem, cartridge.mem, 0x3fff);
+	
+}
+
 char* Cpu::getBC()
 {
 	return(char*)&BC;
@@ -520,9 +527,9 @@ void Cpu::Execute(uint16_t opcode)
 }
 
 
-void Cpu::LD_nn_n(char* nn, char* n)
+void Cpu::LD_nn_N(char* nn, char* N)
 {
-	*n = *nn;
+	*nn = *(uint8_t*)N;
 }
 void Cpu::LD_r1_r2(char* r1, char* r2)
 {
@@ -536,24 +543,25 @@ void Cpu::LD_n_A(char* n, char* A)
 {
 	*n = *A;
 }
-void Cpu::LD_A_$C(char* A, char* C)
+void Cpu::LD_A_C(char* A, char* C)
 {
-	*A=ram.read(0xff00 + *C);
+	//?
+	*A=ram.read(0xff00 + *(uint8_t*)C);
 }
-void Cpu::LD_$C_A(char* C, char* A)
+void Cpu::LD_C_A(char* C, char* A)
 {
-	ram.write(0xff00 + *C, *A);
+	//?
+	ram.write(0xff00 + *(uint8_t*)C, *A);
 }
 
 void Cpu::LDD_A_$HL(char* A, char* $HL)
 {
 	*A = *$HL;
-		HL--;
+	HL--;
 }
 void Cpu::LDD_$HL_A(char* $HL, char* A)
 {
-	uint16_t* hl = (uint16_t*)$HL;
-	ram.write(*hl,*A);
+	*$HL = *A;
 	HL--;
 }
 void Cpu::LDI_A_$HL(char* A, char* $HL)
@@ -568,10 +576,10 @@ void Cpu::LDI_$HL_A(char* $HL, char* A)
 	HL++;
 }
 void Cpu::LDH_n_A(char* N, char* A){
-	ram.write(0xff00 + *N, *A);
+	ram.write(0xff00 + *(uint8_t*)N, *A);
 }
 void Cpu::LDH_A_n(char* A,char* N) {
-	*A=ram.read(0xff00 + *N);
+	*A=ram.read(0xff00 + *(uint8_t*)N);
 }
 void Cpu::LD_n_nn(char* n, char* nn)
 {
@@ -585,23 +593,33 @@ void Cpu::LD_SP_HL(char* SP, char* HL)
 void Cpu::LDHL_SP_$n(char* SP, char* $N)
 {
 	//HL = *(uint16_t*)SP + (signed char)*N;
-	HL = *(uint16_t*)SP + (signed char)*$N;
+	uint8_t n_=*(uint8_t*)$N;
+	HL = *(uint16_t*)SP + n_;
 	resetFlag('Z');
 	resetFlag('N');
-	//resetFlag('Z');
-	//resetFlag('Z');
+	if (*(uint16_t*)SP + n_ > 0xFFFF)
+		setFlag('C');
+	else
+		resetFlag('C');
+	if ((*(uint16_t*)SP & 0xF) + (n_ & 0xF) > 0xF)
+		setFlag('H');
+	else
+		resetFlag('H');
+	
 }
-void Cpu::LD_nn_SP(char* NN,char* SP)
+void Cpu::LD_$NN_SP(char* $NN,char* SP)
 {
-	*(uint16_t*)SP = *(uint16_t*)NN;
+	//?
+	*(uint16_t*)$NN = *(uint16_t*)SP;
 }
 
 void Cpu::PUSH_nn(char* nn, char* SP)
 {
+	//?
 	uint16_t sp = *(uint16_t*)SP;
-	sp--;
 	uint16_t n = *(uint16_t*)nn;
 	Word word = WordToBytes(n);	
+	sp--;
 	ram.write(sp--, word.msb);
 	ram.write(sp--, word.lsb);
 	*(uint16_t*)SP = sp;
@@ -619,68 +637,67 @@ void Cpu::POP_nn(char* SP, char* nn)
 void Cpu::ADD_A_n(char* A, char* n)
 {
 	Byte byteR = getByte(*A);
-	Byte byteN = getByte(*n);
+	uint8_t n_ = *(uint8_t*)n;
 	char oldA = *A;
-	*A += *n;
+	*A += n_;
 	if (*A == 0)
 		setFlag('Z');
 	resetFlag('N');
-	if (byteR.lsn + byteN.lsn > 0xf) 
+	if (byteR.lsn + n_&0xf > 0xf)
 		setFlag('H');
-	if (oldA + *n > 0xff)
+	if (oldA + n_ > 0xff)
 		setFlag('C');
 }
 
 void Cpu::ADC_A_n(char* A, char* n)
 {
-	
 	Byte byteR = getByte(*A);
-	Byte byteN = getByte(*n);
+	uint8_t n_ = *(uint8_t*)n;
 	char oldA = *A;
-	*A += *n + getFlag('C');
+	*A += n_+ getFlag('C');
 	if (*A == 0)
 		setFlag('Z');
 	resetFlag('N');
-	if (byteR.lsn + byteN.lsn + getFlag('C') > 0xf) 
+	if (byteR.lsn + n_ & 0xf + getFlag('C') > 0xf)
 		setFlag('H');
-	if (oldA + *n + getFlag('C') > 0xff)
+	if (oldA + n_ + getFlag('C') > 0xff)
 		setFlag('C');
 }
 void Cpu::SUB_n(char* A, char* n) {
 	Byte byteR = getByte(*A);
-	Byte byteN = getByte(*n);
+	uint8_t n_ = *(uint8_t*)n;
 	char oldA = *A;
 	
-	*A -= *n;
+	*A -= n_ & 0xf;
 	if (*A == 0)
 		setFlag('Z');
 	setFlag('N');
-	if (byteR.lsn < byteN.lsn)
+	if (byteR.lsn < n_ & 0xf)
 		setFlag('H');
-	if (oldA < *n)
+	if (oldA < n_)
 		setFlag('C');
 
 }
 void Cpu::SBC_A_n(char* A, char* n) {
 	Byte byteR = getByte(*A);
-	Byte byteN = getByte(*n);
+	uint8_t n_ = *(uint8_t*)n;
 	char oldA = *A;
 
-	*A -= (*n + getFlag('C'));
+	*A -= (n_ + getFlag('C'));
 	if (*A == 0)
 		setFlag('Z');
 	setFlag('N');
-	if (byteR.lsn < byteN.lsn + getFlag('C'))
+	if (byteR.lsn < n_ & 0xf + getFlag('C'))
 		setFlag('H');
-	if (oldA < *n + getFlag('C'))
+	if (oldA < n_ + getFlag('C'))
 		setFlag('C');
 
 }
 void Cpu::AND_n(char* A, char* n)
 {
 	Byte byteR = getByte(*A);
-	Byte byteN = getByte(*n);
-	*A &= *n;
+	uint8_t n_ = *(uint8_t*)n;
+	*A &= n_;
 	if (*A == 0)
 		setFlag('Z');
 	resetFlag('N');
@@ -690,8 +707,8 @@ void Cpu::AND_n(char* A, char* n)
 void Cpu::OR_n(char* A, char* n)
 {
 	Byte byteR = getByte(*A);
-	Byte byteN = getByte(*n);
-	*A |= *n;
+	uint8_t n_ = *(uint8_t*)n;
+	*A |= n_;
 	if (*A == 0)
 		setFlag('Z');
 	resetFlag('N');
@@ -700,9 +717,10 @@ void Cpu::OR_n(char* A, char* n)
 }
 void Cpu::XOR_n(char* A, char* n)
 {
+	//? *?
 	Byte byteR = getByte(*A);
-	Byte byteN = getByte(*n);
-	*A ^= *n;
+	uint8_t n_ = *(uint8_t*)n;
+	*A ^= n_;
 	if (*A == 0)
 		setFlag('Z');
 	resetFlag('N');
@@ -712,27 +730,60 @@ void Cpu::XOR_n(char* A, char* n)
 void Cpu::CP_n(char* n, char* none) {
 	char A = *getA();
 	Byte byteR = getByte(A);
-	Byte byteN = getByte(*n);
-	char res = A - *n;
+	uint8_t n_ = *(uint8_t*)n;
+	char res = A - n_;
 	if (res == 0)
 		setFlag('Z');
 	setFlag('N');
-	if (byteR.lsn < byteN.lsn)
+	if (byteR.lsn < n_ & 0xf)
 		setFlag('H');
-	if (A < *n)
+	if (A < n_)
 		setFlag('C');
 }
 void Cpu::INC_n(char* n, char* none) {
-	*n++;
+	Byte byteN = getByte(*n);
+	(*n)++;
+	if (*n == 0)
+		setFlag('Z');
+	resetFlag('N');
+	if (byteN.lsn +1  > 0xf)
+		setFlag('H');
 }
 void Cpu::DEC_n(char* n, char* none) {
-	*n--;
+	Byte byteN = getByte(*n);
+	(*n)--;
+	if (*n == 0)
+		setFlag('Z');
+	setFlag('N');
+	//? if (byteN.lsn < 0xf)
+	if (byteN.lsn < 1)
+		setFlag('H');
 }
 void Cpu::ADD_HL_n(char* HL, char* n) {
-	*HL += *n;
+
+	uint16_t oldHL=* (uint16_t*)HL;
+	uint16_t n_ = *(uint16_t*)n;
+	*HL += n_;
+	
+	resetFlag('N');
+	if((oldHL&0xfff) +(n_&0xfff)> 0xfff)
+		setFlag('H');
+	if (oldHL + n_ > 0xffff)
+		setFlag('C');
 }
 void Cpu::ADD_SP_n(char* SP, char* n) {
-	*SP += *n;
+	uint16_t oldSP = *(uint16_t*)SP;
+	*(uint16_t*)SP += *n;
+	resetFlag('Z');
+	resetFlag('N');
+	if (oldSP + *n > 0xFFFF)
+		setFlag('C');
+	else
+		resetFlag('C');
+	if ((oldSP & 0xF) + (*n & 0xF) > 0xF)
+		setFlag('H');
+	else
+		resetFlag('H');
 }
 void Cpu::INC_nn(char* nn, char* none) {
 	(*(uint16_t*)nn)++;
@@ -744,6 +795,12 @@ void Cpu::SWAP_n(char* n, char* none) {
 	Byte oldByte = getByte(*n);
 	Byte newByte{ oldByte.lsn,oldByte.msn };
 	*n = getByte(newByte);
+	if (*n == 0)
+		setFlag('Z');
+	resetFlag('N');
+	resetFlag('H');
+	resetFlag('C');
+
 }
 void Cpu::DAA(char* none, char* none2) {
 	char correction = 0;
@@ -752,19 +809,31 @@ void Cpu::DAA(char* none, char* none2) {
 		correction += 0x06;
 	if((!getFlag('N') && A.msn > 9) || getFlag('C'))
 		correction += 0x60;
+	*getA() += getFlag('N')?-correction:correction;
+	if (*getA() == 0)
+		setFlag('Z');
+	resetFlag('H');
 
-	*(getA()) += getFlag('N')?-correction:correction;
-
+	if ((!getFlag('N')&&getByte(A)+correction> 0xFF)||(getFlag('N')&& getByte(A)<correction))
+		setFlag('C');
+	else
+		resetFlag('C');
 }
 void Cpu::CPL(char* none, char* none2) {
 	*getA() ^= 0xff;
+	setFlag('N');
+	setFlag('H');
 }
 void Cpu::CCF(char* none, char* none2) {
 
 	getFlag('C') ? resetFlag('C') : setFlag('C');
+	resetFlag('N');
+	resetFlag('H');
 }
 void Cpu::SCF(char* none, char* none2) {
 	setFlag('C');
+	resetFlag('N');
+	resetFlag('H');
 }
 void Cpu::NOP(char* none, char* none2) {
 }
@@ -788,52 +857,94 @@ void Cpu::RLCA(char* none, char* none2) {
 	*getA()= (A<<1)|bitLeaving;
 	bitLeaving ? setFlag('C') : resetFlag('C');
 
-	/*for (char i = 0;i < 8;i++)
-		newA |= (1 & (A >> i)) << (7 - i);
-	*getA() = newA;*/
+	if(*getA()==0)
+	setFlag('Z');
+	resetFlag('N');
+	resetFlag('H');
 }
 void Cpu::RLA(char* none, char* none2) {
 	char A = *getA();
 	char bitLeaving = (1 & (A >> 7));
 	*getA() = (A << 1) | getFlag('C');
 	bitLeaving ? setFlag('C') : resetFlag('C');
+
+	if (*getA() == 0)
+		setFlag('Z');
+	resetFlag('N');
+	resetFlag('H');
 }
 void Cpu::RRCA(char* none, char* none2) {
 	char A = *getA();
 	char bitLeaving = 1 & A;
 	*getA() = (bitLeaving<<7) |(A >> 1);
 	bitLeaving ? setFlag('C') : resetFlag('C');
+
+	if (*getA() == 0)
+		setFlag('Z');
+	resetFlag('N');
+	resetFlag('H');
 }
 void Cpu::RRA(char* none, char* none2) {
 	char A = *getA();
 	char bitLeaving = 1 & A;
 	*getA() = (getFlag('C') << 7) | (A >> 1);
 	bitLeaving ? setFlag('C') : resetFlag('C');
+
+	if (*getA() == 0)
+		setFlag('Z');
+	resetFlag('N');
+	resetFlag('H');
 }
 void Cpu::RLC_n(char* n, char* none) {
 	char bitLeaving = (1 & (*n >> 7));
 	*n = (*n << 1) | bitLeaving;
 	bitLeaving ? setFlag('C') : resetFlag('C');
+
+	if (*n == 0)
+		setFlag('Z');
+	resetFlag('N');
+	resetFlag('H');
 }
 void Cpu::RL_n(char* n, char* none) {
 	char bitLeaving = (1 & (*n >> 7));
 	*n = (*n << 1) | getFlag('C');
 	bitLeaving ? setFlag('C') : resetFlag('C');
+
+	if (*n == 0)
+		setFlag('Z');
+	resetFlag('N');
+	resetFlag('H');
 }
 void Cpu::RRC_n(char* n, char* none) {
 	char bitLeaving = 1 & *n;
 	*n = (bitLeaving << 7) | (*n >> 1);
 	bitLeaving ? setFlag('C') : resetFlag('C');
+
+	if (*n == 0)
+		setFlag('Z');
+	resetFlag('N');
+	resetFlag('H');
 }
 void Cpu::RR_n(char* n, char* none) {
 	char bitLeaving = 1 & *n;
 	*n = getFlag('C') | (*n >> 1);
 	bitLeaving ? setFlag('C') : resetFlag('C');
+
+	if (*n == 0)
+		setFlag('Z');
+	resetFlag('N');
+	resetFlag('H');
 }
 void Cpu::SLA_n(char* n, char* none) {
 	char bitLeaving = (1 & (*n >> 7));
 	*n <<= 1;
 	bitLeaving ? setFlag('C') : resetFlag('C');
+
+	if (*n == 0)
+		setFlag('Z');
+	resetFlag('N');
+	resetFlag('H');
+
 }
 void Cpu::SRA_n(char* n, char* none) {
 	char bitLeaving = (1 &*n);
@@ -841,16 +952,29 @@ void Cpu::SRA_n(char* n, char* none) {
 	bitLeaving ? setFlag('C') : resetFlag('C');
 	bitLeaving = (1 & (*n>>6));
 	*n &= bitLeaving << 7;
+
+	if (*n == 0)
+		setFlag('Z');
+	resetFlag('N');
+	resetFlag('H');
 }
 void Cpu::SRL_n(char* n, char* none) {
 	char bitLeaving = (1 & *n);
 	*n >>= 1;
 	bitLeaving ? setFlag('C') : resetFlag('C');
 	*n &= 0x7f;
+
+	if (*n == 0)
+		setFlag('Z');
+	resetFlag('N');
+	resetFlag('H');
 }
 void Cpu::BIT_$n_r(char* $n, char* r) {
 	char bit =1 & *r>>*$n;
 	bit ? resetFlag('Z') : setFlag('Z');
+
+	resetFlag('N');
+	setFlag('H');
 }
 void Cpu::SET_$n_r(char* $n, char* r) {
 	//?
@@ -865,17 +989,17 @@ void Cpu::JP_nn(char* nn, char* none) {
 	PC = *(uint16_t*)nn;
 }
 void Cpu::JP_cc_nn(char* cc, char* nn) {
-	if((*cc == 'NZ'&&!getFlag('Z'))|| (*cc == 'Z' && getFlag('Z'))|| (*cc == 'NC' && !getFlag('C'))|| (*cc == 'C' && getFlag('C')))
+	if((*cc == NZ&&!getFlag('Z'))|| (*cc == Z && getFlag('Z'))|| (*cc == NC && !getFlag('C'))|| (*cc == C && getFlag('C')))
 		PC = *(uint16_t*)nn;
 }
 void Cpu::JP_HL(char* HL, char* none) {
 	PC = *(uint16_t*)HL;
 }
 void Cpu::JR_n(char* n, char* none) {
-	PC +=(signed)*n;
+	PC +=*n;
 }
 void Cpu::JR_cc_n(char* cc, char* n) {
-	if ((*cc == 'NZ' && !getFlag('Z')) || (*cc == 'Z' && getFlag('Z')) || (*cc == 'NC' && !getFlag('C')) || (*cc == 'C' && getFlag('C')))
+	if ((*cc == NZ && !getFlag('Z')) || (*cc == Z && getFlag('Z')) || (*cc == NC && !getFlag('C')) || (*cc == C && getFlag('C')))
 		PC +=(signed)*n;
 }
 void Cpu::CALL_nn(char* nn, char* none) {
@@ -884,9 +1008,9 @@ void Cpu::CALL_nn(char* nn, char* none) {
 	PC = *(uint16_t*)nn;
 }
 void Cpu::CALL_cc_nn(char* cc, char* nn) {
-	if ((*cc == 'NZ' && !getFlag('Z')) || (*cc == 'Z' && getFlag('Z')) || (*cc == 'NC' && !getFlag('C')) || (*cc == 'C' && getFlag('C'))) {
+	if ((*cc == NZ && !getFlag('Z')) || (*cc == Z && getFlag('Z')) || (*cc == NC && !getFlag('C')) || (*cc == C && getFlag('C'))) {
 		uint16_t next = PC + 1;
-		PUSH_nn((char*)&next, (char*)&SP);
+		PUSH_nn((char*)&next, (char*)&SP);//?
 		PC = *(uint16_t*)nn;
 	}
 }
@@ -901,7 +1025,7 @@ void Cpu::RET(char* none, char* none2) {
 	
 }
 void Cpu::RET_cc(char* cc, char* none) {
-	if ((*cc == 'NZ' && !getFlag('Z')) || (*cc == 'Z' && getFlag('Z')) || (*cc == 'NC' && !getFlag('C')) || (*cc == 'C' && getFlag('C'))) {
+	if ((*cc == NZ && !getFlag('Z')) || (*cc == Z && getFlag('Z')) || (*cc == NC && !getFlag('C')) || (*cc == C && getFlag('C'))) {
 		char lsb = ram.read(SP++);
 		char msb = ram.read(SP++);
 		PC = BytesToWord(msb, lsb);
@@ -911,10 +1035,6 @@ void Cpu::RETI(char* none, char* none2) {
 	RET(none, none2);
 	IME = 1;
 }
-
-
-
-
 
 
 char Cpu::getFlag(char flag)

@@ -3,6 +3,7 @@
 #include <map>
 #include "Ram.h"
 #include "Structures.h"
+#include "Cartridge.h"
 using namespace std;
 
 
@@ -24,14 +25,17 @@ private:
 	uint16_t HL = 0;
 	uint16_t SP = 0xfffe;
 	uint16_t PC = 0x100;
+	//uint16_t PC = 0;
 	map<uint16_t, Opcode> opcodes;
 	Ram ram;
 	char haltCpu = 0;
 	char haltDisplay = 0;
 	char IME = 1;
 	bool IMEScheduled = true;
-	char flagsNames[4] = { 'NZ','Z','NC','C' };
+	enum Flag : char { NZ, Z, NC, C };
+	char flagsNames[4] = { NZ,Z,NC,C };
 	char RSTOffsets[8] = { 0x00,0x08,0x10,0x18,0x20,0x28,0x30,0x38 };
+	Cartridge cartridge;
 public:
 
 	Cpu();
@@ -56,13 +60,14 @@ public:
 	char* get$NN();
 	char* getImmediate();
 	char* getSP();
+	void InsertCartridge(Cartridge cartridge);
 	void Execute(uint16_t opcode);
-	void LD_nn_n(char* nn, char* n);
+	void LD_nn_N(char* nn, char* n);
 	void LD_r1_r2(char* r1, char* r2);
 	void LD_A_n(char* A, char* n);
 	void LD_n_A(char* n, char* A);
-	void LD_A_$C(char* A, char* C);
-	void LD_$C_A(char* C, char* A);
+	void LD_A_C(char* A, char* C);
+	void LD_C_A(char* C, char* A);
 	void LDD_A_$HL(char* A, char* $HL);
 	void LDD_$HL_A(char* $HL, char* A);
 	void LDI_A_$HL(char* A, char* $HL);
@@ -72,7 +77,7 @@ public:
 	void LD_n_nn(char* n, char* nn);
 	void LD_SP_HL(char* SP, char* HL);
 	void LDHL_SP_$n(char* SP,char* $N);
-	void LD_nn_SP(char* $NN, char* SP);
+	void LD_$NN_SP(char* $NN, char* SP);
 	void PUSH_nn(char* nn, char* SP);
 	void POP_nn(char* SP, char* nn);
 	void ADD_A_n(char* A, char* n);
@@ -147,6 +152,7 @@ public:
 	char getByte(Byte byte);
 	void SetWordIntoBytes(uint16_t* a, uint16_t* b);
 	void SetByte(uint16_t* word, uint8_t value);
+
 	//void* nn2nWrapper(void (*operate)(uint16_t, uint16_t),uint16_t* nn, uint8_t n) {
 	//	return operate;
 	//}
