@@ -30,6 +30,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
+    <CLRSupport>false</CLRSupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -43,6 +44,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
+    <CLRSupport>false</CLRSupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -74,6 +76,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>C:\opencv\build\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\opencv\build\x64\vc15\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -87,10 +91,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\opencv\build\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\opencv\build\include</AdditionalLibraryDirectories>
+      <AdditionalDependencies>C:\opencv\build\x64\vc14\lib\opencv_world420.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -99,10 +106,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\opencv\build\include</AdditionalLibraryDirectories>
+      <AdditionalDependencies>C:\opencv\build\x64\vc15\lib\opencv_world420d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -138,16 +149,24 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Cartridge.cpp" />
-    <ClCompile Include="Cpu.cpp" />
+    <ClCompile Include="BUS.cpp" />
+    <ClCompile Include="CARTRIDGE.cpp" />
+    <ClCompile Include="CPU.cpp" />
+    <ClCompile Include="DISPLAY.cpp" />
+    <ClCompile Include="DMA.cpp" />
+    <ClCompile Include="GPU.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Ram.cpp" />
+    <ClCompile Include="MMU.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Cartridge.h" />
-    <ClInclude Include="Cpu.h" />
+    <ClInclude Include="BUS.h" />
+    <ClInclude Include="CARTRIDGE.h" />
+    <ClInclude Include="CPU.h" />
+    <ClInclude Include="DISPLAY.h" />
+    <ClInclude Include="DMA.h" />
+    <ClInclude Include="GPU.h" />
     <ClInclude Include="main.h" />
-    <ClInclude Include="Ram.h" />
+    <ClInclude Include="MMU.h" />
     <ClInclude Include="SHA1.h" />
     <ClInclude Include="Structures.h" />
   </ItemGroup>

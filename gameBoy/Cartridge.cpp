@@ -1,7 +1,11 @@
-#include "Cartridge.h"
+#include "CARTRIDGE.h"
 #include <stdlib.h>
 #include "SHA1.h"
-void Cartridge::loadRom(const char* path)
+void CARTRIDGE::connectToBus(BUS* bus)
+{
+	this->bus = bus;
+}
+void CARTRIDGE::loadRom(const char* path)
 {
 	ifstream rf(path, ios::out | ios::binary);
 	if (!rf) {
@@ -31,12 +35,14 @@ void Cartridge::loadRom(const char* path)
 	
 }
 
-void Cartridge::setCartridgeHeader()
+void CARTRIDGE::setCartridgeHeader()
 {
 	memcpy(title, (mem + 0x0134), 9);
 }
 
-char Cartridge::getRomBanksSize()
+
+
+char CARTRIDGE::getRomBanksSize()
 {
 	switch (romSize)
 	{
@@ -62,4 +68,17 @@ char Cartridge::getRomBanksSize()
 		return 96;
 	}
 	return 0;
+}
+
+uint8_t CARTRIDGE::read(uint32_t address)
+{
+	return mem[address];
+}
+
+void CARTRIDGE::load()
+{
+
+	for (int i = 0;i < 0x3fff;i++)
+		bus->mmu->write(i, read(i));
+
 }
