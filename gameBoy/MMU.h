@@ -9,6 +9,7 @@ class  MMU
 private:
 	BUS* bus;
 public:
+    MMU();
 	void connectToBus(BUS* bus);
     //bios.
 	uint8_t bios[0x0100] = {
@@ -29,14 +30,19 @@ public:
     0x21, 0x04, 0x01, 0x11, 0xA8, 0x00, 0x1A, 0x13, 0xBE, 0x20, 0xFE, 0x23, 0x7D, 0xFE, 0x34, 0x20,
     0xF5, 0x06, 0x19, 0x78, 0x86, 0x23, 0x05, 0x20, 0xFB, 0x86, 0x20, 0xFE, 0x3E, 0x01, 0xE0, 0x50 };
 	
-	uint8_t rom[0x3fff];//rom bank 0...n
-	uint8_t workingRam[0xffff];//working ram
-	uint8_t externalRam[0xffff];
-	uint8_t zeroRam[0xffff];
-	uint8_t mem[0xffff];
+	uint8_t rom[0x8000];//rom bank 0...n
+	uint8_t externalRam[0x8000];//by range supposed to be 0x2000 but imrannazar gitup mmu says 0x8000.
+    //uint8_t workingRam[0x2000];//working ram
+    uint8_t workingRam[0x3E00];//working ram
+	//uint8_t zeroRam[0x2000];
+    uint8_t io[0x80];
+    uint8_t zeroRam[0x80];
+	//uint8_t mem[0xffff];
 	bool biosLoaded = true;
 	void write(uint16_t address, uint8_t value);
 	uint8_t read(uint16_t address);
+    uint8_t* getMemCell(uint16_t address);
+    void reset();
 
 };
 

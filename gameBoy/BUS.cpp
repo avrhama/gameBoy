@@ -30,6 +30,11 @@ void BUS::connectDMA(DMA* dma)
 	dma->connectToBus(this);
 }
 
+void BUS::connectDisplay(DISPLAY* display)
+{
+	this->display = display;
+}
+
 void BUS::insertCartridge(CARTRIDGE* cartridge)
 {
 	this->cartridge = cartridge;

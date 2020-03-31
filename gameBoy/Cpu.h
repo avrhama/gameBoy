@@ -17,7 +17,6 @@ class CPU
 		uint8_t* (CPU::* param1)();
 		uint8_t* (CPU::* param2)();
 		uint8_t cycles;
-	
 	};
 private:
 	BUS* bus;
@@ -27,6 +26,11 @@ private:
 	uint16_t HL = 0;
 	uint16_t SP = 0xfffe;
 	//uint16_t PC = 0x100;
+	uint16_t * nn;
+	uint8_t  * n;
+	/*uint8_t $n;
+	uint16_t $nn;*/
+	
 	map<uint16_t, Opcode> opcodes;
 	//Mmu mmu;
 	uint8_t haltCPU = 0;
@@ -36,7 +40,7 @@ private:
 	enum Flag : uint8_t { NZ, Z, NC, C };
 	uint8_t flagsNames[4] = { NZ,Z,NC,C };
 	uint8_t RSTOffsets[8] = { 0x00,0x08,0x10,0x18,0x20,0x28,0x30,0x38 };
-	
+	int time;
 public:
 	
 	CPU();
@@ -155,6 +159,9 @@ public:
 	uint8_t getByte(Byte byte);
 	void SetWordIntoBytes(uint16_t* a, uint16_t* b);
 	void SetByte(uint16_t* word, uint8_t value);
+	void reset();
+	
+	uint8_t lastOpcodeCycles;
 	
 
 };

@@ -77,8 +77,8 @@ uint8_t CARTRIDGE::read(uint32_t address)
 
 void CARTRIDGE::load()
 {
-
-	for (int i = 0;i < 0x3fff;i++)
+	bus->mmu->biosLoaded = false;
+	for (int i = 0;i < 0x7fff;i++)
 		bus->mmu->write(i, read(i));
-
+	bus->mmu->biosLoaded = true;
 }

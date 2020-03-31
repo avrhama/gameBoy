@@ -412,7 +412,7 @@ CPU::CPU()
 	//RETI
 	opcodes[0xD9] = { "RETI",&CPU::RETI,&CPU::getNULL,&CPU::getNULL,8 };
 
-
+	reset();
 }
 
 uint8_t* CPU::getA()
@@ -467,34 +467,35 @@ uint8_t* CPU::getDE()
 }
 uint8_t* CPU::get$BC()
 {
-	uint8_t n = bus->mmu->read(BC);
-	return &n;
+	n=bus->mmu->getMemCell(BC);
+	return n;
 }
 uint8_t* CPU::get$DE()
 {
-	uint8_t n = bus->mmu->read(DE);
-	return &n;
+	n = bus->mmu->getMemCell(DE);
+	return n;
 }
 uint8_t* CPU::get$HL()
 {
-	uint8_t n = bus->mmu->read(HL);
-	return &n;
+	n = bus->mmu->getMemCell(HL);
+	return n;
 }
 uint8_t* CPU::getN()
 {
-	uint8_t n= bus->mmu->read(PC++);
+	n= bus->mmu->read(PC++);
 	return &n;
 }
 uint8_t* CPU::getNN()
 {
-	uint8_t msb =bus->mmu->read(PC++);
 	uint8_t lsb = bus->mmu->read(PC++);
-	uint16_t nn = msb << 8 | lsb;
+	uint8_t msb =bus->mmu->read(PC++);
+	
+	nn = msb << 8 | lsb;
 	return (uint8_t*)&nn;
 }
 uint8_t* CPU::get$N()
 {
-	uint8_t n = bus->mmu->read(bus->mmu->read(PC++));
+	n = bus->mmu->read(bus->mmu->read(PC++));
 	return &n;
 }
 uint8_t* CPU::get$NN()
@@ -502,13 +503,13 @@ uint8_t* CPU::get$NN()
 	
 	uint8_t lsb = bus->mmu->read(PC++);
 	uint8_t msb = bus->mmu->read(PC++);
-	uint8_t nn = bus->mmu->read(msb << 8 | lsb);
-	return &nn;
+	n = bus->mmu->read(msb << 8 | lsb);
+	return &n;
 }
 
 uint8_t* CPU::getImmediate()
 {
-	uint8_t n=*getN();
+	n=*getN();
 	return &n;
 }
 uint8_t* CPU::getSP()
@@ -524,17 +525,7 @@ uint8_t* CPU::getNULL()
 
 
 
-void CPU::Execute(uint16_t opcode)
-{
-	Opcode  op = opcodes[opcode];
-	uint8_t n = 19;
-	//opcodes[opcode]
-	uint8_t* param1= (this->*op.param1)();
-	uint8_t* param2 = (this->*op.param2)();
-	(this->*op.operate)(param1, param2);
-	//(this->*opcodes[opcode].operate)(op.arg1, &n);
-	//op.operate(op.arg1, &n);
-}
+
 
 
 void CPU::LD_nn_N(uint8_t* nn, uint8_t* N)
@@ -1185,6 +1176,38 @@ void CPU::SetByte(uint16_t* word, uint8_t value) {
 	uint8_t* b = (uint8_t*)word;
 	*b = value;
 
+}
+void CPU::Execute(uint16_t opcode)
+{
+
+	Opcode  op = opcodes[opcode];
+	uint8_t n = 19;
+	//opcodes[opcode]
+	uint8_t* param1 = (this->*op.param1)();
+	uint8_t* param2 = (this->*op.param2)();
+	(this->*op.operate)(param1, param2);
+	//(this->*opcodes[opcode].operate)(op.arg1, &n);
+	//op.operate(op.arg1, &n);
+	lastOpcodeCycles = op.cycles;
+	time += lastOpcodeCycles;
+	/*if (op.name != "NOP")
+		printf("pc:%d opcode:%d func:%s\n", PC, opcode, op.name);*/
+}
+void CPU::reset()
+{
+	AF = 0x01;//-GB/SGB, $FF-GBP, $11-GBC
+	//F = 0xB0;?
+	BC = 0x0013;
+	DE = 0x00D8;
+	HL = 0x014D;
+	SP=0xFFFE;
+	PC = 0x100;
+	//PC = 0;
+	AF = 0;
+	BC = 0;
+	DE = 0;
+	HL = 0;
+	//SP = 0;
 }
 
 void CPU::connectToBus(BUS* bus)
