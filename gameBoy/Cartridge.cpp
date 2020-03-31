@@ -15,13 +15,14 @@ void CARTRIDGE::loadRom(const char* path)
 		rf.seekg(0, rf.end);
 		int size = rf.tellg();
 		rf.seekg(0, rf.beg);
-		mem = (uint8_t*)malloc(size);
+		mem = (uint8_t*)calloc(size, 1);
 		int p = 0;
-		rf.read((char*)mem, size);		
+		//rf.read((char*)mem, size);
+		rf.read((char*)mem, size);
+
 	}
 	rf.close();
 	setCartridgeHeader();
-
 	
 	//rom[0x7fff+1] = '\0';
 	colorGB = mem[0x0143];

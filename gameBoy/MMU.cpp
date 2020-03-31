@@ -54,6 +54,8 @@ void MMU::write(uint16_t address, uint8_t value)
 	}
 	else if (0x8000 <= address &&address <= 0x9fff) {// Graphics: VRAM (8k)
 		bus->gpu->vRam[address & 0x1FFF] = value; // GPU._vram[addr & 0x1FFF];
+		if (value != 1)
+			int d = 0;
 	}
 	else if (0xa000 <= address &&address <= 0xbfff) {// External RAM (8k)
 		externalRam[address & 0x1FFF] = value;

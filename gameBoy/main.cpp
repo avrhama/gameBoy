@@ -27,7 +27,7 @@ void a(uint16_t* p) {
 int main(void) {
 	//const char* romPath = "alleyway.gb";
 	const char* romPath = "megaman.gb";
-	//const char* romPath = "cpu_instrs.gb";
+	//const char* romPath = "test\\cpu_instrs\\cpu_instrs.gb";
 	BUS  bus;
 	CPU cpu;
 	GPU gpu;
@@ -47,23 +47,31 @@ int main(void) {
 
 	//return 0;
 	uint8_t opcode;
-	int n = 10;
+	int n = 100;
+	char d;
 	do {
+
 		opcode = *(uint8_t*)cpu.getN();
 		if (opcode == 0xcb)
 			opcode = opcode == 0xCB ? 0XCB00 | *(uint8_t*)cpu.getN() : opcode;
-		
-		/*if(mmu.read(0xFF02)==0x81)
-			printf("%d\n", mmu.read(0xFF01));*/
+		if (opcode == 0x38) {
+			n =n+ 0;
+		}
+		//printf("opcode:0x%01x\n", opcode);
+		printf("opcode:0x%01x AF:0x%01x BC:0x%01x DE:0x%01x HL:0x%01x\n", opcode, *(uint16_t*)cpu.getAF(), *(uint16_t*)cpu.getBC(), *(uint16_t*)cpu.getDE(), *(uint16_t*)cpu.getHL());
+		//cin >> d;
+		if(mmu.read(0xFF02)==0x81)
+			printf("%d\n", mmu.read(0xFF01));
 		if (opcode != 0) {
 			 //printf("lineScan:%d LCD:%d\n", mmu.read(0xFF44), mmu.read(0xFF40));
 			//printf("first opcode:%u\n", opcode);
 			n--;
 		}
+		
 		cpu.Execute(opcode);
 
 
-	} while (cpu.PC != 0x100||n>0);//cpu.PC!=0x100
+	} while (cpu.PC != 0x100 || n > 0);//||mmu.biosLoaded);//cpu.PC!=0x100
 
 	
 	std::thread displayThread(displayThreadFunc, display);

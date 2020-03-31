@@ -72,7 +72,7 @@ CPU::CPU()
 	opcodes[0x0A] = { "LD_A_n",&CPU::LD_A_n,&CPU::getA,&CPU::get$BC,8 };
 	opcodes[0x1A] = { "LD_A_n",&CPU::LD_A_n,&CPU::getA,&CPU::get$DE,8 };
 	opcodes[0xFA] = { "LD_A_n",&CPU::LD_A_n,&CPU::getA,&CPU::get$NN,16 };
-	opcodes[0x3E] = { "LD_A_n",&CPU::LD_A_n,&CPU::getA,&CPU::get$N,8 };
+	opcodes[0x3E] = { "LD_A_n",&CPU::LD_A_n,&CPU::getA,&CPU::getN,8 };
 	//LD n,A
 	opcodes[0x47] = { "LD_n_A",&CPU::LD_n_A,&CPU::getB,&CPU::getA,4 };
 	opcodes[0x4F] = { "LD_n_A",&CPU::LD_n_A,&CPU::getC,&CPU::getA,4 };
@@ -482,36 +482,31 @@ uint8_t* CPU::get$HL()
 }
 uint8_t* CPU::getN()
 {
-	n= bus->mmu->read(PC++);
-	return &n;
+	immidiateN= bus->mmu->read(PC++);
+	return &immidiateN;
 }
 uint8_t* CPU::getNN()
 {
 	uint8_t lsb = bus->mmu->read(PC++);
 	uint8_t msb =bus->mmu->read(PC++);
-	
-	nn = msb << 8 | lsb;
-	return (uint8_t*)&nn;
+	immidiateNN = msb << 8 | lsb;
+	return (uint8_t*)&immidiateNN;
 }
 uint8_t* CPU::get$N()
 {
-	n = bus->mmu->read(bus->mmu->read(PC++));
-	return &n;
+	n = bus->mmu->getMemCell(PC++);
+	return n;
 }
 uint8_t* CPU::get$NN()
 {
-	
+	//n=(msb|lsb) write(c,*(uint16*)n)-> memory[c]=lsb memory[c+1]=msb.
 	uint8_t lsb = bus->mmu->read(PC++);
 	uint8_t msb = bus->mmu->read(PC++);
-	n = bus->mmu->read(msb << 8 | lsb);
-	return &n;
+	n = bus->mmu->getMemCell(msb << 8 | lsb);
+	return n;
 }
 
-uint8_t* CPU::getImmediate()
-{
-	n=*getN();
-	return &n;
-}
+
 uint8_t* CPU::getSP()
 {
 	return(uint8_t*)&SP;
@@ -1088,7 +1083,7 @@ void CPU::resetFlag(uint8_t flag)
 		byte = 128;
 		break;
 	}
-	byte ^= byte;
+	byte ^= 0xffff;
 	uint8_t* f = getF();
 	*f = *f & byte;
 }
@@ -1195,18 +1190,22 @@ void CPU::Execute(uint16_t opcode)
 }
 void CPU::reset()
 {
-	AF = 0x01;//-GB/SGB, $FF-GBP, $11-GBC
-	//F = 0xB0;?
+	//AF = 0x01;//-GB/SGB, $FF-GBP, $11-GBC
+
+	AF = 0x1180;//gbc
+	//AF = 0x01B0;
 	BC = 0x0013;
 	DE = 0x00D8;
+	DE = 0xFF56;
 	HL = 0x014D;
+	HL = 0x000D;
 	SP=0xFFFE;
 	PC = 0x100;
 	//PC = 0;
-	AF = 0;
+	//AF = 0;
 	BC = 0;
-	DE = 0;
-	HL = 0;
+	//DE = 0;
+	//HL = 0;
 	//SP = 0;
 }
 

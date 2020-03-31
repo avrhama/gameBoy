@@ -6,6 +6,10 @@ for line in opcodesLines:
 		opcodeEnd=line.index(']')
 		opcode=int(line[8:opcodeEnd],16)
 		opcodeMap[opcode]=line
+	if 'get$N' in line:
+		tokens=line.split(',')
+		if tokens[2]=='&CPU::get$N':
+			print(line)
 
 while True:
 	opcode=input('insert opcode: ').lower().strip()

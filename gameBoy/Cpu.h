@@ -28,6 +28,8 @@ private:
 	//uint16_t PC = 0x100;
 	uint16_t * nn;
 	uint8_t  * n;
+	uint8_t immidiateN = 0;
+	uint16_t immidiateNN = 0;
 	/*uint8_t $n;
 	uint16_t $nn;*/
 	
