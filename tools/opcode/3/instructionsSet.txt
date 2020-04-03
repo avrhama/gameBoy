@@ -1,0 +1,8 @@
+opcodes[0xCB87] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::get$N,&CPU::getA,8 };
+opcodes[0xCB80] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::get$N,&CPU::getB,8 };
+opcodes[0xCB81] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::get$N,&CPU::getC,8 };
+opcodes[0xCB82] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::get$N,&CPU::getD,8 };
+opcodes[0xCB83] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::get$N,&CPU::getE,8 };
+opcodes[0xCB84] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::get$N,&CPU::getH,8 };
+opcodes[0xCB85] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::get$N,&CPU::getL,8 };
+opcodes[0xCB86] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::get$N,&CPU::get$HL,16 };
