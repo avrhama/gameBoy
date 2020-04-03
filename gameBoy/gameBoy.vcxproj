@@ -155,6 +155,7 @@
     <ClCompile Include="DISPLAY.cpp" />
     <ClCompile Include="DMA.cpp" />
     <ClCompile Include="GPU.cpp" />
+    <ClCompile Include="INTERRUPT.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MMU.cpp" />
   </ItemGroup>
@@ -165,8 +166,10 @@
     <ClInclude Include="DISPLAY.h" />
     <ClInclude Include="DMA.h" />
     <ClInclude Include="GPU.h" />
+    <ClInclude Include="INTERRUPT.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="MMU.h" />
+    <ClInclude Include="pipeChannel.h" />
     <ClInclude Include="SHA1.h" />
     <ClInclude Include="Structures.h" />
   </ItemGroup>

@@ -33,7 +33,7 @@ private:
 	/*uint8_t $n;
 	uint16_t $nn;*/
 	
-	map<uint16_t, Opcode> opcodes;
+	
 	//Mmu mmu;
 	uint8_t haltCPU = 0;
 	uint8_t haltDisplay = 0;
@@ -43,8 +43,11 @@ private:
 	uint8_t flagsNames[4] = { NZ,Z,NC,C };
 	uint8_t RSTOffsets[8] = { 0x00,0x08,0x10,0x18,0x20,0x28,0x30,0x38 };
 	int time;
+	int cpuFreq = 4194304;
+	int cyclesPerIncrementTIMA = 1024;//each cyclesPerSecond cycles of cpu increment tima register by 1.
+	uint8_t cyclesPerIncrementDIVIDER = 255;// 4194304/16382
 public:
-	
+	map<uint16_t, Opcode> opcodes;
 	CPU();
 	void connectToBus(BUS* bus);
 	uint16_t PC = 0;
@@ -161,8 +164,10 @@ public:
 	uint8_t getByte(Byte byte);
 	void SetWordIntoBytes(uint16_t* a, uint16_t* b);
 	void SetByte(uint16_t* word, uint8_t value);
-	void reset();
 	
+	void reset();
+	void updateCycelPerIncrementTIMA(uint8_t freqIndex);
+	void updateTimers();
 	uint8_t lastOpcodeCycles;
 	
 

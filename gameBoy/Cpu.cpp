@@ -201,15 +201,15 @@ CPU::CPU()
 	opcodes[0xAE] = { "XOR_n",&CPU::XOR_n,&CPU::getA,&CPU::get$HL,8 };
 	opcodes[0xEE] = { "XOR_n",&CPU::XOR_n,&CPU::getA,&CPU::get$N,8 };
 	//CP n
-	opcodes[0xBF] = { "CP_n",&CPU::CP_n,&CPU::getA,&CPU::getA,4 };
-	opcodes[0xB8] = { "CP_n",&CPU::CP_n,&CPU::getA,&CPU::getB,4 };
-	opcodes[0xB9] = { "CP_n",&CPU::CP_n,&CPU::getA,&CPU::getC,4 };
-	opcodes[0xBA] = { "CP_n",&CPU::CP_n,&CPU::getA,&CPU::getD,4 };
-	opcodes[0xBB] = { "CP_n",&CPU::CP_n,&CPU::getA,&CPU::getE,4 };
-	opcodes[0xBC] = { "CP_n",&CPU::CP_n,&CPU::getA,&CPU::getH,4 };
-	opcodes[0xBD] = { "CP_n",&CPU::CP_n,&CPU::getA,&CPU::getL,4 };
-	opcodes[0xBE] = { "CP_n",&CPU::CP_n,&CPU::getA,&CPU::get$HL,8 };
-	opcodes[0xFE] = { "CP_n",&CPU::CP_n,&CPU::getA,&CPU::get$N,8 };
+	opcodes[0xBF] = { "CP_n",&CPU::CP_n,&CPU::getA,&CPU::getNULL,4 };
+	opcodes[0xB8] = { "CP_n",&CPU::CP_n,&CPU::getB,&CPU::getNULL,4 };
+	opcodes[0xB9] = { "CP_n",&CPU::CP_n,&CPU::getC,&CPU::getNULL,4 };
+	opcodes[0xBA] = { "CP_n",&CPU::CP_n,&CPU::getD,&CPU::getNULL,4 };
+	opcodes[0xBB] = { "CP_n",&CPU::CP_n,&CPU::getE,&CPU::getNULL,4 };
+	opcodes[0xBC] = { "CP_n",&CPU::CP_n,&CPU::getH,&CPU::getNULL,4 };
+	opcodes[0xBD] = { "CP_n",&CPU::CP_n,&CPU::getL,&CPU::getNULL,4 };
+	opcodes[0xBE] = { "CP_n",&CPU::CP_n,&CPU::get$HL,&CPU::getNULL,8 };
+	opcodes[0xFE] = { "CP_n",&CPU::CP_n,&CPU::get$N,&CPU::getNULL,8 };
 	//INC n
 	opcodes[0x3C] = { "INC_n",&CPU::INC_n,&CPU::getA,&CPU::getNULL,4 };
 	opcodes[0x04] = { "INC_n",&CPU::INC_n,&CPU::getB,&CPU::getNULL,4 };
@@ -516,13 +516,6 @@ uint8_t* CPU::getNULL()
 {
 	return NULL;
 }
-
-
-
-
-
-
-
 void CPU::LD_nn_N(uint8_t* nn, uint8_t* N)
 {
 	*nn = *N;
@@ -588,15 +581,15 @@ void CPU::LD_SP_HL(uint8_t* SP, uint8_t* HL)
 }
 void CPU::LDHL_SP_$n(uint8_t* SP, uint8_t* $N)
 {
-	//HL = *(uint16_t*)SP + (signed uint8_t)*N;
-	HL = *(uint16_t*)SP + *$N;
+	signed char N_ = *(signed char*)$N;
+	HL = *(uint16_t*)SP + N_;
 	resetFlag('Z');
 	resetFlag('N');
-	if (*(uint16_t*)SP + *$N > 0xFFFF)
+	if (*(uint16_t*)SP + N_ > 0xFFFF)
 		setFlag('C');
 	else
 		resetFlag('C');
-	if ((*(uint16_t*)SP & 0xF) + (*$N & 0xF) > 0xF)
+	if ((*(uint16_t*)SP & 0xF) + (N_ & 0xF) > 0xF)
 		setFlag('H');
 	else
 		resetFlag('H');
@@ -608,23 +601,31 @@ void CPU::LD_$NN_SP(uint8_t* $NN,uint8_t* SP)
 	*(uint16_t*)$NN = *(uint16_t*)SP;
 }
 
-void CPU::PUSH_nn(uint8_t* nn, uint8_t* SP)
+void CPU::PUSH_nn(uint8_t* nn, uint8_t* sp)
 {
 	//?
-	uint16_t sp = *(uint16_t*)SP;
+	//uint16_t sp = *(uint16_t*)SP;
 	uint16_t n = *(uint16_t*)nn;
 	Word word = WordToBytes(n);	
-	sp--;
-	bus->mmu->write(sp--, word.msb);
-	bus->mmu->write(sp--, word.lsb);
-	*(uint16_t*)SP = sp;
+	//sp--;
+	//SP--;
+	bus->mmu->write(SP--, word.msb);
+	bus->mmu->write(SP--, word.lsb);
+	//SP = SP - 2;
+	//*(uint16_t*)SP = sp;
 }
 
-void CPU::POP_nn(uint8_t* SP, uint8_t* nn)
+void CPU::POP_nn(uint8_t* sp, uint8_t* nn)
 {
-	uint16_t sp = *(uint16_t*)SP;
-	uint8_t lsb=bus->mmu->read(sp++);
-	uint8_t msb=bus->mmu->read(sp++);
+	//uint16_t sp = *(uint16_t*)SP;
+	uint8_t lsb3 = bus->mmu->read(SP - 1);
+	uint8_t lsb2 = bus->mmu->read(SP);
+	uint8_t lsb1 = bus->mmu->read(SP + 1);
+	uint8_t lsb=bus->mmu->read(++SP);
+	uint8_t msb=bus->mmu->read(++SP);
+	//SP = SP + 2;
+	//uint8_t lsb = bus->mmu->read(SP++);
+	//uint8_t msb = bus->mmu->read(SP++);
 	uint16_t word=BytesToWord(msb,lsb);
 	*(uint16_t*)nn=word;
 }
@@ -636,11 +637,17 @@ void CPU::ADD_A_n(uint8_t* A, uint8_t* n)
 	*A += *n;
 	if (*A == 0)
 		setFlag('Z');
+	else
+		resetFlag('Z');
 	resetFlag('N');
-	if (byteR.lsn + (*n &0xf) > 0xf)
+	if (byteR.lsn + (*n & 0xf) > 0xf)
 		setFlag('H');
+	else
+		resetFlag('H');
 	if (oldA + *n > 0xff)
 		setFlag('C');
+	else
+		resetFlag('C');
 }
 
 void CPU::ADC_A_n(uint8_t* A, uint8_t* n)
@@ -651,11 +658,17 @@ void CPU::ADC_A_n(uint8_t* A, uint8_t* n)
 	*A += *n + getFlag('C');
 	if (*A == 0)
 		setFlag('Z');
+	else
+		resetFlag('Z');
 	resetFlag('N');
 	if (byteR.lsn + (*n &0xf) + getFlag('C') > 0xf)
 		setFlag('H');
+	else
+		resetFlag('H');
 	if (oldA + *n + getFlag('C') > 0xff)
 		setFlag('C');
+	else
+		resetFlag('C');
 }
 void CPU::SUB_n(uint8_t* A, uint8_t* n) {
 	Byte byteR = getByte(*A);
@@ -665,11 +678,17 @@ void CPU::SUB_n(uint8_t* A, uint8_t* n) {
 	*A -= *n & 0xf;
 	if (*A == 0)
 		setFlag('Z');
+	else
+		resetFlag('Z');
 	setFlag('N');
 	if (byteR.lsn < (*n&0xf))
 		setFlag('H');
+	else
+		resetFlag('H');
 	if (oldA < *n)
 		setFlag('C');
+	else
+		resetFlag('C');
 
 }
 void CPU::SBC_A_n(uint8_t* A, uint8_t* n) {
@@ -680,11 +699,17 @@ void CPU::SBC_A_n(uint8_t* A, uint8_t* n) {
 	*A -= (*n + getFlag('C'));
 	if (*A == 0)
 		setFlag('Z');
+	else
+		resetFlag('Z');
 	setFlag('N');
 	if (byteR.lsn < (*n &0xf) + getFlag('C'))
 		setFlag('H');
+	else
+		resetFlag('H');
 	if (oldA < *n + getFlag('C'))
 		setFlag('C');
+	else
+		resetFlag('C');
 
 }
 void CPU::AND_n(uint8_t* A, uint8_t* n)
@@ -694,6 +719,8 @@ void CPU::AND_n(uint8_t* A, uint8_t* n)
 	*A &= *n;
 	if (*A == 0)
 		setFlag('Z');
+	else
+		resetFlag('Z');
 	resetFlag('N');
 	setFlag('H');
 	resetFlag('C');
@@ -704,6 +731,8 @@ void CPU::OR_n(uint8_t* A, uint8_t* n)
 	*A |= *n;
 	if (*A == 0)
 		setFlag('Z');
+	else
+		resetFlag('Z');
 	resetFlag('N');
 	resetFlag('H');
 	resetFlag('C');
@@ -715,6 +744,8 @@ void CPU::XOR_n(uint8_t* A, uint8_t* n)
 	*A ^= *n;
 	if (*A == 0)
 		setFlag('Z');
+	else
+		resetFlag('Z');
 	resetFlag('N');
 	resetFlag('H');
 	resetFlag('C');
@@ -725,30 +756,44 @@ void CPU::CP_n(uint8_t* n, uint8_t* none) {
 	uint8_t res = A - *n;
 	if (res == 0)
 		setFlag('Z');
+	else
+		resetFlag('Z');
 	setFlag('N');
 	if (byteR.lsn < (*n & 0xf))
 		setFlag('H');
+	else
+		resetFlag('H');
 	if (A < *n)
 		setFlag('C');
+	else
+		resetFlag('C');
 }
 void CPU::INC_n(uint8_t* n, uint8_t* none) {
 	Byte byteN = getByte(*n);
 	(*n)++;
 	if (*n == 0)
 		setFlag('Z');
+	else
+		resetFlag('Z');
 	resetFlag('N');
-	if (byteN.lsn +1  > 0xf)
+	if (byteN.lsn + 1 > 0xf)
 		setFlag('H');
+	else
+		resetFlag('H');
 }
 void CPU::DEC_n(uint8_t* n, uint8_t* none) {
 	Byte byteN = getByte(*n);
 	(*n)--;
 	if (*n == 0)
 		setFlag('Z');
+	else
+		resetFlag('Z');
 	setFlag('N');
 	//? if (byteN.lsn < 0xf)
 	if (byteN.lsn < 1)
 		setFlag('H');
+	else
+		resetFlag('H');
 }
 void CPU::ADD_HL_n(uint8_t* HL, uint8_t* n) {
 
@@ -759,19 +804,24 @@ void CPU::ADD_HL_n(uint8_t* HL, uint8_t* n) {
 	resetFlag('N');
 	if((oldHL&0xfff) +(n_&0xfff)> 0xfff)
 		setFlag('H');
+	else
+		resetFlag('H');
 	if (oldHL + n_ > 0xffff)
-		setFlag('C');
-}
-void CPU::ADD_SP_n(uint8_t* SP, uint8_t* n) {
-	uint16_t oldSP = *(uint16_t*)SP;
-	*(uint16_t*)SP += *n;
-	resetFlag('Z');
-	resetFlag('N');
-	if (oldSP + *n > 0xFFFF)
 		setFlag('C');
 	else
 		resetFlag('C');
-	if ((oldSP & 0xF) + (*n & 0xF) > 0xF)
+}
+void CPU::ADD_SP_n(uint8_t* SP, uint8_t* n) {
+	uint16_t oldSP = *(uint16_t*)SP;
+	signed char n_= *(signed char*)n;
+	*(uint16_t*)SP += n_;
+	resetFlag('Z');
+	resetFlag('N');
+	if (oldSP + n_ > 0xFFFF)
+		setFlag('C');
+	else
+		resetFlag('C');
+	if ((oldSP & 0xF) + (n_ & 0xF) > 0xF)
 		setFlag('H');
 	else
 		resetFlag('H');
@@ -788,6 +838,8 @@ void CPU::SWAP_n(uint8_t* n, uint8_t* none) {
 	*n = getByte(newByte);
 	if (*n == 0)
 		setFlag('Z');
+	else
+		resetFlag('Z');
 	resetFlag('N');
 	resetFlag('H');
 	resetFlag('C');
@@ -803,6 +855,8 @@ void CPU::DAA(uint8_t* none, uint8_t* none2) {
 	*getA() += getFlag('N')?-correction:correction;
 	if (*getA() == 0)
 		setFlag('Z');
+	else
+		resetFlag('Z');
 	resetFlag('H');
 
 	if ((!getFlag('N')&&getByte(A)+correction> 0xFF)||(getFlag('N')&& getByte(A)<correction))
@@ -849,7 +903,9 @@ void CPU::RLCA(uint8_t* none, uint8_t* none2) {
 	bitLeaving ? setFlag('C') : resetFlag('C');
 
 	if(*getA()==0)
-	setFlag('Z');
+		setFlag('Z');
+	else
+		resetFlag('Z');
 	resetFlag('N');
 	resetFlag('H');
 }
@@ -861,6 +917,8 @@ void CPU::RLA(uint8_t* none, uint8_t* none2) {
 
 	if (*getA() == 0)
 		setFlag('Z');
+	else
+		resetFlag('Z');
 	resetFlag('N');
 	resetFlag('H');
 }
@@ -872,6 +930,8 @@ void CPU::RRCA(uint8_t* none, uint8_t* none2) {
 
 	if (*getA() == 0)
 		setFlag('Z');
+	else
+		resetFlag('Z');
 	resetFlag('N');
 	resetFlag('H');
 }
@@ -883,6 +943,8 @@ void CPU::RRA(uint8_t* none, uint8_t* none2) {
 
 	if (*getA() == 0)
 		setFlag('Z');
+	else
+		resetFlag('Z');
 	resetFlag('N');
 	resetFlag('H');
 }
@@ -893,6 +955,8 @@ void CPU::RLC_n(uint8_t* n, uint8_t* none) {
 
 	if (*n == 0)
 		setFlag('Z');
+	else
+		resetFlag('Z');
 	resetFlag('N');
 	resetFlag('H');
 }
@@ -903,6 +967,8 @@ void CPU::RL_n(uint8_t* n, uint8_t* none) {
 
 	if (*n == 0)
 		setFlag('Z');
+	else
+		resetFlag('Z');
 	resetFlag('N');
 	resetFlag('H');
 }
@@ -913,6 +979,8 @@ void CPU::RRC_n(uint8_t* n, uint8_t* none) {
 
 	if (*n == 0)
 		setFlag('Z');
+	else
+		resetFlag('Z');
 	resetFlag('N');
 	resetFlag('H');
 }
@@ -923,6 +991,8 @@ void CPU::RR_n(uint8_t* n, uint8_t* none) {
 
 	if (*n == 0)
 		setFlag('Z');
+	else
+		resetFlag('Z');
 	resetFlag('N');
 	resetFlag('H');
 }
@@ -933,6 +1003,8 @@ void CPU::SLA_n(uint8_t* n, uint8_t* none) {
 
 	if (*n == 0)
 		setFlag('Z');
+	else
+		resetFlag('Z');
 	resetFlag('N');
 	resetFlag('H');
 
@@ -946,6 +1018,8 @@ void CPU::SRA_n(uint8_t* n, uint8_t* none) {
 
 	if (*n == 0)
 		setFlag('Z');
+	else
+		resetFlag('Z');
 	resetFlag('N');
 	resetFlag('H');
 }
@@ -957,6 +1031,8 @@ void CPU::SRL_n(uint8_t* n, uint8_t* none) {
 
 	if (*n == 0)
 		setFlag('Z');
+	else
+		resetFlag('Z');
 	resetFlag('N');
 	resetFlag('H');
 }
@@ -994,36 +1070,45 @@ void CPU::JR_cc_n(uint8_t* cc, uint8_t* n) {
 		PC +=(signed char)*n;
 }
 void CPU::CALL_nn(uint8_t* nn, uint8_t* none) {
-	uint16_t next = PC + 1;
-	PUSH_nn((uint8_t*)&next, (uint8_t*)&SP);
+	
+	Word word = WordToBytes(PC);
+	bus->mmu->write(SP--, word.msb);
+	bus->mmu->write(SP--, word.lsb);
 	PC = *(uint16_t*)nn;
 }
 void CPU::CALL_cc_nn(uint8_t* cc, uint8_t* nn) {
 	if ((*cc == NZ && !getFlag('Z')) || (*cc == Z && getFlag('Z')) || (*cc == NC && !getFlag('C')) || (*cc == C && getFlag('C'))) {
-		uint16_t next = PC + 1;
-		PUSH_nn((uint8_t*)&next, (uint8_t*)&SP);//?
+		
+		Word word=WordToBytes(PC);
+		bus->mmu->write(SP--, word.msb);
+		bus->mmu->write(SP--, word.lsb);
 		PC = *(uint16_t*)nn;
 	}
 }
 void CPU::RST_n(uint8_t* n, uint8_t* none) {
-	PUSH_nn((uint8_t*)&PC, (uint8_t*)&SP);
-	PC = *n;
+	
+	Word word = WordToBytes(PC);
+	bus->mmu->write(SP--, word.msb);
+	bus->mmu->write(SP--, word.lsb);
+	PC =*(uint16_t*)n;
 }
 void CPU::RET(uint8_t* none, uint8_t* none2) {
-	uint8_t lsb = bus->mmu->read(SP++);
-	uint8_t msb = bus->mmu->read(SP++);
+	uint8_t lsb = bus->mmu->read(++SP);
+	uint8_t msb = bus->mmu->read(++SP);
 	PC=BytesToWord(msb, lsb);
 	
 }
 void CPU::RET_cc(uint8_t* cc, uint8_t* none) {
 	if ((*cc == NZ && !getFlag('Z')) || (*cc == Z && getFlag('Z')) || (*cc == NC && !getFlag('C')) || (*cc == C && getFlag('C'))) {
-		uint8_t lsb = bus->mmu->read(SP++);
-		uint8_t msb = bus->mmu->read(SP++);
+		uint8_t lsb = bus->mmu->read(++SP);
+		uint8_t msb = bus->mmu->read(++SP);
 		PC = BytesToWord(msb, lsb);
 	}
 }
 void CPU::RETI(uint8_t* none, uint8_t* none2) {
-	RET(none, none2);
+	uint8_t lsb = bus->mmu->read(++SP);
+	uint8_t msb = bus->mmu->read(++SP);
+	PC = BytesToWord(msb, lsb);
 	IME = 1;
 }
 
@@ -1151,17 +1236,17 @@ uint16_t CPU::BytesToWord(uint8_t msb, uint8_t lsb) {
 	return n;
 }
 Word CPU::WordToBytes(uint16_t word) {
-	uint8_t msb = 0xff && (word >> 8);
-	uint8_t lsb = 0xff && word;
+	uint8_t msb = 0xff & (word >> 8);
+	uint8_t lsb = 0xff & word;
 	return Word{msb,lsb};
 }
 Byte CPU::getByte(uint8_t byte) {
-	uint8_t msn = 0xf && (byte >> 4);
-	uint8_t lsn = 0xf && byte;
+	uint8_t msn = 0xf & (byte >> 4);
+	uint8_t lsn = 0xf & byte;
 	return Byte{ msn,lsn };
 }
 uint8_t CPU::getByte(Byte byte) {
-	return byte.msn << 4 | byte.msn;
+	return byte.msn << 4 | byte.lsn;
 }
 void CPU::SetWordIntoBytes(uint16_t* a, uint16_t* b) {
 	Word word = WordToBytes(*a);
@@ -1178,12 +1263,16 @@ void CPU::Execute(uint16_t opcode)
 	Opcode  op = opcodes[opcode];
 	uint8_t n = 19;
 	//opcodes[opcode]
+	if (opcode == 0x63) {
+		n = 9;
+	}
 	uint8_t* param1 = (this->*op.param1)();
 	uint8_t* param2 = (this->*op.param2)();
 	(this->*op.operate)(param1, param2);
+	lastOpcodeCycles = op.cycles;
 	//(this->*opcodes[opcode].operate)(op.arg1, &n);
 	//op.operate(op.arg1, &n);
-	lastOpcodeCycles = op.cycles;
+	
 	time += lastOpcodeCycles;
 	/*if (op.name != "NOP")
 		printf("pc:%d opcode:%d func:%s\n", PC, opcode, op.name);*/
@@ -1207,6 +1296,46 @@ void CPU::reset()
 	//DE = 0;
 	//HL = 0;
 	//SP = 0;
+}
+void CPU::updateCycelPerIncrementTIMA(uint8_t freqIndex) {
+	switch (freqIndex) {//read tac selected freq
+	case 0:
+		cyclesPerIncrementTIMA = cpuFreq / 4096;
+		break;
+	case 1:
+		cyclesPerIncrementTIMA = cpuFreq / 262144;
+		break;
+	case 2:
+		cyclesPerIncrementTIMA = cpuFreq / 65536;
+		break;
+	case 3:
+		cyclesPerIncrementTIMA = cpuFreq / 16384;
+		break;
+	}
+}
+void CPU::updateTimers()
+{
+	
+	if (cyclesPerIncrementDIVIDER-lastOpcodeCycles <=0) {
+		bus->interrupt->io[0x04]++;//divider increment
+		cyclesPerIncrementDIVIDER = 255;
+	}else {
+		cyclesPerIncrementDIVIDER -= lastOpcodeCycles;
+	}
+	uint8_t timcont = bus->mmu->read(0xff07);//timer controler reister
+	if ((timcont >> 2)&0x1) {//counting
+		cyclesPerIncrementTIMA -= lastOpcodeCycles;
+		if (cyclesPerIncrementTIMA <= 0) {
+			updateCycelPerIncrementTIMA(timcont & 0x3);
+			bus->mmu->write(0xff05, bus->mmu->read(0xff05) + 1);//tima increment
+			if (bus->mmu->read(0xff05) == 0) {//tima overflow
+				bus->mmu->write(0xff05, bus->mmu->read(0xff06));//load tma to tima
+				bus->interrupt->read("2");
+			}
+		}
+	}
+	else {//stop
+	}
 }
 
 void CPU::connectToBus(BUS* bus)

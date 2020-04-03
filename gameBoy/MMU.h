@@ -4,6 +4,8 @@
 #include "BUS.h"
 #include "CPU.h"
 #include "GPU.h"
+#include "CARTRIDGE.h"
+#include "INTERRUPT.h"
 class  MMU
 {
 private:
@@ -35,7 +37,7 @@ public:
     //uint8_t workingRam[0x2000];//working ram
     uint8_t workingRam[0x3E00];//working ram
 	//uint8_t zeroRam[0x2000];
-    uint8_t io[0x80];
+    //uint8_t io[0x80];
     uint8_t zeroRam[0x80];
 	//uint8_t mem[0xffff];
 	bool biosLoaded = true;

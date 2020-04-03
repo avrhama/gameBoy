@@ -1,0 +1,93 @@
+switch(address){
+   case 0x05:{
+   printf("opcode:0x05 // TIMA value:%04x\n",value);
+   break;
+ } case 0x06:{
+   printf("opcode:0x06 // TMA value:%04x\n",value);
+   break;
+ } case 0x07:{
+   printf("opcode:0x07 // TAC value:%04x\n",value);
+   break;
+ } case 0x10:{
+   printf("opcode:0x10 // NR10 value:%04x\n",value);
+   break;
+ } case 0x11:{
+   printf("opcode:0x11 // NR11 value:%04x\n",value);
+   break;
+ } case 0x12:{
+   printf("opcode:0x12 // NR12 value:%04x\n",value);
+   break;
+ } case 0x14:{
+   printf("opcode:0x14 // NR14 value:%04x\n",value);
+   break;
+ } case 0x16:{
+   printf("opcode:0x16 // NR21 value:%04x\n",value);
+   break;
+ } case 0x17:{
+   printf("opcode:0x17 // NR22 value:%04x\n",value);
+   break;
+ } case 0x19:{
+   printf("opcode:0x19 // NR24 value:%04x\n",value);
+   break;
+ } case 0x1A:{
+   printf("opcode:0x1A // NR30 value:%04x\n",value);
+   break;
+ } case 0x1B:{
+   printf("opcode:0x1B // NR31 value:%04x\n",value);
+   break;
+ } case 0x1C:{
+   printf("opcode:0x1C // NR32 value:%04x\n",value);
+   break;
+ } case 0x1E:{
+   printf("opcode:0x1E // NR33 value:%04x\n",value);
+   break;
+ } case 0x20:{
+   printf("opcode:0x20 // NR41 value:%04x\n",value);
+   break;
+ } case 0x21:{
+   printf("opcode:0x21 // NR42 value:%04x\n",value);
+   break;
+ } case 0x22:{
+   printf("opcode:0x22 // NR43 value:%04x\n",value);
+   break;
+ } case 0x23:{
+   printf("opcode:0x23 // NR30 value:%04x\n",value);
+   break;
+ } case 0x24:{
+   printf("opcode:0x24 // NR50 value:%04x\n",value);
+   break;
+ } case 0x25:{
+   printf("opcode:0x25 // NR51 value:%04x\n",value);
+   break;
+ } case 0x26:{
+   printf("opcode:0x26 //-GB, 0xF0-SGB ;// NR52 value:%04x\n",value);
+   break;
+ } case 0x40:{
+   printf("opcode:0x40 // LCDC value:%04x\n",value);
+   break;
+ } case 0x42:{
+   printf("opcode:0x42 // SCY value:%04x\n",value);
+   break;
+ } case 0x43:{
+   printf("opcode:0x43 // SCX value:%04x\n",value);
+   break;
+ } case 0x45:{
+   printf("opcode:0x45 // LYC value:%04x\n",value);
+   break;
+ } case 0x47:{
+   printf("opcode:0x47 // BGP value:%04x\n",value);
+   break;
+ } case 0x48:{
+   printf("opcode:0x48 // OBP0 value:%04x\n",value);
+   break;
+ } case 0x49:{
+   printf("opcode:0x49 // OBP1 value:%04x\n",value);
+   break;
+ } case 0x4A:{
+   printf("opcode:0x4A // WY value:%04x\n",value);
+   break;
+ } case 0x4B:{
+   printf("opcode:0x4B // W value:%04x\n",value);
+   break;
+ }
+}

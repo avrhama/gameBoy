@@ -4,6 +4,7 @@
 #include "CARTRIDGE.h"
 #include "GPU.h"
 #include "DMA.h"
+#include "INTERRUPT.h"
 void BUS::connectCPU(CPU* cpu)
 {
 	this->cpu = cpu;
@@ -33,6 +34,12 @@ void BUS::connectDMA(DMA* dma)
 void BUS::connectDisplay(DISPLAY* display)
 {
 	this->display = display;
+}
+
+void BUS::connectInterrupt(INTERRUPT* interrupt)
+{
+	this->interrupt = interrupt;
+	interrupt->connectToBus(this);
 }
 
 void BUS::insertCartridge(CARTRIDGE* cartridge)
