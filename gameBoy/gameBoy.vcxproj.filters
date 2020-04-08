@@ -42,6 +42,9 @@
     <ClCompile Include="INTERRUPT.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="JOYPAD.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Structures.h">
@@ -78,6 +81,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="INTERRUPT.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="JOYPAD.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,0 +1,3296 @@
+switch(opcode){
+		case 0x0:
+			lastOpcodeCycles=1;
+			param1=NULL;
+			param2=NULL;
+			NOP(param1,param2);
+			break;
+		case 0x1:
+			lastOpcodeCycles=3;
+			lsb = bus->mmu->read(PC++);
+			msb = bus->mmu->read(PC++);
+			immidiateNN = msb << 8 | lsb;
+			param1=(uint8_t*)&BC;
+			param2=(uint8_t*)&immidiateNN;
+			LD_n_nn(param1,param2);
+			break;
+		case 0x2:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&BC;
+			param2=(uint8_t*)&AF + 1;
+			LD_$n_A(param1,param2);
+			break;
+		case 0x3:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&BC;
+			param2=NULL;
+			INC_nn(param1,param2);
+			break;
+		case 0x4:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&BC + 1;
+			param2=NULL;
+			INC_n(param1,param2);
+			break;
+		case 0x5:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&BC + 1;
+			param2=NULL;
+			DEC_n(param1,param2);
+			break;
+		case 0x6:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(PC++);
+			param1=(uint8_t*)&BC + 1;
+			param2=&immidiateN;
+			LD_nn_N(param1,param2);
+			break;
+		case 0x7:
+			lastOpcodeCycles=1;
+			param1=NULL;
+			param2=NULL;
+			RLCA(param1,param2);
+			break;
+		case 0x8:
+			lastOpcodeCycles=5;
+			lsb = bus->mmu->read(PC++);
+			msb = bus->mmu->read(PC++);
+			immidiateN = bus->mmu->read(msb << 8 | lsb);
+			param1=&immidiateN;
+			param2=NULL;
+			LD_$NN_SP(param1,param2);
+			break;
+		case 0x9:
+			lastOpcodeCycles=2;
+			param1=NULL;
+			param2=(uint8_t*)&BC;
+			ADD_HL_n(param1,param2);
+			break;
+		case 0xa:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(BC);
+			param1=(uint8_t*)&AF + 1;
+			param2=&immidiateN;
+			LD_A_n(param1,param2);
+			break;
+		case 0xb:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&BC;
+			param2=NULL;
+			DEC_nn(param1,param2);
+			break;
+		case 0xc:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&BC;
+			param2=NULL;
+			INC_n(param1,param2);
+			break;
+		case 0xd:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&BC;
+			param2=NULL;
+			DEC_n(param1,param2);
+			break;
+		case 0xe:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(PC++);
+			param1=(uint8_t*)&BC;
+			param2=&immidiateN;
+			LD_nn_N(param1,param2);
+			break;
+		case 0xf:
+			lastOpcodeCycles=1;
+			param1=NULL;
+			param2=NULL;
+			RRCA(param1,param2);
+			break;
+		case 0x10:
+			lastOpcodeCycles=0;
+			param1=NULL;
+			param2=NULL;
+			STOP(param1,param2);
+			break;
+		case 0x11:
+			lastOpcodeCycles=3;
+			lsb = bus->mmu->read(PC++);
+			msb = bus->mmu->read(PC++);
+			immidiateNN = msb << 8 | lsb;
+			param1=(uint8_t*)&DE;
+			param2=(uint8_t*)&immidiateNN;
+			LD_n_nn(param1,param2);
+			break;
+		case 0x12:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&DE;
+			param2=(uint8_t*)&AF + 1;
+			LD_$n_A(param1,param2);
+			break;
+		case 0x13:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&DE;
+			param2=NULL;
+			INC_nn(param1,param2);
+			break;
+		case 0x14:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&DE + 1 ;
+			param2=NULL;
+			INC_n(param1,param2);
+			break;
+		case 0x15:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&DE + 1 ;
+			param2=NULL;
+			DEC_n(param1,param2);
+			break;
+		case 0x16:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(PC++);
+			param1=(uint8_t*)&DE + 1 ;
+			param2=&immidiateN;
+			LD_nn_N(param1,param2);
+			break;
+		case 0x17:
+			lastOpcodeCycles=1;
+			param1=NULL;
+			param2=NULL;
+			RLA(param1,param2);
+			break;
+		case 0x18:
+			lastOpcodeCycles=3;
+			immidiateN = bus->mmu->read(PC++);
+			param1=&immidiateN;
+			param2=NULL;
+			JR_n(param1,param2);
+			break;
+		case 0x19:
+			lastOpcodeCycles=2;
+			param1=NULL;
+			param2=(uint8_t*)&DE;
+			ADD_HL_n(param1,param2);
+			break;
+		case 0x1a:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(DE);
+			param1=(uint8_t*)&AF + 1;
+			param2=&immidiateN;
+			LD_A_n(param1,param2);
+			break;
+		case 0x1b:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&DE;
+			param2=NULL;
+			DEC_nn(param1,param2);
+			break;
+		case 0x1c:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&DE;
+			param2=NULL;
+			INC_n(param1,param2);
+			break;
+		case 0x1d:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&DE;
+			param2=NULL;
+			DEC_n(param1,param2);
+			break;
+		case 0x1e:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(PC++);
+			param1=(uint8_t*)&DE;
+			param2=&immidiateN;
+			LD_nn_N(param1,param2);
+			break;
+		case 0x1f:
+			lastOpcodeCycles=1;
+			param1=NULL;
+			param2=NULL;
+			RRA(param1,param2);
+			break;
+		case 0x20:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(PC++);
+			param1=flagsNames;
+			param2=&immidiateN;
+			JR_cc_n(param1,param2);
+			break;
+		case 0x21:
+			lastOpcodeCycles=3;
+			lsb = bus->mmu->read(PC++);
+			msb = bus->mmu->read(PC++);
+			immidiateNN = msb << 8 | lsb;
+			param1=(uint8_t*)&HL;
+			param2=(uint8_t*)&immidiateNN;
+			LD_n_nn(param1,param2);
+			break;
+		case 0x22:
+			lastOpcodeCycles=2;
+			param1=NULL;
+			param2=(uint8_t*)&AF + 1;
+			LDI_$HL_A(param1,param2);
+			break;
+		case 0x23:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&HL;
+			param2=NULL;
+			INC_nn(param1,param2);
+			break;
+		case 0x24:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&HL + 1 ;
+			param2=NULL;
+			INC_n(param1,param2);
+			break;
+		case 0x25:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&HL + 1 ;
+			param2=NULL;
+			DEC_n(param1,param2);
+			break;
+		case 0x26:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(PC++);
+			param1=(uint8_t*)&HL + 1 ;
+			param2=&immidiateN;
+			LD_nn_N(param1,param2);
+			break;
+		case 0x27:
+			lastOpcodeCycles=1;
+			param1=NULL;
+			param2=NULL;
+			DAA(param1,param2);
+			break;
+		case 0x28:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(PC++);
+			param1=flagsNames+1;
+			param2=&immidiateN;
+			JR_cc_n(param1,param2);
+			break;
+		case 0x29:
+			lastOpcodeCycles=2;
+			param1=NULL;
+			param2=(uint8_t*)&HL;
+			ADD_HL_n(param1,param2);
+			break;
+		case 0x2a:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&AF + 1;
+			param2=NULL;
+			LDI_A_$HL(param1,param2);
+			break;
+		case 0x2b:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&HL;
+			param2=NULL;
+			DEC_nn(param1,param2);
+			break;
+		case 0x2c:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&HL;
+			param2=NULL;
+			INC_n(param1,param2);
+			break;
+		case 0x2d:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&HL;
+			param2=NULL;
+			DEC_n(param1,param2);
+			break;
+		case 0x2e:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(PC++);
+			param1=(uint8_t*)&HL;
+			param2=&immidiateN;
+			LD_nn_N(param1,param2);
+			break;
+		case 0x2f:
+			lastOpcodeCycles=1;
+			param1=NULL;
+			param2=NULL;
+			CPL(param1,param2);
+			break;
+		case 0x30:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(PC++);
+			param1=flagsNames+2;
+			param2=&immidiateN;
+			JR_cc_n(param1,param2);
+			break;
+		case 0x31:
+			lastOpcodeCycles=3;
+			lsb = bus->mmu->read(PC++);
+			msb = bus->mmu->read(PC++);
+			immidiateNN = msb << 8 | lsb;
+			param1=(uint8_t*)&SP;
+			param2=(uint8_t*)&immidiateNN;
+			LD_n_nn(param1,param2);
+			break;
+		case 0x32:
+			lastOpcodeCycles=2;
+			param1=NULL;
+			param2=(uint8_t*)&AF + 1;
+			LDD_$HL_A(param1,param2);
+			break;
+		case 0x33:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&SP;
+			param2=NULL;
+			INC_nn(param1,param2);
+			break;
+		case 0x34:
+			lastOpcodeCycles=3;
+			immidiateN = bus->mmu->read(HL);
+			param1=&immidiateN;
+			param2=NULL;
+			INC_$HL(param1,param2);
+			break;
+		case 0x35:
+			lastOpcodeCycles=3;
+			immidiateN = bus->mmu->read(HL);
+			param1=&immidiateN;
+			param2=NULL;
+			DEC_$HL(param1,param2);
+			break;
+		case 0x36:
+			lastOpcodeCycles=3;
+			immidiateN = bus->mmu->read(PC++);
+			param1=NULL;
+			param2=&immidiateN;
+			LD_n_$HL(param1,param2);
+			break;
+		case 0x37:
+			lastOpcodeCycles=1;
+			param1=NULL;
+			param2=NULL;
+			SCF(param1,param2);
+			break;
+		case 0x38:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(PC++);
+			param1=flagsNames+3;
+			param2=&immidiateN;
+			JR_cc_n(param1,param2);
+			break;
+		case 0x39:
+			lastOpcodeCycles=2;
+			param1=NULL;
+			param2=(uint8_t*)&SP;
+			ADD_HL_n(param1,param2);
+			break;
+		case 0x3a:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&AF + 1;
+			param2=NULL;
+			LDD_A_$HL(param1,param2);
+			break;
+		case 0x3b:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&SP;
+			param2=NULL;
+			DEC_nn(param1,param2);
+			break;
+		case 0x3c:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=NULL;
+			INC_n(param1,param2);
+			break;
+		case 0x3d:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=NULL;
+			DEC_n(param1,param2);
+			break;
+		case 0x3e:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(PC++);
+			param1=(uint8_t*)&AF + 1;
+			param2=&immidiateN;
+			LD_A_n(param1,param2);
+			break;
+		case 0x3f:
+			lastOpcodeCycles=1;
+			param1=NULL;
+			param2=NULL;
+			CCF(param1,param2);
+			break;
+		case 0x40:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&BC + 1;
+			param2=(uint8_t*)&BC + 1;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x41:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&BC + 1;
+			param2=(uint8_t*)&BC;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x42:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&BC + 1;
+			param2=(uint8_t*)&DE + 1 ;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x43:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&BC + 1;
+			param2=(uint8_t*)&DE;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x44:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&BC + 1;
+			param2=(uint8_t*)&HL + 1 ;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x45:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&BC + 1;
+			param2=(uint8_t*)&HL;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x46:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(HL);
+			param1=(uint8_t*)&BC + 1;
+			param2=&immidiateN;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x47:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&BC + 1;
+			param2=(uint8_t*)&AF + 1;
+			LD_n_A(param1,param2);
+			break;
+		case 0x48:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&BC;
+			param2=(uint8_t*)&BC + 1;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x49:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&BC;
+			param2=(uint8_t*)&BC;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x4a:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&BC;
+			param2=(uint8_t*)&DE + 1 ;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x4b:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&BC;
+			param2=(uint8_t*)&DE;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x4c:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&BC;
+			param2=(uint8_t*)&HL + 1 ;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x4d:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&BC;
+			param2=(uint8_t*)&HL;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x4e:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(HL);
+			param1=(uint8_t*)&BC;
+			param2=&immidiateN;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x4f:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&BC;
+			param2=(uint8_t*)&AF + 1;
+			LD_n_A(param1,param2);
+			break;
+		case 0x50:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&DE + 1 ;
+			param2=(uint8_t*)&BC + 1;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x51:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&DE + 1 ;
+			param2=(uint8_t*)&BC;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x52:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&DE + 1 ;
+			param2=(uint8_t*)&DE + 1 ;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x53:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&DE + 1 ;
+			param2=(uint8_t*)&DE;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x54:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&DE + 1 ;
+			param2=(uint8_t*)&HL + 1 ;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x55:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&DE + 1 ;
+			param2=(uint8_t*)&HL;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x56:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(HL);
+			param1=(uint8_t*)&DE + 1 ;
+			param2=&immidiateN;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x57:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&DE + 1 ;
+			param2=(uint8_t*)&AF + 1;
+			LD_n_A(param1,param2);
+			break;
+		case 0x58:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&DE;
+			param2=(uint8_t*)&BC + 1;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x59:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&DE;
+			param2=(uint8_t*)&BC;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x5a:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&DE;
+			param2=(uint8_t*)&DE + 1 ;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x5b:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&DE;
+			param2=(uint8_t*)&DE;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x5c:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&DE;
+			param2=(uint8_t*)&HL + 1 ;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x5d:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&DE;
+			param2=(uint8_t*)&HL;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x5e:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(HL);
+			param1=(uint8_t*)&DE;
+			param2=&immidiateN;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x5f:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&DE;
+			param2=(uint8_t*)&AF + 1;
+			LD_n_A(param1,param2);
+			break;
+		case 0x60:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&HL + 1 ;
+			param2=(uint8_t*)&BC + 1;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x61:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&HL + 1 ;
+			param2=(uint8_t*)&BC;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x62:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&HL + 1 ;
+			param2=(uint8_t*)&DE + 1 ;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x63:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&HL + 1 ;
+			param2=(uint8_t*)&DE;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x64:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&HL + 1 ;
+			param2=(uint8_t*)&HL + 1 ;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x65:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&HL + 1 ;
+			param2=(uint8_t*)&HL;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x66:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(HL);
+			param1=(uint8_t*)&HL + 1 ;
+			param2=&immidiateN;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x67:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&HL + 1 ;
+			param2=(uint8_t*)&AF + 1;
+			LD_n_A(param1,param2);
+			break;
+		case 0x68:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&HL;
+			param2=(uint8_t*)&BC + 1;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x69:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&HL;
+			param2=(uint8_t*)&BC;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x6a:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&HL;
+			param2=(uint8_t*)&DE + 1 ;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x6b:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&HL;
+			param2=(uint8_t*)&DE;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x6c:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&HL;
+			param2=(uint8_t*)&HL + 1 ;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x6d:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&HL;
+			param2=(uint8_t*)&HL;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x6e:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(HL);
+			param1=(uint8_t*)&HL;
+			param2=&immidiateN;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x6f:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&HL;
+			param2=(uint8_t*)&AF + 1;
+			LD_n_A(param1,param2);
+			break;
+		case 0x70:
+			lastOpcodeCycles=2;
+			param1=NULL;
+			param2=(uint8_t*)&BC + 1;
+			LD_n_$HL(param1,param2);
+			break;
+		case 0x71:
+			lastOpcodeCycles=2;
+			param1=NULL;
+			param2=(uint8_t*)&BC;
+			LD_n_$HL(param1,param2);
+			break;
+		case 0x72:
+			lastOpcodeCycles=2;
+			param1=NULL;
+			param2=(uint8_t*)&DE + 1 ;
+			LD_n_$HL(param1,param2);
+			break;
+		case 0x73:
+			lastOpcodeCycles=2;
+			param1=NULL;
+			param2=(uint8_t*)&DE;
+			LD_n_$HL(param1,param2);
+			break;
+		case 0x74:
+			lastOpcodeCycles=2;
+			param1=NULL;
+			param2=(uint8_t*)&HL + 1 ;
+			LD_n_$HL(param1,param2);
+			break;
+		case 0x75:
+			lastOpcodeCycles=2;
+			param1=NULL;
+			param2=(uint8_t*)&HL;
+			LD_n_$HL(param1,param2);
+			break;
+		case 0x76:
+			lastOpcodeCycles=0;
+			param1=NULL;
+			param2=NULL;
+			HALT(param1,param2);
+			break;
+		case 0x77:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&HL;
+			param2=(uint8_t*)&AF + 1;
+			LD_$n_A(param1,param2);
+			break;
+		case 0x78:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&BC + 1;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x79:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&BC;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x7a:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&DE + 1 ;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x7b:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&DE;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x7c:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&HL + 1 ;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x7d:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&HL;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x7e:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(HL);
+			param1=(uint8_t*)&AF + 1;
+			param2=&immidiateN;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x7f:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&AF + 1;
+			LD_r1_r2(param1,param2);
+			break;
+		case 0x80:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&BC + 1;
+			ADD_A_n(param1,param2);
+			break;
+		case 0x81:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&BC;
+			ADD_A_n(param1,param2);
+			break;
+		case 0x82:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&DE + 1 ;
+			ADD_A_n(param1,param2);
+			break;
+		case 0x83:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&DE;
+			ADD_A_n(param1,param2);
+			break;
+		case 0x84:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&HL + 1 ;
+			ADD_A_n(param1,param2);
+			break;
+		case 0x85:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&HL;
+			ADD_A_n(param1,param2);
+			break;
+		case 0x86:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(HL);
+			param1=(uint8_t*)&AF + 1;
+			param2=&immidiateN;
+			ADD_A_n(param1,param2);
+			break;
+		case 0x87:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&AF + 1;
+			ADD_A_n(param1,param2);
+			break;
+		case 0x88:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&BC + 1;
+			ADC_A_n(param1,param2);
+			break;
+		case 0x89:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&BC;
+			ADC_A_n(param1,param2);
+			break;
+		case 0x8a:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&DE + 1 ;
+			ADC_A_n(param1,param2);
+			break;
+		case 0x8b:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&DE;
+			ADC_A_n(param1,param2);
+			break;
+		case 0x8c:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&HL + 1 ;
+			ADC_A_n(param1,param2);
+			break;
+		case 0x8d:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&HL;
+			ADC_A_n(param1,param2);
+			break;
+		case 0x8e:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(HL);
+			param1=(uint8_t*)&AF + 1;
+			param2=&immidiateN;
+			ADC_A_n(param1,param2);
+			break;
+		case 0x8f:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&AF + 1;
+			ADC_A_n(param1,param2);
+			break;
+		case 0x90:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&BC + 1;
+			SUB_n(param1,param2);
+			break;
+		case 0x91:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&BC;
+			SUB_n(param1,param2);
+			break;
+		case 0x92:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&DE + 1 ;
+			SUB_n(param1,param2);
+			break;
+		case 0x93:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&DE;
+			SUB_n(param1,param2);
+			break;
+		case 0x94:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&HL + 1 ;
+			SUB_n(param1,param2);
+			break;
+		case 0x95:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&HL;
+			SUB_n(param1,param2);
+			break;
+		case 0x96:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(HL);
+			param1=(uint8_t*)&AF + 1;
+			param2=&immidiateN;
+			SUB_n(param1,param2);
+			break;
+		case 0x97:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&AF + 1;
+			SUB_n(param1,param2);
+			break;
+		case 0x98:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&BC + 1;
+			SBC_A_n(param1,param2);
+			break;
+		case 0x99:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&BC;
+			SBC_A_n(param1,param2);
+			break;
+		case 0x9a:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&DE + 1 ;
+			SBC_A_n(param1,param2);
+			break;
+		case 0x9b:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&DE;
+			SBC_A_n(param1,param2);
+			break;
+		case 0x9c:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&HL + 1 ;
+			SBC_A_n(param1,param2);
+			break;
+		case 0x9d:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&HL;
+			SBC_A_n(param1,param2);
+			break;
+		case 0x9e:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(HL);
+			param1=(uint8_t*)&AF + 1;
+			param2=&immidiateN;
+			SBC_A_n(param1,param2);
+			break;
+		case 0x9f:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&AF + 1;
+			SBC_A_n(param1,param2);
+			break;
+		case 0xa0:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&BC + 1;
+			AND_n(param1,param2);
+			break;
+		case 0xa1:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&BC;
+			AND_n(param1,param2);
+			break;
+		case 0xa2:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&DE + 1 ;
+			AND_n(param1,param2);
+			break;
+		case 0xa3:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&DE;
+			AND_n(param1,param2);
+			break;
+		case 0xa4:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&HL + 1 ;
+			AND_n(param1,param2);
+			break;
+		case 0xa5:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&HL;
+			AND_n(param1,param2);
+			break;
+		case 0xa6:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(HL);
+			param1=(uint8_t*)&AF + 1;
+			param2=&immidiateN;
+			AND_n(param1,param2);
+			break;
+		case 0xa7:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&AF + 1;
+			AND_n(param1,param2);
+			break;
+		case 0xa8:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&BC + 1;
+			XOR_n(param1,param2);
+			break;
+		case 0xa9:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&BC;
+			XOR_n(param1,param2);
+			break;
+		case 0xaa:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&DE + 1 ;
+			XOR_n(param1,param2);
+			break;
+		case 0xab:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&DE;
+			XOR_n(param1,param2);
+			break;
+		case 0xac:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&HL + 1 ;
+			XOR_n(param1,param2);
+			break;
+		case 0xad:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&HL;
+			XOR_n(param1,param2);
+			break;
+		case 0xae:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(HL);
+			param1=(uint8_t*)&AF + 1;
+			param2=&immidiateN;
+			XOR_n(param1,param2);
+			break;
+		case 0xaf:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&AF + 1;
+			XOR_n(param1,param2);
+			break;
+		case 0xb0:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&BC + 1;
+			OR_n(param1,param2);
+			break;
+		case 0xb1:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&BC;
+			OR_n(param1,param2);
+			break;
+		case 0xb2:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&DE + 1 ;
+			OR_n(param1,param2);
+			break;
+		case 0xb3:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&DE;
+			OR_n(param1,param2);
+			break;
+		case 0xb4:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&HL + 1 ;
+			OR_n(param1,param2);
+			break;
+		case 0xb5:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&HL;
+			OR_n(param1,param2);
+			break;
+		case 0xb6:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(HL);
+			param1=(uint8_t*)&AF + 1;
+			param2=&immidiateN;
+			OR_n(param1,param2);
+			break;
+		case 0xb7:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&AF + 1;
+			OR_n(param1,param2);
+			break;
+		case 0xb8:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&BC + 1;
+			param2=NULL;
+			CP_n(param1,param2);
+			break;
+		case 0xb9:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&BC;
+			param2=NULL;
+			CP_n(param1,param2);
+			break;
+		case 0xba:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&DE + 1 ;
+			param2=NULL;
+			CP_n(param1,param2);
+			break;
+		case 0xbb:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&DE;
+			param2=NULL;
+			CP_n(param1,param2);
+			break;
+		case 0xbc:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&HL + 1 ;
+			param2=NULL;
+			CP_n(param1,param2);
+			break;
+		case 0xbd:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&HL;
+			param2=NULL;
+			CP_n(param1,param2);
+			break;
+		case 0xbe:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(HL);
+			param1=&immidiateN;
+			param2=NULL;
+			CP_n(param1,param2);
+			break;
+		case 0xbf:
+			lastOpcodeCycles=1;
+			param1=(uint8_t*)&AF + 1;
+			param2=NULL;
+			CP_n(param1,param2);
+			break;
+		case 0xc0:
+			lastOpcodeCycles=2;
+			param1=flagsNames;
+			param2=NULL;
+			RET_cc(param1,param2);
+			break;
+		case 0xc1:
+			lastOpcodeCycles=3;
+			param1=NULL;
+			param2=(uint8_t*)&BC;
+			POP_nn(param1,param2);
+			break;
+		case 0xc2:
+			lastOpcodeCycles=3;
+			lsb = bus->mmu->read(PC++);
+			msb = bus->mmu->read(PC++);
+			immidiateNN = msb << 8 | lsb;
+			param1=flagsNames;
+			param2=(uint8_t*)&immidiateNN;
+			JP_cc_nn(param1,param2);
+			break;
+		case 0xc3:
+			lastOpcodeCycles=4;
+			lsb = bus->mmu->read(PC++);
+			msb = bus->mmu->read(PC++);
+			immidiateNN = msb << 8 | lsb;
+			param1=(uint8_t*)&immidiateNN;
+			param2=NULL;
+			JP_nn(param1,param2);
+			break;
+		case 0xc4:
+			lastOpcodeCycles=3;
+			lsb = bus->mmu->read(PC++);
+			msb = bus->mmu->read(PC++);
+			immidiateNN = msb << 8 | lsb;
+			param1=flagsNames;
+			param2=(uint8_t*)&immidiateNN;
+			CALL_cc_nn(param1,param2);
+			break;
+		case 0xc5:
+			lastOpcodeCycles=4;
+			param1=(uint8_t*)&BC;
+			param2=NULL;
+			PUSH_nn(param1,param2);
+			break;
+		case 0xc6:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(PC++);
+			param1=(uint8_t*)&AF + 1;
+			param2=&immidiateN;
+			ADD_A_n(param1,param2);
+			break;
+		case 0xc7:
+			lastOpcodeCycles=4;
+			param1=RSTOffsets;
+			param2=NULL;
+			RST_n(param1,param2);
+			break;
+		case 0xc8:
+			lastOpcodeCycles=2;
+			param1=flagsNames+1;
+			param2=NULL;
+			RET_cc(param1,param2);
+			break;
+		case 0xc9:
+			lastOpcodeCycles=4;
+			param1=NULL;
+			param2=NULL;
+			RET(param1,param2);
+			break;
+		case 0xca:
+			lastOpcodeCycles=3;
+			lsb = bus->mmu->read(PC++);
+			msb = bus->mmu->read(PC++);
+			immidiateNN = msb << 8 | lsb;
+			param1=flagsNames+1;
+			param2=(uint8_t*)&immidiateNN;
+			JP_cc_nn(param1,param2);
+			break;
+		case 0xcc:
+			lastOpcodeCycles=3;
+			lsb = bus->mmu->read(PC++);
+			msb = bus->mmu->read(PC++);
+			immidiateNN = msb << 8 | lsb;
+			param1=flagsNames+1;
+			param2=(uint8_t*)&immidiateNN;
+			CALL_cc_nn(param1,param2);
+			break;
+		case 0xcd:
+			lastOpcodeCycles=6;
+			lsb = bus->mmu->read(PC++);
+			msb = bus->mmu->read(PC++);
+			immidiateNN = msb << 8 | lsb;
+			param1=(uint8_t*)&immidiateNN;
+			param2=NULL;
+			CALL_nn(param1,param2);
+			break;
+		case 0xce:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(PC++);
+			param1=(uint8_t*)&AF + 1;
+			param2=&immidiateN;
+			ADC_A_n(param1,param2);
+			break;
+		case 0xcf:
+			lastOpcodeCycles=4;
+			param1=RSTOffsets+1;
+			param2=NULL;
+			RST_n(param1,param2);
+			break;
+		case 0xd0:
+			lastOpcodeCycles=2;
+			param1=flagsNames+2;
+			param2=NULL;
+			RET_cc(param1,param2);
+			break;
+		case 0xd1:
+			lastOpcodeCycles=3;
+			param1=NULL;
+			param2=(uint8_t*)&DE;
+			POP_nn(param1,param2);
+			break;
+		case 0xd2:
+			lastOpcodeCycles=3;
+			lsb = bus->mmu->read(PC++);
+			msb = bus->mmu->read(PC++);
+			immidiateNN = msb << 8 | lsb;
+			param1=flagsNames+2;
+			param2=(uint8_t*)&immidiateNN;
+			JP_cc_nn(param1,param2);
+			break;
+		case 0xd4:
+			lastOpcodeCycles=3;
+			lsb = bus->mmu->read(PC++);
+			msb = bus->mmu->read(PC++);
+			immidiateNN = msb << 8 | lsb;
+			param1=flagsNames+2;
+			param2=(uint8_t*)&immidiateNN;
+			CALL_cc_nn(param1,param2);
+			break;
+		case 0xd5:
+			lastOpcodeCycles=4;
+			param1=(uint8_t*)&DE;
+			param2=NULL;
+			PUSH_nn(param1,param2);
+			break;
+		case 0xd6:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(PC++);
+			param1=(uint8_t*)&AF + 1;
+			param2=&immidiateN;
+			SUB_n(param1,param2);
+			break;
+		case 0xd7:
+			lastOpcodeCycles=4;
+			param1=RSTOffsets+2;
+			param2=NULL;
+			RST_n(param1,param2);
+			break;
+		case 0xd8:
+			lastOpcodeCycles=2;
+			param1=flagsNames+3;
+			param2=NULL;
+			RET_cc(param1,param2);
+			break;
+		case 0xd9:
+			lastOpcodeCycles=4;
+			param1=NULL;
+			param2=NULL;
+			RETI(param1,param2);
+			break;
+		case 0xda:
+			lastOpcodeCycles=3;
+			lsb = bus->mmu->read(PC++);
+			msb = bus->mmu->read(PC++);
+			immidiateNN = msb << 8 | lsb;
+			param1=flagsNames+3;
+			param2=(uint8_t*)&immidiateNN;
+			JP_cc_nn(param1,param2);
+			break;
+		case 0xdc:
+			lastOpcodeCycles=3;
+			lsb = bus->mmu->read(PC++);
+			msb = bus->mmu->read(PC++);
+			immidiateNN = msb << 8 | lsb;
+			param1=flagsNames+3;
+			param2=(uint8_t*)&immidiateNN;
+			CALL_cc_nn(param1,param2);
+			break;
+		case 0xde:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(PC++);
+			param1=(uint8_t*)&AF + 1;
+			param2=&immidiateN;
+			SBC_A_n(param1,param2);
+			break;
+		case 0xdf:
+			lastOpcodeCycles=4;
+			param1=RSTOffsets+3;
+			param2=NULL;
+			RST_n(param1,param2);
+			break;
+		case 0xe0:
+			lastOpcodeCycles=3;
+			immidiateN = bus->mmu->read(PC++);
+			param1=&immidiateN;
+			param2=(uint8_t*)&AF + 1;
+			LDH_n_A(param1,param2);
+			break;
+		case 0xe1:
+			lastOpcodeCycles=3;
+			param1=NULL;
+			param2=(uint8_t*)&HL;
+			POP_nn(param1,param2);
+			break;
+		case 0xe2:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&BC;
+			param2=(uint8_t*)&AF + 1;
+			LD_C_A(param1,param2);
+			break;
+		case 0xe5:
+			lastOpcodeCycles=4;
+			param1=(uint8_t*)&HL;
+			param2=NULL;
+			PUSH_nn(param1,param2);
+			break;
+		case 0xe6:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(PC++);
+			param1=(uint8_t*)&AF + 1;
+			param2=&immidiateN;
+			AND_n(param1,param2);
+			break;
+		case 0xe7:
+			lastOpcodeCycles=4;
+			param1=RSTOffsets+4;
+			param2=NULL;
+			RST_n(param1,param2);
+			break;
+		case 0xe8:
+			lastOpcodeCycles=4;
+			immidiateN = bus->mmu->read(PC++);
+			param1=NULL;
+			param2=&immidiateN;
+			ADD_SP_n(param1,param2);
+			break;
+		case 0xe9:
+			lastOpcodeCycles=1;
+			param1=NULL;
+			param2=NULL;
+			JP_HL(param1,param2);
+			break;
+		case 0xea:
+			lastOpcodeCycles=4;
+			lsb = bus->mmu->read(PC++);
+			msb = bus->mmu->read(PC++);
+			immidiateNN = msb << 8 | lsb;
+			param1=(uint8_t*)&immidiateNN;
+			param2=(uint8_t*)&AF + 1;
+			LD_$n_A(param1,param2);
+			break;
+		case 0xee:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(PC++);
+			param1=(uint8_t*)&AF + 1;
+			param2=&immidiateN;
+			XOR_n(param1,param2);
+			break;
+		case 0xef:
+			lastOpcodeCycles=4;
+			param1=RSTOffsets+5;
+			param2=NULL;
+			RST_n(param1,param2);
+			break;
+		case 0xf0:
+			lastOpcodeCycles=3;
+			immidiateN = bus->mmu->read(PC++);
+			param1=(uint8_t*)&AF + 1;
+			param2=&immidiateN;
+			LDH_A_n(param1,param2);
+			break;
+		case 0xf1:
+			lastOpcodeCycles=3;
+			param1=NULL;
+			param2=(uint8_t*)&AF;
+			POP_nn(param1,param2);
+			break;
+		case 0xf2:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&AF + 1;
+			param2=(uint8_t*)&BC;
+			LD_A_C(param1,param2);
+			break;
+		case 0xf3:
+			lastOpcodeCycles=1;
+			param1=NULL;
+			param2=NULL;
+			DI(param1,param2);
+			break;
+		case 0xf5:
+			lastOpcodeCycles=4;
+			param1=(uint8_t*)&AF;
+			param2=NULL;
+			PUSH_nn(param1,param2);
+			break;
+		case 0xf6:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(PC++);
+			param1=(uint8_t*)&AF + 1;
+			param2=&immidiateN;
+			OR_n(param1,param2);
+			break;
+		case 0xf7:
+			lastOpcodeCycles=4;
+			param1=RSTOffsets+6;
+			param2=NULL;
+			RST_n(param1,param2);
+			break;
+		case 0xf8:
+			lastOpcodeCycles=3;
+			param1=NULL;
+			param2=NULL;
+			LDHL_SP_$n(param1,param2);
+			break;
+		case 0xf9:
+			lastOpcodeCycles=2;
+			param1=NULL;
+			param2=NULL;
+			LD_SP_HL(param1,param2);
+			break;
+		case 0xfa:
+			lastOpcodeCycles=4;
+			lsb = bus->mmu->read(PC++);
+			msb = bus->mmu->read(PC++);
+			immidiateN = bus->mmu->read(msb << 8 | lsb);
+			param1=(uint8_t*)&AF + 1;
+			param2=&immidiateN;
+			LD_A_n(param1,param2);
+			break;
+		case 0xfb:
+			lastOpcodeCycles=1;
+			param1=NULL;
+			param2=NULL;
+			EI(param1,param2);
+			break;
+		case 0xfe:
+			lastOpcodeCycles=2;
+			immidiateN = bus->mmu->read(PC++);
+			param1=&immidiateN;
+			param2=NULL;
+			CP_n(param1,param2);
+			break;
+		case 0xff:
+			lastOpcodeCycles=4;
+			param1=RSTOffsets+7;
+			param2=NULL;
+			RST_n(param1,param2);
+			break;
+		case 0xcb00:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&BC + 1;
+			param2=NULL;
+			RLC_n(param1,param2);
+			break;
+		case 0xcb01:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&BC;
+			param2=NULL;
+			RLC_n(param1,param2);
+			break;
+		case 0xcb02:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&DE + 1 ;
+			param2=NULL;
+			RLC_n(param1,param2);
+			break;
+		case 0xcb03:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&DE;
+			param2=NULL;
+			RLC_n(param1,param2);
+			break;
+		case 0xcb04:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&HL + 1 ;
+			param2=NULL;
+			RLC_n(param1,param2);
+			break;
+		case 0xcb05:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&HL;
+			param2=NULL;
+			RLC_n(param1,param2);
+			break;
+		case 0xcb06:
+			lastOpcodeCycles=4;
+			param1=(uint8_t*)&HL;
+			param2=NULL;
+			RLC_$HL(param1,param2);
+			break;
+		case 0xcb07:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&AF + 1;
+			param2=NULL;
+			RLC_n(param1,param2);
+			break;
+		case 0xcb08:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&BC + 1;
+			param2=NULL;
+			RRC_n(param1,param2);
+			break;
+		case 0xcb09:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&BC;
+			param2=NULL;
+			RRC_n(param1,param2);
+			break;
+		case 0xcb0a:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&DE + 1 ;
+			param2=NULL;
+			RRC_n(param1,param2);
+			break;
+		case 0xcb0b:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&DE;
+			param2=NULL;
+			RRC_n(param1,param2);
+			break;
+		case 0xcb0c:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&HL + 1 ;
+			param2=NULL;
+			RRC_n(param1,param2);
+			break;
+		case 0xcb0d:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&HL;
+			param2=NULL;
+			RRC_n(param1,param2);
+			break;
+		case 0xcb0e:
+			lastOpcodeCycles=4;
+			param1=(uint8_t*)&HL;
+			param2=NULL;
+			RRC_$HL(param1,param2);
+			break;
+		case 0xcb0f:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&AF + 1;
+			param2=NULL;
+			RRC_n(param1,param2);
+			break;
+		case 0xcb10:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&BC + 1;
+			param2=NULL;
+			RL_n(param1,param2);
+			break;
+		case 0xcb11:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&BC;
+			param2=NULL;
+			RL_n(param1,param2);
+			break;
+		case 0xcb12:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&DE + 1 ;
+			param2=NULL;
+			RL_n(param1,param2);
+			break;
+		case 0xcb13:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&DE;
+			param2=NULL;
+			RL_n(param1,param2);
+			break;
+		case 0xcb14:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&HL + 1 ;
+			param2=NULL;
+			RL_n(param1,param2);
+			break;
+		case 0xcb15:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&HL;
+			param2=NULL;
+			RL_n(param1,param2);
+			break;
+		case 0xcb16:
+			lastOpcodeCycles=4;
+			param1=(uint8_t*)&HL;
+			param2=NULL;
+			RL_$HL(param1,param2);
+			break;
+		case 0xcb17:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&AF + 1;
+			param2=NULL;
+			RL_n(param1,param2);
+			break;
+		case 0xcb18:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&BC + 1;
+			param2=NULL;
+			RR_n(param1,param2);
+			break;
+		case 0xcb19:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&BC;
+			param2=NULL;
+			RR_n(param1,param2);
+			break;
+		case 0xcb1a:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&DE + 1 ;
+			param2=NULL;
+			RR_n(param1,param2);
+			break;
+		case 0xcb1b:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&DE;
+			param2=NULL;
+			RR_n(param1,param2);
+			break;
+		case 0xcb1c:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&HL + 1 ;
+			param2=NULL;
+			RR_n(param1,param2);
+			break;
+		case 0xcb1d:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&HL;
+			param2=NULL;
+			RR_n(param1,param2);
+			break;
+		case 0xcb1e:
+			lastOpcodeCycles=4;
+			param1=(uint8_t*)&HL;
+			param2=NULL;
+			RR_$HL(param1,param2);
+			break;
+		case 0xcb1f:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&AF + 1;
+			param2=NULL;
+			RR_n(param1,param2);
+			break;
+		case 0xcb20:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&BC + 1;
+			param2=NULL;
+			SLA_n(param1,param2);
+			break;
+		case 0xcb21:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&BC;
+			param2=NULL;
+			SLA_n(param1,param2);
+			break;
+		case 0xcb22:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&DE + 1 ;
+			param2=NULL;
+			SLA_n(param1,param2);
+			break;
+		case 0xcb23:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&DE;
+			param2=NULL;
+			SLA_n(param1,param2);
+			break;
+		case 0xcb24:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&HL + 1 ;
+			param2=NULL;
+			SLA_n(param1,param2);
+			break;
+		case 0xcb25:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&HL;
+			param2=NULL;
+			SLA_n(param1,param2);
+			break;
+		case 0xcb26:
+			lastOpcodeCycles=4;
+			param1=(uint8_t*)&HL;
+			param2=NULL;
+			SLA_$HL(param1,param2);
+			break;
+		case 0xcb27:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&AF + 1;
+			param2=NULL;
+			SLA_n(param1,param2);
+			break;
+		case 0xcb28:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&BC + 1;
+			param2=NULL;
+			SRA_n(param1,param2);
+			break;
+		case 0xcb29:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&BC;
+			param2=NULL;
+			SRA_n(param1,param2);
+			break;
+		case 0xcb2a:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&DE + 1 ;
+			param2=NULL;
+			SRA_n(param1,param2);
+			break;
+		case 0xcb2b:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&DE;
+			param2=NULL;
+			SRA_n(param1,param2);
+			break;
+		case 0xcb2c:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&HL + 1 ;
+			param2=NULL;
+			SRA_n(param1,param2);
+			break;
+		case 0xcb2d:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&HL;
+			param2=NULL;
+			SRA_n(param1,param2);
+			break;
+		case 0xcb2e:
+			lastOpcodeCycles=4;
+			param1=(uint8_t*)&HL;
+			param2=NULL;
+			SRA_$HL(param1,param2);
+			break;
+		case 0xcb2f:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&AF + 1;
+			param2=NULL;
+			SRA_n(param1,param2);
+			break;
+		case 0xcb30:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&BC + 1;
+			param2=NULL;
+			SWAP_n(param1,param2);
+			break;
+		case 0xcb31:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&BC;
+			param2=NULL;
+			SWAP_n(param1,param2);
+			break;
+		case 0xcb32:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&DE + 1 ;
+			param2=NULL;
+			SWAP_n(param1,param2);
+			break;
+		case 0xcb33:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&DE;
+			param2=NULL;
+			SWAP_n(param1,param2);
+			break;
+		case 0xcb34:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&HL + 1 ;
+			param2=NULL;
+			SWAP_n(param1,param2);
+			break;
+		case 0xcb35:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&HL;
+			param2=NULL;
+			SWAP_n(param1,param2);
+			break;
+		case 0xcb36:
+			lastOpcodeCycles=4;
+			param1=(uint8_t*)&HL;
+			param2=NULL;
+			SWAP_$HL(param1,param2);
+			break;
+		case 0xcb37:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&AF + 1;
+			param2=NULL;
+			SWAP_n(param1,param2);
+			break;
+		case 0xcb38:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&BC + 1;
+			param2=NULL;
+			SRL_n(param1,param2);
+			break;
+		case 0xcb39:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&BC;
+			param2=NULL;
+			SRL_n(param1,param2);
+			break;
+		case 0xcb3a:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&DE + 1 ;
+			param2=NULL;
+			SRL_n(param1,param2);
+			break;
+		case 0xcb3b:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&DE;
+			param2=NULL;
+			SRL_n(param1,param2);
+			break;
+		case 0xcb3c:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&HL + 1 ;
+			param2=NULL;
+			SRL_n(param1,param2);
+			break;
+		case 0xcb3d:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&HL;
+			param2=NULL;
+			SRL_n(param1,param2);
+			break;
+		case 0xcb3e:
+			lastOpcodeCycles=4;
+			param1=(uint8_t*)&HL;
+			param2=NULL;
+			SRL_$HL(param1,param2);
+			break;
+		case 0xcb3f:
+			lastOpcodeCycles=2;
+			param1=(uint8_t*)&AF + 1;
+			param2=NULL;
+			SRL_n(param1,param2);
+			break;
+		case 0xcb40:
+			lastOpcodeCycles=2;
+			bit = 0;
+			param1=&bit;
+			param2=(uint8_t*)&BC + 1;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb41:
+			lastOpcodeCycles=2;
+			bit = 0;
+			param1=&bit;
+			param2=(uint8_t*)&BC;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb42:
+			lastOpcodeCycles=2;
+			bit = 0;
+			param1=&bit;
+			param2=(uint8_t*)&DE + 1 ;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb43:
+			lastOpcodeCycles=2;
+			bit = 0;
+			param1=&bit;
+			param2=(uint8_t*)&DE;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb44:
+			lastOpcodeCycles=2;
+			bit = 0;
+			param1=&bit;
+			param2=(uint8_t*)&HL + 1 ;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb45:
+			lastOpcodeCycles=2;
+			bit = 0;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb46:
+			lastOpcodeCycles=3;
+			bit = 0;
+			immidiateN = bus->mmu->read(HL);
+			param1=&bit;
+			param2=&immidiateN;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb47:
+			lastOpcodeCycles=2;
+			bit = 0;
+			param1=&bit;
+			param2=(uint8_t*)&AF + 1;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb48:
+			lastOpcodeCycles=2;
+			bit = 1;
+			param1=&bit;
+			param2=(uint8_t*)&BC + 1;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb49:
+			lastOpcodeCycles=2;
+			bit = 1;
+			param1=&bit;
+			param2=(uint8_t*)&BC;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb4a:
+			lastOpcodeCycles=2;
+			bit = 1;
+			param1=&bit;
+			param2=(uint8_t*)&DE + 1 ;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb4b:
+			lastOpcodeCycles=2;
+			bit = 1;
+			param1=&bit;
+			param2=(uint8_t*)&DE;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb4c:
+			lastOpcodeCycles=2;
+			bit = 1;
+			param1=&bit;
+			param2=(uint8_t*)&HL + 1 ;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb4d:
+			lastOpcodeCycles=2;
+			bit = 1;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb4e:
+			lastOpcodeCycles=3;
+			bit = 1;
+			immidiateN = bus->mmu->read(HL);
+			param1=&bit;
+			param2=&immidiateN;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb4f:
+			lastOpcodeCycles=2;
+			bit = 1;
+			param1=&bit;
+			param2=(uint8_t*)&AF + 1;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb50:
+			lastOpcodeCycles=2;
+			bit = 2;
+			param1=&bit;
+			param2=(uint8_t*)&BC + 1;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb51:
+			lastOpcodeCycles=2;
+			bit = 2;
+			param1=&bit;
+			param2=(uint8_t*)&BC;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb52:
+			lastOpcodeCycles=2;
+			bit = 2;
+			param1=&bit;
+			param2=(uint8_t*)&DE + 1 ;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb53:
+			lastOpcodeCycles=2;
+			bit = 2;
+			param1=&bit;
+			param2=(uint8_t*)&DE;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb54:
+			lastOpcodeCycles=2;
+			bit = 2;
+			param1=&bit;
+			param2=(uint8_t*)&HL + 1 ;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb55:
+			lastOpcodeCycles=2;
+			bit = 2;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb56:
+			lastOpcodeCycles=3;
+			bit = 2;
+			immidiateN = bus->mmu->read(HL);
+			param1=&bit;
+			param2=&immidiateN;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb57:
+			lastOpcodeCycles=2;
+			bit = 2;
+			param1=&bit;
+			param2=(uint8_t*)&AF + 1;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb58:
+			lastOpcodeCycles=2;
+			bit = 3;
+			param1=&bit;
+			param2=(uint8_t*)&BC + 1;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb59:
+			lastOpcodeCycles=2;
+			bit = 3;
+			param1=&bit;
+			param2=(uint8_t*)&BC;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb5a:
+			lastOpcodeCycles=2;
+			bit = 3;
+			param1=&bit;
+			param2=(uint8_t*)&DE + 1 ;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb5b:
+			lastOpcodeCycles=2;
+			bit = 3;
+			param1=&bit;
+			param2=(uint8_t*)&DE;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb5c:
+			lastOpcodeCycles=2;
+			bit = 3;
+			param1=&bit;
+			param2=(uint8_t*)&HL + 1 ;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb5d:
+			lastOpcodeCycles=2;
+			bit = 3;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb5e:
+			lastOpcodeCycles=3;
+			bit = 3;
+			immidiateN = bus->mmu->read(HL);
+			param1=&bit;
+			param2=&immidiateN;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb5f:
+			lastOpcodeCycles=2;
+			bit = 3;
+			param1=&bit;
+			param2=(uint8_t*)&AF + 1;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb60:
+			lastOpcodeCycles=2;
+			bit = 4;
+			param1=&bit;
+			param2=(uint8_t*)&BC + 1;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb61:
+			lastOpcodeCycles=2;
+			bit = 4;
+			param1=&bit;
+			param2=(uint8_t*)&BC;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb62:
+			lastOpcodeCycles=2;
+			bit = 4;
+			param1=&bit;
+			param2=(uint8_t*)&DE + 1 ;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb63:
+			lastOpcodeCycles=2;
+			bit = 4;
+			param1=&bit;
+			param2=(uint8_t*)&DE;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb64:
+			lastOpcodeCycles=2;
+			bit = 4;
+			param1=&bit;
+			param2=(uint8_t*)&HL + 1 ;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb65:
+			lastOpcodeCycles=2;
+			bit = 4;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb66:
+			lastOpcodeCycles=3;
+			bit = 4;
+			immidiateN = bus->mmu->read(HL);
+			param1=&bit;
+			param2=&immidiateN;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb67:
+			lastOpcodeCycles=2;
+			bit = 4;
+			param1=&bit;
+			param2=(uint8_t*)&AF + 1;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb68:
+			lastOpcodeCycles=2;
+			bit = 5;
+			param1=&bit;
+			param2=(uint8_t*)&BC + 1;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb69:
+			lastOpcodeCycles=2;
+			bit = 5;
+			param1=&bit;
+			param2=(uint8_t*)&BC;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb6a:
+			lastOpcodeCycles=2;
+			bit = 5;
+			param1=&bit;
+			param2=(uint8_t*)&DE + 1 ;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb6b:
+			lastOpcodeCycles=2;
+			bit = 5;
+			param1=&bit;
+			param2=(uint8_t*)&DE;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb6c:
+			lastOpcodeCycles=2;
+			bit = 5;
+			param1=&bit;
+			param2=(uint8_t*)&HL + 1 ;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb6d:
+			lastOpcodeCycles=2;
+			bit = 5;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb6e:
+			lastOpcodeCycles=3;
+			bit = 5;
+			immidiateN = bus->mmu->read(HL);
+			param1=&bit;
+			param2=&immidiateN;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb6f:
+			lastOpcodeCycles=2;
+			bit = 5;
+			param1=&bit;
+			param2=(uint8_t*)&AF + 1;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb70:
+			lastOpcodeCycles=2;
+			bit = 6;
+			param1=&bit;
+			param2=(uint8_t*)&BC + 1;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb71:
+			lastOpcodeCycles=2;
+			bit = 6;
+			param1=&bit;
+			param2=(uint8_t*)&BC;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb72:
+			lastOpcodeCycles=2;
+			bit = 6;
+			param1=&bit;
+			param2=(uint8_t*)&DE + 1 ;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb73:
+			lastOpcodeCycles=2;
+			bit = 6;
+			param1=&bit;
+			param2=(uint8_t*)&DE;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb74:
+			lastOpcodeCycles=2;
+			bit = 6;
+			param1=&bit;
+			param2=(uint8_t*)&HL + 1 ;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb75:
+			lastOpcodeCycles=2;
+			bit = 6;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb76:
+			lastOpcodeCycles=3;
+			bit = 6;
+			immidiateN = bus->mmu->read(HL);
+			param1=&bit;
+			param2=&immidiateN;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb77:
+			lastOpcodeCycles=2;
+			bit = 6;
+			param1=&bit;
+			param2=(uint8_t*)&AF + 1;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb78:
+			lastOpcodeCycles=2;
+			bit = 7;
+			param1=&bit;
+			param2=(uint8_t*)&BC + 1;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb79:
+			lastOpcodeCycles=2;
+			bit = 7;
+			param1=&bit;
+			param2=(uint8_t*)&BC;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb7a:
+			lastOpcodeCycles=2;
+			bit = 7;
+			param1=&bit;
+			param2=(uint8_t*)&DE + 1 ;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb7b:
+			lastOpcodeCycles=2;
+			bit = 7;
+			param1=&bit;
+			param2=(uint8_t*)&DE;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb7c:
+			lastOpcodeCycles=2;
+			bit = 7;
+			param1=&bit;
+			param2=(uint8_t*)&HL + 1 ;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb7d:
+			lastOpcodeCycles=2;
+			bit = 7;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb7e:
+			lastOpcodeCycles=3;
+			bit = 7;
+			immidiateN = bus->mmu->read(HL);
+			param1=&bit;
+			param2=&immidiateN;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb7f:
+			lastOpcodeCycles=2;
+			bit = 7;
+			param1=&bit;
+			param2=(uint8_t*)&AF + 1;
+			BIT_$n_r(param1,param2);
+			break;
+		case 0xcb80:
+			lastOpcodeCycles=2;
+			bit = 0;
+			param1=&bit;
+			param2=(uint8_t*)&BC + 1;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcb81:
+			lastOpcodeCycles=2;
+			bit = 0;
+			param1=&bit;
+			param2=(uint8_t*)&BC;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcb82:
+			lastOpcodeCycles=2;
+			bit = 0;
+			param1=&bit;
+			param2=(uint8_t*)&DE + 1 ;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcb83:
+			lastOpcodeCycles=2;
+			bit = 0;
+			param1=&bit;
+			param2=(uint8_t*)&DE;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcb84:
+			lastOpcodeCycles=2;
+			bit = 0;
+			param1=&bit;
+			param2=(uint8_t*)&HL + 1 ;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcb85:
+			lastOpcodeCycles=2;
+			bit = 0;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcb86:
+			lastOpcodeCycles=4;
+			bit = 0;
+			param1=&bit;
+			param2=NULL;
+			RES_$n_$HL(param1,param2);
+			break;
+		case 0xcb87:
+			lastOpcodeCycles=2;
+			bit = 0;
+			param1=&bit;
+			param2=(uint8_t*)&AF + 1;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcb88:
+			lastOpcodeCycles=2;
+			bit = 1;
+			param1=&bit;
+			param2=(uint8_t*)&BC + 1;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcb89:
+			lastOpcodeCycles=2;
+			bit = 1;
+			param1=&bit;
+			param2=(uint8_t*)&BC;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcb8a:
+			lastOpcodeCycles=2;
+			bit = 1;
+			param1=&bit;
+			param2=(uint8_t*)&DE + 1 ;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcb8b:
+			lastOpcodeCycles=2;
+			bit = 1;
+			param1=&bit;
+			param2=(uint8_t*)&DE;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcb8c:
+			lastOpcodeCycles=2;
+			bit = 1;
+			param1=&bit;
+			param2=(uint8_t*)&HL + 1 ;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcb8d:
+			lastOpcodeCycles=2;
+			bit = 1;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcb8e:
+			lastOpcodeCycles=4;
+			bit = 1;
+			param1=&bit;
+			param2=NULL;
+			RES_$n_$HL(param1,param2);
+			break;
+		case 0xcb8f:
+			lastOpcodeCycles=2;
+			bit = 1;
+			param1=&bit;
+			param2=(uint8_t*)&AF + 1;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcb90:
+			lastOpcodeCycles=2;
+			bit = 2;
+			param1=&bit;
+			param2=(uint8_t*)&BC + 1;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcb91:
+			lastOpcodeCycles=2;
+			bit = 2;
+			param1=&bit;
+			param2=(uint8_t*)&BC;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcb92:
+			lastOpcodeCycles=2;
+			bit = 2;
+			param1=&bit;
+			param2=(uint8_t*)&DE + 1 ;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcb93:
+			lastOpcodeCycles=2;
+			bit = 2;
+			param1=&bit;
+			param2=(uint8_t*)&DE;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcb94:
+			lastOpcodeCycles=2;
+			bit = 2;
+			param1=&bit;
+			param2=(uint8_t*)&HL + 1 ;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcb95:
+			lastOpcodeCycles=2;
+			bit = 2;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcb96:
+			lastOpcodeCycles=4;
+			bit = 2;
+			param1=&bit;
+			param2=NULL;
+			RES_$n_$HL(param1,param2);
+			break;
+		case 0xcb97:
+			lastOpcodeCycles=2;
+			bit = 2;
+			param1=&bit;
+			param2=(uint8_t*)&AF + 1;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcb98:
+			lastOpcodeCycles=2;
+			bit = 3;
+			param1=&bit;
+			param2=(uint8_t*)&BC + 1;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcb99:
+			lastOpcodeCycles=2;
+			bit = 3;
+			param1=&bit;
+			param2=(uint8_t*)&BC;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcb9a:
+			lastOpcodeCycles=2;
+			bit = 3;
+			param1=&bit;
+			param2=(uint8_t*)&DE + 1 ;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcb9b:
+			lastOpcodeCycles=2;
+			bit = 3;
+			param1=&bit;
+			param2=(uint8_t*)&DE;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcb9c:
+			lastOpcodeCycles=2;
+			bit = 3;
+			param1=&bit;
+			param2=(uint8_t*)&HL + 1 ;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcb9d:
+			lastOpcodeCycles=2;
+			bit = 3;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcb9e:
+			lastOpcodeCycles=4;
+			bit = 3;
+			param1=&bit;
+			param2=NULL;
+			RES_$n_$HL(param1,param2);
+			break;
+		case 0xcb9f:
+			lastOpcodeCycles=2;
+			bit = 3;
+			param1=&bit;
+			param2=(uint8_t*)&AF + 1;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcba0:
+			lastOpcodeCycles=2;
+			bit = 4;
+			param1=&bit;
+			param2=(uint8_t*)&BC + 1;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcba1:
+			lastOpcodeCycles=2;
+			bit = 4;
+			param1=&bit;
+			param2=(uint8_t*)&BC;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcba2:
+			lastOpcodeCycles=2;
+			bit = 4;
+			param1=&bit;
+			param2=(uint8_t*)&DE + 1 ;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcba3:
+			lastOpcodeCycles=2;
+			bit = 4;
+			param1=&bit;
+			param2=(uint8_t*)&DE;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcba4:
+			lastOpcodeCycles=2;
+			bit = 4;
+			param1=&bit;
+			param2=(uint8_t*)&HL + 1 ;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcba5:
+			lastOpcodeCycles=2;
+			bit = 4;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcba6:
+			lastOpcodeCycles=4;
+			bit = 4;
+			param1=&bit;
+			param2=NULL;
+			RES_$n_$HL(param1,param2);
+			break;
+		case 0xcba7:
+			lastOpcodeCycles=2;
+			bit = 4;
+			param1=&bit;
+			param2=(uint8_t*)&AF + 1;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcba8:
+			lastOpcodeCycles=2;
+			bit = 5;
+			param1=&bit;
+			param2=(uint8_t*)&BC + 1;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcba9:
+			lastOpcodeCycles=2;
+			bit = 5;
+			param1=&bit;
+			param2=(uint8_t*)&BC;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcbaa:
+			lastOpcodeCycles=2;
+			bit = 5;
+			param1=&bit;
+			param2=(uint8_t*)&DE + 1 ;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcbab:
+			lastOpcodeCycles=2;
+			bit = 5;
+			param1=&bit;
+			param2=(uint8_t*)&DE;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcbac:
+			lastOpcodeCycles=2;
+			bit = 5;
+			param1=&bit;
+			param2=(uint8_t*)&HL + 1 ;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcbad:
+			lastOpcodeCycles=2;
+			bit = 5;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcbae:
+			lastOpcodeCycles=4;
+			bit = 5;
+			param1=&bit;
+			param2=NULL;
+			RES_$n_$HL(param1,param2);
+			break;
+		case 0xcbaf:
+			lastOpcodeCycles=2;
+			bit = 5;
+			param1=&bit;
+			param2=(uint8_t*)&AF + 1;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcbb0:
+			lastOpcodeCycles=2;
+			bit = 6;
+			param1=&bit;
+			param2=(uint8_t*)&BC + 1;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcbb1:
+			lastOpcodeCycles=2;
+			bit = 6;
+			param1=&bit;
+			param2=(uint8_t*)&BC;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcbb2:
+			lastOpcodeCycles=2;
+			bit = 6;
+			param1=&bit;
+			param2=(uint8_t*)&DE + 1 ;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcbb3:
+			lastOpcodeCycles=2;
+			bit = 6;
+			param1=&bit;
+			param2=(uint8_t*)&DE;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcbb4:
+			lastOpcodeCycles=2;
+			bit = 6;
+			param1=&bit;
+			param2=(uint8_t*)&HL + 1 ;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcbb5:
+			lastOpcodeCycles=2;
+			bit = 6;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcbb6:
+			lastOpcodeCycles=4;
+			bit = 6;
+			param1=&bit;
+			param2=NULL;
+			RES_$n_$HL(param1,param2);
+			break;
+		case 0xcbb7:
+			lastOpcodeCycles=2;
+			bit = 6;
+			param1=&bit;
+			param2=(uint8_t*)&AF + 1;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcbb8:
+			lastOpcodeCycles=2;
+			bit = 7;
+			param1=&bit;
+			param2=(uint8_t*)&BC + 1;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcbb9:
+			lastOpcodeCycles=2;
+			bit = 7;
+			param1=&bit;
+			param2=(uint8_t*)&BC;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcbba:
+			lastOpcodeCycles=2;
+			bit = 7;
+			param1=&bit;
+			param2=(uint8_t*)&DE + 1 ;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcbbb:
+			lastOpcodeCycles=2;
+			bit = 7;
+			param1=&bit;
+			param2=(uint8_t*)&DE;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcbbc:
+			lastOpcodeCycles=2;
+			bit = 7;
+			param1=&bit;
+			param2=(uint8_t*)&HL + 1 ;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcbbd:
+			lastOpcodeCycles=2;
+			bit = 7;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcbbe:
+			lastOpcodeCycles=4;
+			bit = 7;
+			param1=&bit;
+			param2=NULL;
+			RES_$n_$HL(param1,param2);
+			break;
+		case 0xcbbf:
+			lastOpcodeCycles=2;
+			bit = 7;
+			param1=&bit;
+			param2=(uint8_t*)&AF + 1;
+			RES_$n_r(param1,param2);
+			break;
+		case 0xcbc0:
+			lastOpcodeCycles=2;
+			bit = 0;
+			param1=&bit;
+			param2=(uint8_t*)&BC + 1;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbc1:
+			lastOpcodeCycles=2;
+			bit = 0;
+			param1=&bit;
+			param2=(uint8_t*)&BC;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbc2:
+			lastOpcodeCycles=2;
+			bit = 0;
+			param1=&bit;
+			param2=(uint8_t*)&DE + 1 ;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbc3:
+			lastOpcodeCycles=2;
+			bit = 0;
+			param1=&bit;
+			param2=(uint8_t*)&DE;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbc4:
+			lastOpcodeCycles=2;
+			bit = 0;
+			param1=&bit;
+			param2=(uint8_t*)&HL + 1 ;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbc5:
+			lastOpcodeCycles=2;
+			bit = 0;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbc6:
+			lastOpcodeCycles=4;
+			bit = 0;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			SET_$n_$HL(param1,param2);
+			break;
+		case 0xcbc7:
+			lastOpcodeCycles=2;
+			bit = 0;
+			param1=&bit;
+			param2=(uint8_t*)&AF + 1;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbc8:
+			lastOpcodeCycles=2;
+			bit = 1;
+			param1=&bit;
+			param2=(uint8_t*)&BC + 1;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbc9:
+			lastOpcodeCycles=2;
+			bit = 1;
+			param1=&bit;
+			param2=(uint8_t*)&BC;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbca:
+			lastOpcodeCycles=2;
+			bit = 1;
+			param1=&bit;
+			param2=(uint8_t*)&DE + 1 ;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbcb:
+			lastOpcodeCycles=2;
+			bit = 1;
+			param1=&bit;
+			param2=(uint8_t*)&DE;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbcc:
+			lastOpcodeCycles=2;
+			bit = 1;
+			param1=&bit;
+			param2=(uint8_t*)&HL + 1 ;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbcd:
+			lastOpcodeCycles=2;
+			bit = 1;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbce:
+			lastOpcodeCycles=4;
+			bit = 1;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			SET_$n_$HL(param1,param2);
+			break;
+		case 0xcbcf:
+			lastOpcodeCycles=2;
+			bit = 1;
+			param1=&bit;
+			param2=(uint8_t*)&AF + 1;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbd0:
+			lastOpcodeCycles=2;
+			bit = 2;
+			param1=&bit;
+			param2=(uint8_t*)&BC + 1;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbd1:
+			lastOpcodeCycles=2;
+			bit = 2;
+			param1=&bit;
+			param2=(uint8_t*)&BC;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbd2:
+			lastOpcodeCycles=2;
+			bit = 2;
+			param1=&bit;
+			param2=(uint8_t*)&DE + 1 ;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbd3:
+			lastOpcodeCycles=2;
+			bit = 2;
+			param1=&bit;
+			param2=(uint8_t*)&DE;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbd4:
+			lastOpcodeCycles=2;
+			bit = 2;
+			param1=&bit;
+			param2=(uint8_t*)&HL + 1 ;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbd5:
+			lastOpcodeCycles=2;
+			bit = 2;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbd6:
+			lastOpcodeCycles=4;
+			bit = 2;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			SET_$n_$HL(param1,param2);
+			break;
+		case 0xcbd7:
+			lastOpcodeCycles=2;
+			bit = 2;
+			param1=&bit;
+			param2=(uint8_t*)&AF + 1;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbd8:
+			lastOpcodeCycles=2;
+			bit = 3;
+			param1=&bit;
+			param2=(uint8_t*)&BC + 1;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbd9:
+			lastOpcodeCycles=2;
+			bit = 3;
+			param1=&bit;
+			param2=(uint8_t*)&BC;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbda:
+			lastOpcodeCycles=2;
+			bit = 3;
+			param1=&bit;
+			param2=(uint8_t*)&DE + 1 ;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbdb:
+			lastOpcodeCycles=2;
+			bit = 3;
+			param1=&bit;
+			param2=(uint8_t*)&DE;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbdc:
+			lastOpcodeCycles=2;
+			bit = 3;
+			param1=&bit;
+			param2=(uint8_t*)&HL + 1 ;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbdd:
+			lastOpcodeCycles=2;
+			bit = 3;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbde:
+			lastOpcodeCycles=4;
+			bit = 3;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			SET_$n_$HL(param1,param2);
+			break;
+		case 0xcbdf:
+			lastOpcodeCycles=2;
+			bit = 3;
+			param1=&bit;
+			param2=(uint8_t*)&AF + 1;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbe0:
+			lastOpcodeCycles=2;
+			bit = 4;
+			param1=&bit;
+			param2=(uint8_t*)&BC + 1;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbe1:
+			lastOpcodeCycles=2;
+			bit = 4;
+			param1=&bit;
+			param2=(uint8_t*)&BC;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbe2:
+			lastOpcodeCycles=2;
+			bit = 4;
+			param1=&bit;
+			param2=(uint8_t*)&DE + 1 ;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbe3:
+			lastOpcodeCycles=2;
+			bit = 4;
+			param1=&bit;
+			param2=(uint8_t*)&DE;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbe4:
+			lastOpcodeCycles=2;
+			bit = 4;
+			param1=&bit;
+			param2=(uint8_t*)&HL + 1 ;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbe5:
+			lastOpcodeCycles=2;
+			bit = 4;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbe6:
+			lastOpcodeCycles=4;
+			bit = 4;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			SET_$n_$HL(param1,param2);
+			break;
+		case 0xcbe7:
+			lastOpcodeCycles=2;
+			bit = 4;
+			param1=&bit;
+			param2=(uint8_t*)&AF + 1;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbe8:
+			lastOpcodeCycles=2;
+			bit = 5;
+			param1=&bit;
+			param2=(uint8_t*)&BC + 1;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbe9:
+			lastOpcodeCycles=2;
+			bit = 5;
+			param1=&bit;
+			param2=(uint8_t*)&BC;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbea:
+			lastOpcodeCycles=2;
+			bit = 5;
+			param1=&bit;
+			param2=(uint8_t*)&DE + 1 ;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbeb:
+			lastOpcodeCycles=2;
+			bit = 5;
+			param1=&bit;
+			param2=(uint8_t*)&DE;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbec:
+			lastOpcodeCycles=2;
+			bit = 5;
+			param1=&bit;
+			param2=(uint8_t*)&HL + 1 ;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbed:
+			lastOpcodeCycles=2;
+			bit = 5;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbee:
+			lastOpcodeCycles=4;
+			bit = 5;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			SET_$n_$HL(param1,param2);
+			break;
+		case 0xcbef:
+			lastOpcodeCycles=2;
+			bit = 5;
+			param1=&bit;
+			param2=(uint8_t*)&AF + 1;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbf0:
+			lastOpcodeCycles=2;
+			bit = 6;
+			param1=&bit;
+			param2=(uint8_t*)&BC + 1;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbf1:
+			lastOpcodeCycles=2;
+			bit = 6;
+			param1=&bit;
+			param2=(uint8_t*)&BC;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbf2:
+			lastOpcodeCycles=2;
+			bit = 6;
+			param1=&bit;
+			param2=(uint8_t*)&DE + 1 ;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbf3:
+			lastOpcodeCycles=2;
+			bit = 6;
+			param1=&bit;
+			param2=(uint8_t*)&DE;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbf4:
+			lastOpcodeCycles=2;
+			bit = 6;
+			param1=&bit;
+			param2=(uint8_t*)&HL + 1 ;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbf5:
+			lastOpcodeCycles=2;
+			bit = 6;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbf6:
+			lastOpcodeCycles=4;
+			bit = 6;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			SET_$n_$HL(param1,param2);
+			break;
+		case 0xcbf7:
+			lastOpcodeCycles=2;
+			bit = 6;
+			param1=&bit;
+			param2=(uint8_t*)&AF + 1;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbf8:
+			lastOpcodeCycles=2;
+			bit = 7;
+			param1=&bit;
+			param2=(uint8_t*)&BC + 1;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbf9:
+			lastOpcodeCycles=2;
+			bit = 7;
+			param1=&bit;
+			param2=(uint8_t*)&BC;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbfa:
+			lastOpcodeCycles=2;
+			bit = 7;
+			param1=&bit;
+			param2=(uint8_t*)&DE + 1 ;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbfb:
+			lastOpcodeCycles=2;
+			bit = 7;
+			param1=&bit;
+			param2=(uint8_t*)&DE;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbfc:
+			lastOpcodeCycles=2;
+			bit = 7;
+			param1=&bit;
+			param2=(uint8_t*)&HL + 1 ;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbfd:
+			lastOpcodeCycles=2;
+			bit = 7;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			SET_$n_r(param1,param2);
+			break;
+		case 0xcbfe:
+			lastOpcodeCycles=4;
+			bit = 7;
+			param1=&bit;
+			param2=(uint8_t*)&HL;
+			SET_$n_$HL(param1,param2);
+			break;
+		case 0xcbff:
+			lastOpcodeCycles=2;
+			bit = 7;
+			param1=&bit;
+			param2=(uint8_t*)&AF + 1;
+			SET_$n_r(param1,param2);
+			break;
+}

@@ -21,12 +21,7 @@ public:
 	uint8_t msn;
 	uint8_t lsn;
 };
-struct KEY {
-	int value;
-	bool isPressed;
-};
-enum ColorChannel:uint8_t { Blue, Green, Red, Alpha };
-enum KEYS {
+enum class KEYS {
 	A = 65,//The A key.
 	Add = 107,//The add key.
 	Alt = 262144,//The ALT modifier key.
@@ -221,4 +216,14 @@ enum KEYS {
 	Y = 89,//The Y key.
 	Z = 90,//The Z key.
 	Zoom = 251//The ZOOM key.
+};
+struct KEY {
+	KEYS key;
+	bool isPressed;
+};
+enum ColorChannel:uint8_t { Blue, Green, Red, Alpha };
+
+enum COLOUR
+{
+	WHITE, LIGHT_GRAY, DARK_GRAY, BLACK
 };

@@ -5,6 +5,7 @@
 #include "GPU.h"
 #include "DMA.h"
 #include "INTERRUPT.h"
+#include "JOYPAD.h"
 void BUS::connectCPU(CPU* cpu)
 {
 	this->cpu = cpu;
@@ -41,12 +42,17 @@ void BUS::connectInterrupt(INTERRUPT* interrupt)
 	this->interrupt = interrupt;
 	interrupt->connectToBus(this);
 }
+void BUS::connectJoypad(JOYPAD* joypad)
+{
+	this->joypad = joypad;
+	joypad->connectToBus(this);
 
-void BUS::insertCartridge(CARTRIDGE* cartridge)
+}
+
+void BUS::connectCartridge(CARTRIDGE* cartridge)
 {
 	this->cartridge = cartridge;
 	cartridge->connectToBus(this);
 
 }
-
 

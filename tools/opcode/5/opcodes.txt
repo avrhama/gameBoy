@@ -1,0 +1,807 @@
+#pragma region LD nn,n
+//LD nn,n
+opcodes[0x06] = { "LD_nn_N",&CPU::LD_nn_N,&CPU::getB,&CPU::getN,8 };
+opcodes[0x0E] = { "LD_nn_N",&CPU::LD_nn_N,&CPU::getC,&CPU::getN,8 };
+opcodes[0x16] = { "LD_nn_N",&CPU::LD_nn_N,&CPU::getD,&CPU::getN,8 };
+opcodes[0x1E] = { "LD_nn_N",&CPU::LD_nn_N,&CPU::getE,&CPU::getN,8 };
+opcodes[0x26] = { "LD_nn_N",&CPU::LD_nn_N,&CPU::getH,&CPU::getN,8 };
+opcodes[0x2E] = { "LD_nn_N",&CPU::LD_nn_N,&CPU::getL,&CPU::getN,8 };
+#pragma endregion
+#pragma region LD r1,r2
+//LD r1,r2
+opcodes[0x7F] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getA,&CPU::getA,4 };
+opcodes[0x78] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getA,&CPU::getB,4 };
+opcodes[0x79] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getA,&CPU::getC,4 };
+opcodes[0x7A] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getA,&CPU::getD,4 };
+opcodes[0x7B] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getA,&CPU::getE,4 };
+opcodes[0x7C] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getA,&CPU::getH,4 };
+opcodes[0x7D] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getA,&CPU::getL,4 };
+opcodes[0x7E] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getA,&CPU::get$HL,8 };
+opcodes[0x40] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getB,&CPU::getB,4 };
+opcodes[0x41] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getB,&CPU::getC,4 };
+opcodes[0x42] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getB,&CPU::getD,4 };
+opcodes[0x43] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getB,&CPU::getE,4 };
+opcodes[0x44] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getB,&CPU::getH,4 };
+opcodes[0x45] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getB,&CPU::getL,4 };
+opcodes[0x46] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getB,&CPU::get$HL,8 };
+opcodes[0x48] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getC,&CPU::getB,4 };
+opcodes[0x49] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getC,&CPU::getC,4 };
+opcodes[0x4A] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getC,&CPU::getD,4 };
+opcodes[0x4B] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getC,&CPU::getE,4 };
+opcodes[0x4C] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getC,&CPU::getH,4 };
+opcodes[0x4D] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getC,&CPU::getL,4 };
+opcodes[0x4E] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getC,&CPU::get$HL,8 };
+opcodes[0x50] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getD,&CPU::getB,4 };
+opcodes[0x51] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getD,&CPU::getC,4 };
+opcodes[0x52] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getD,&CPU::getD,4 };
+opcodes[0x53] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getD,&CPU::getE,4 };
+opcodes[0x54] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getD,&CPU::getH,4 };
+opcodes[0x55] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getD,&CPU::getL,4 };
+opcodes[0x56] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getD,&CPU::get$HL,8 };
+opcodes[0x58] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getE,&CPU::getB,4 };
+opcodes[0x59] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getE,&CPU::getC,4 };
+opcodes[0x5A] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getE,&CPU::getD,4 };
+opcodes[0x5B] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getE,&CPU::getE,4 };
+opcodes[0x5C] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getE,&CPU::getH,4 };
+opcodes[0x5D] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getE,&CPU::getL,4 };
+opcodes[0x5E] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getE,&CPU::get$HL,8 };
+opcodes[0x60] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getH,&CPU::getB,4 };
+opcodes[0x61] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getH,&CPU::getC,4 };
+opcodes[0x62] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getH,&CPU::getD,4 };
+opcodes[0x63] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getH,&CPU::getE,4 };
+opcodes[0x64] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getH,&CPU::getH,4 };
+opcodes[0x65] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getH,&CPU::getL,4 };
+opcodes[0x66] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getH,&CPU::get$HL,8 };
+opcodes[0x68] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getL,&CPU::getB,4 };
+opcodes[0x69] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getL,&CPU::getC,4 };
+opcodes[0x6A] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getL,&CPU::getD,4 };
+opcodes[0x6B] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getL,&CPU::getE,4 };
+opcodes[0x6C] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getL,&CPU::getH,4 };
+opcodes[0x6D] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getL,&CPU::getL,4 };
+opcodes[0x6E] = { "LD_r1_r2",&CPU::LD_r1_r2,&CPU::getL,&CPU::get$HL,8 };
+
+opcodes[0x70] = { "LD_n_$HL",&CPU::LD_n_$HL,&CPU::getNULL,&CPU::getB,8 };
+opcodes[0x71] = { "LD_n_$HL",&CPU::LD_n_$HL,&CPU::getNULL,&CPU::getC,8 };
+opcodes[0x72] = { "LD_n_$HL",&CPU::LD_n_$HL,&CPU::getNULL,&CPU::getD,8 };
+opcodes[0x73] = { "LD_n_$HL",&CPU::LD_n_$HL,&CPU::getNULL,&CPU::getE,8 };
+opcodes[0x74] = { "LD_n_$HL",&CPU::LD_n_$HL,&CPU::getNULL,&CPU::getH,8 };
+opcodes[0x75] = { "LD_n_$HL",&CPU::LD_n_$HL,&CPU::getNULL,&CPU::getL,8 };
+opcodes[0x36] = { "LD_n_$HL",&CPU::LD_n_$HL,&CPU::getNULL,&CPU::getN,12 };
+
+#pragma endregion
+#pragma region LD A,n
+//LD A,n
+opcodes[0x0A] = { "LD_A_n",&CPU::LD_A_n,&CPU::getA,&CPU::get$BC,8 };
+opcodes[0x1A] = { "LD_A_n",&CPU::LD_A_n,&CPU::getA,&CPU::get$DE,8 };
+opcodes[0xFA] = { "LD_A_n",&CPU::LD_A_n,&CPU::getA,&CPU::get$NN,16 };
+opcodes[0x3E] = { "LD_A_n",&CPU::LD_A_n,&CPU::getA,&CPU::getN,8 };
+#pragma endregion	
+#pragma region LD n,A
+//LD n,A
+opcodes[0x47] = { "LD_n_A",&CPU::LD_n_A,&CPU::getB,&CPU::getA,4 };
+opcodes[0x4F] = { "LD_n_A",&CPU::LD_n_A,&CPU::getC,&CPU::getA,4 };
+opcodes[0x57] = { "LD_n_A",&CPU::LD_n_A,&CPU::getD,&CPU::getA,4 };
+opcodes[0x5F] = { "LD_n_A",&CPU::LD_n_A,&CPU::getE,&CPU::getA,4 };
+opcodes[0x67] = { "LD_n_A",&CPU::LD_n_A,&CPU::getH,&CPU::getA,4 };
+opcodes[0x6F] = { "LD_n_A",&CPU::LD_n_A,&CPU::getL,&CPU::getA,4 };
+
+opcodes[0x02] = { "LD_$n_A",&CPU::LD_$n_A,&CPU::getBC,&CPU::getA,8 };
+opcodes[0x12] = { "LD_$n_A",&CPU::LD_$n_A,&CPU::getDE,&CPU::getA,8 };
+opcodes[0x77] = { "LD_$n_A",&CPU::LD_$n_A,&CPU::getHL,&CPU::getA,8 };
+opcodes[0xEA] = { "LD_$n_A",&CPU::LD_$n_A,&CPU::getNN,&CPU::getA,16 };
+#pragma endregion
+#pragma region LD A,(C)
+//LD A,(C)
+opcodes[0xF2] = { "LD_A_C",&CPU::LD_A_C,&CPU::getA,&CPU::getC,8 };
+#pragma endregion
+#pragma region LD (C),A
+//LD (C),A
+opcodes[0xE2] = { "LD_C_A",&CPU::LD_C_A,&CPU::getC,&CPU::getA,8 };
+#pragma endregion
+#pragma region LDD A,(HL)
+//LDD A,(HL)//LD A,(HLD)//LD A,(HLminus)
+opcodes[0x3A] = { "LDD_A_$HL",&CPU::LDD_A_$HL,&CPU::getA,&CPU::getNULL,8 };
+#pragma endregion
+#pragma region LD (HLD),A
+//LD (HLD),A//LD (HLminus),A//LDD (HL),A
+opcodes[0x32] = { "LDD_$HL_A",&CPU::LDD_$HL_A,&CPU::getNULL,&CPU::getA,8 };
+#pragma endregion
+#pragma region LD A,(HLI)
+//LD A,(HLI)//LD A,(HLplus)//LDI A,(HL)
+opcodes[0x2A] = { "LDI_A_$HL",&CPU::LDI_A_$HL,&CPU::getA,&CPU::getNULL,8 };
+#pragma endregion
+#pragma region LD (HLI),A
+//LD (HLI),A//LD (HLplus),A//LDI (HL),A
+opcodes[0x22] = { "LDI_$HL_A",&CPU::LDI_$HL_A,&CPU::getNULL,&CPU::getA,8 };
+#pragma endregion
+#pragma region LDH n,A
+//LDH n,A
+opcodes[0xE0] = { "LDH_n_A",&CPU::LDH_n_A,&CPU::getN,&CPU::getA,12 };
+#pragma endregion
+#pragma region LDH A,n
+//LDH A,n
+opcodes[0xF0] = { "LDH_A_n",&CPU::LDH_A_n,&CPU::getA,&CPU::getN,12 };
+#pragma endregion
+#pragma region LD n,nn
+//LD n,nn
+opcodes[0x01] = { "LD_n_nn",&CPU::LD_n_nn,&CPU::getBC,&CPU::getNN,12 };
+opcodes[0x11] = { "LD_n_nn",&CPU::LD_n_nn,&CPU::getDE,&CPU::getNN,12 };
+opcodes[0x21] = { "LD_n_nn",&CPU::LD_n_nn,&CPU::getHL,&CPU::getNN,12 };
+opcodes[0x31] = { "LD_n_nn",&CPU::LD_n_nn,&CPU::getSP,&CPU::getNN,12 };
+#pragma endregion
+#pragma region LD SP,HL
+//LD SP,HL
+opcodes[0xF9] = { "LD_SP_HL",&CPU::LD_SP_HL,&CPU::getNULL,&CPU::getNULL,8 };
+#pragma endregion
+#pragma region LD_HL_SP
+//LD_HL_SP//LDHL SP,(n)
+opcodes[0xF8] = { "LDHL_SP_$n",&CPU::LDHL_SP_$n,&CPU::getNULL,&CPU::getNULL,12 };
+#pragma endregion
+#pragma region LD nn,SP
+//LD nn,SP
+opcodes[0x08] = { "LD_$NN_SP",&CPU::LD_$NN_SP,&CPU::get$NN,&CPU::getNULL,20 };
+#pragma endregion
+#pragma region PUSH nn
+//PUSH nn
+opcodes[0xF5] = { "PUSH_nn",&CPU::PUSH_nn,&CPU::getAF,&CPU::getNULL,16 };
+opcodes[0xC5] = { "PUSH_nn",&CPU::PUSH_nn,&CPU::getBC,&CPU::getNULL,16 };
+opcodes[0xD5] = { "PUSH_nn",&CPU::PUSH_nn,&CPU::getDE,&CPU::getNULL,16 };
+opcodes[0xE5] = { "PUSH_nn",&CPU::PUSH_nn,&CPU::getHL,&CPU::getNULL,16 };
+#pragma endregion
+#pragma region POP nn
+//POP nn
+opcodes[0xF1] = { "POP_nn",&CPU::POP_nn,&CPU::getNULL,&CPU::getAF,12 };
+opcodes[0xC1] = { "POP_nn",&CPU::POP_nn,&CPU::getNULL,&CPU::getBC,12 };
+opcodes[0xD1] = { "POP_nn",&CPU::POP_nn,&CPU::getNULL,&CPU::getDE,12 };
+opcodes[0xE1] = { "POP_nn",&CPU::POP_nn,&CPU::getNULL,&CPU::getHL,12 };
+#pragma endregion
+#pragma region ADD A,n
+//ADD A,n
+opcodes[0x87] = { "ADD_A_n",&CPU::ADD_A_n,&CPU::getA,&CPU::getA,4 };
+opcodes[0x80] = { "ADD_A_n",&CPU::ADD_A_n,&CPU::getA,&CPU::getB,4 };
+opcodes[0x81] = { "ADD_A_n",&CPU::ADD_A_n,&CPU::getA,&CPU::getC,4 };
+opcodes[0x82] = { "ADD_A_n",&CPU::ADD_A_n,&CPU::getA,&CPU::getD,4 };
+opcodes[0x83] = { "ADD_A_n",&CPU::ADD_A_n,&CPU::getA,&CPU::getE,4 };
+opcodes[0x84] = { "ADD_A_n",&CPU::ADD_A_n,&CPU::getA,&CPU::getH,4 };
+opcodes[0x85] = { "ADD_A_n",&CPU::ADD_A_n,&CPU::getA,&CPU::getL,4 };
+opcodes[0x86] = { "ADD_A_n",&CPU::ADD_A_n,&CPU::getA,&CPU::get$HL,8 };
+opcodes[0xC6] = { "ADD_A_n",&CPU::ADD_A_n,&CPU::getA,&CPU::getN,8 };
+#pragma endregion
+#pragma region ADC A,n
+//ADC A,n
+opcodes[0x8F] = { "ADC_A_n",&CPU::ADC_A_n,&CPU::getA,&CPU::getA,4 };
+opcodes[0x88] = { "ADC_A_n",&CPU::ADC_A_n,&CPU::getA,&CPU::getB,4 };
+opcodes[0x89] = { "ADC_A_n",&CPU::ADC_A_n,&CPU::getA,&CPU::getC,4 };
+opcodes[0x8A] = { "ADC_A_n",&CPU::ADC_A_n,&CPU::getA,&CPU::getD,4 };
+opcodes[0x8B] = { "ADC_A_n",&CPU::ADC_A_n,&CPU::getA,&CPU::getE,4 };
+opcodes[0x8C] = { "ADC_A_n",&CPU::ADC_A_n,&CPU::getA,&CPU::getH,4 };
+opcodes[0x8D] = { "ADC_A_n",&CPU::ADC_A_n,&CPU::getA,&CPU::getL,4 };
+opcodes[0x8E] = { "ADC_A_n",&CPU::ADC_A_n,&CPU::getA,&CPU::get$HL,8 };
+opcodes[0xCE] = { "ADC_A_n",&CPU::ADC_A_n,&CPU::getA,&CPU::getN,8 };
+#pragma endregion
+#pragma region SUB n
+//SUB n
+opcodes[0x97] = { "SUB_n",&CPU::SUB_n,&CPU::getA,&CPU::getA,4 };
+opcodes[0x90] = { "SUB_n",&CPU::SUB_n,&CPU::getA,&CPU::getB,4 };
+opcodes[0x91] = { "SUB_n",&CPU::SUB_n,&CPU::getA,&CPU::getC,4 };
+opcodes[0x92] = { "SUB_n",&CPU::SUB_n,&CPU::getA,&CPU::getD,4 };
+opcodes[0x93] = { "SUB_n",&CPU::SUB_n,&CPU::getA,&CPU::getE,4 };
+opcodes[0x94] = { "SUB_n",&CPU::SUB_n,&CPU::getA,&CPU::getH,4 };
+opcodes[0x95] = { "SUB_n",&CPU::SUB_n,&CPU::getA,&CPU::getL,4 };
+opcodes[0x96] = { "SUB_n",&CPU::SUB_n,&CPU::getA,&CPU::get$HL,8 };
+opcodes[0xD6] = { "SUB_n",&CPU::SUB_n,&CPU::getA,&CPU::getN,8 };
+
+#pragma endregion
+#pragma region SBC A,n
+//SBC A,n
+opcodes[0x9F] = { "SBC_A_n",&CPU::SBC_A_n,&CPU::getA,&CPU::getA,4 };
+opcodes[0x98] = { "SBC_A_n",&CPU::SBC_A_n,&CPU::getA,&CPU::getB,4 };
+opcodes[0x99] = { "SBC_A_n",&CPU::SBC_A_n,&CPU::getA,&CPU::getC,4 };
+opcodes[0x9A] = { "SBC_A_n",&CPU::SBC_A_n,&CPU::getA,&CPU::getD,4 };
+opcodes[0x9B] = { "SBC_A_n",&CPU::SBC_A_n,&CPU::getA,&CPU::getE,4 };
+opcodes[0x9C] = { "SBC_A_n",&CPU::SBC_A_n,&CPU::getA,&CPU::getH,4 };
+opcodes[0x9D] = { "SBC_A_n",&CPU::SBC_A_n,&CPU::getA,&CPU::getL,4 };
+//read from memory
+opcodes[0x9E] = { "SBC_A_n",&CPU::SBC_A_n,&CPU::getA,&CPU::get$HL,8 };
+opcodes[0xDE] = { "SBC_A_n",&CPU::SBC_A_n,&CPU::getA,&CPU::getN,8 };//added
+#pragma endregion
+
+#pragma region AND n
+//AND n
+opcodes[0xA7] = { "AND_n",&CPU::AND_n,&CPU::getA,&CPU::getA,4 };
+opcodes[0xA0] = { "AND_n",&CPU::AND_n,&CPU::getA,&CPU::getB,4 };
+opcodes[0xA1] = { "AND_n",&CPU::AND_n,&CPU::getA,&CPU::getC,4 };
+opcodes[0xA2] = { "AND_n",&CPU::AND_n,&CPU::getA,&CPU::getD,4 };
+opcodes[0xA3] = { "AND_n",&CPU::AND_n,&CPU::getA,&CPU::getE,4 };
+opcodes[0xA4] = { "AND_n",&CPU::AND_n,&CPU::getA,&CPU::getH,4 };
+opcodes[0xA5] = { "AND_n",&CPU::AND_n,&CPU::getA,&CPU::getL,4 };
+//read from memory
+opcodes[0xA6] = { "AND_n",&CPU::AND_n,&CPU::getA,&CPU::get$HL,8 };
+opcodes[0xE6] = { "AND_n",&CPU::AND_n,&CPU::getA,&CPU::getN,8 };
+#pragma endregion
+
+#pragma region OR n
+//OR n
+opcodes[0xB7] = { "OR_n",&CPU::OR_n,&CPU::getA,&CPU::getA,4 };
+opcodes[0xB0] = { "OR_n",&CPU::OR_n,&CPU::getA,&CPU::getB,4 };
+opcodes[0xB1] = { "OR_n",&CPU::OR_n,&CPU::getA,&CPU::getC,4 };
+opcodes[0xB2] = { "OR_n",&CPU::OR_n,&CPU::getA,&CPU::getD,4 };
+opcodes[0xB3] = { "OR_n",&CPU::OR_n,&CPU::getA,&CPU::getE,4 };
+opcodes[0xB4] = { "OR_n",&CPU::OR_n,&CPU::getA,&CPU::getH,4 };
+opcodes[0xB5] = { "OR_n",&CPU::OR_n,&CPU::getA,&CPU::getL,4 };
+//read from memory
+opcodes[0xB6] = { "OR_n",&CPU::OR_n,&CPU::getA,&CPU::get$HL,8 };
+opcodes[0xF6] = { "OR_n",&CPU::OR_n,&CPU::getA,&CPU::getN,8 };
+#pragma endregion
+
+#pragma region XOR n
+//XOR n
+opcodes[0xAF] = { "XOR_n",&CPU::XOR_n,&CPU::getA,&CPU::getA,4 };
+opcodes[0xA8] = { "XOR_n",&CPU::XOR_n,&CPU::getA,&CPU::getB,4 };
+opcodes[0xA9] = { "XOR_n",&CPU::XOR_n,&CPU::getA,&CPU::getC,4 };
+opcodes[0xAA] = { "XOR_n",&CPU::XOR_n,&CPU::getA,&CPU::getD,4 };
+opcodes[0xAB] = { "XOR_n",&CPU::XOR_n,&CPU::getA,&CPU::getE,4 };
+opcodes[0xAC] = { "XOR_n",&CPU::XOR_n,&CPU::getA,&CPU::getH,4 };
+opcodes[0xAD] = { "XOR_n",&CPU::XOR_n,&CPU::getA,&CPU::getL,4 };
+//read from memory
+opcodes[0xAE] = { "XOR_n",&CPU::XOR_n,&CPU::getA,&CPU::get$HL,8 };
+opcodes[0xEE] = { "XOR_n",&CPU::XOR_n,&CPU::getA,&CPU::getN,8 };
+#pragma endregion
+
+#pragma region CP n
+//CP n
+opcodes[0xBF] = { "CP_n",&CPU::CP_n,&CPU::getA,&CPU::getNULL,4 };
+opcodes[0xB8] = { "CP_n",&CPU::CP_n,&CPU::getB,&CPU::getNULL,4 };
+opcodes[0xB9] = { "CP_n",&CPU::CP_n,&CPU::getC,&CPU::getNULL,4 };
+opcodes[0xBA] = { "CP_n",&CPU::CP_n,&CPU::getD,&CPU::getNULL,4 };
+opcodes[0xBB] = { "CP_n",&CPU::CP_n,&CPU::getE,&CPU::getNULL,4 };
+opcodes[0xBC] = { "CP_n",&CPU::CP_n,&CPU::getH,&CPU::getNULL,4 };
+opcodes[0xBD] = { "CP_n",&CPU::CP_n,&CPU::getL,&CPU::getNULL,4 };
+//read from memory
+opcodes[0xBE] = { "CP_n",&CPU::CP_n,&CPU::get$HL,&CPU::getNULL,8 };
+opcodes[0xFE] = { "CP_n",&CPU::CP_n,&CPU::getN,&CPU::getNULL,8 };
+#pragma endregion
+#pragma region INC n
+//INC n
+opcodes[0x3C] = { "INC_n",&CPU::INC_n,&CPU::getA,&CPU::getNULL,4 };
+opcodes[0x04] = { "INC_n",&CPU::INC_n,&CPU::getB,&CPU::getNULL,4 };
+opcodes[0x0C] = { "INC_n",&CPU::INC_n,&CPU::getC,&CPU::getNULL,4 };
+opcodes[0x14] = { "INC_n",&CPU::INC_n,&CPU::getD,&CPU::getNULL,4 };
+opcodes[0x1C] = { "INC_n",&CPU::INC_n,&CPU::getE,&CPU::getNULL,4 };
+opcodes[0x24] = { "INC_n",&CPU::INC_n,&CPU::getH,&CPU::getNULL,4 };
+opcodes[0x2C] = { "INC_n",&CPU::INC_n,&CPU::getL,&CPU::getNULL,4 };
+//write to memory
+opcodes[0x34] = { "INC_$HL",&CPU::INC_$HL,&CPU::get$HL,&CPU::getNULL,12 };
+#pragma endregion
+#pragma region DEC n
+//DEC n
+opcodes[0x3D] = { "DEC_n",&CPU::DEC_n,&CPU::getA,&CPU::getNULL,4 };
+opcodes[0x05] = { "DEC_n",&CPU::DEC_n,&CPU::getB,&CPU::getNULL,4 };
+opcodes[0x0D] = { "DEC_n",&CPU::DEC_n,&CPU::getC,&CPU::getNULL,4 };
+opcodes[0x15] = { "DEC_n",&CPU::DEC_n,&CPU::getD,&CPU::getNULL,4 };
+opcodes[0x1D] = { "DEC_n",&CPU::DEC_n,&CPU::getE,&CPU::getNULL,4 };
+opcodes[0x25] = { "DEC_n",&CPU::DEC_n,&CPU::getH,&CPU::getNULL,4 };
+opcodes[0x2D] = { "DEC_n",&CPU::DEC_n,&CPU::getL,&CPU::getNULL,4 };
+//write to memory
+opcodes[0x35] = { "DEC_$HL",&CPU::DEC_$HL,&CPU::get$HL,&CPU::getNULL,12 };
+#pragma endregion
+
+#pragma region ADD HL,n
+//ADD HL,n
+opcodes[0x09] = { "ADD_HL_n",&CPU::ADD_HL_n,&CPU::getNULL,&CPU::getBC,8 };
+opcodes[0x19] = { "ADD_HL_n",&CPU::ADD_HL_n,&CPU::getNULL,&CPU::getDE,8 };
+opcodes[0x29] = { "ADD_HL_n",&CPU::ADD_HL_n,&CPU::getNULL,&CPU::getHL,8 };
+opcodes[0x39] = { "ADD_HL_n",&CPU::ADD_HL_n,&CPU::getNULL,&CPU::getSP,8 };
+#pragma endregion
+
+#pragma region ADD SP,n
+//ADD SP,n
+opcodes[0xE8] = { "ADD_SP_n",&CPU::ADD_SP_n,&CPU::getNULL,&CPU::getN,16 };
+#pragma endregion
+
+#pragma region INC nn
+//INC nn
+opcodes[0x03] = { "INC_nn",&CPU::INC_nn,&CPU::getBC,&CPU::getNULL,8 };
+opcodes[0x13] = { "INC_nn",&CPU::INC_nn,&CPU::getDE,&CPU::getNULL,8 };
+opcodes[0x23] = { "INC_nn",&CPU::INC_nn,&CPU::getHL,&CPU::getNULL,8 };
+opcodes[0x33] = { "INC_nn",&CPU::INC_nn,&CPU::getSP,&CPU::getNULL,8 };
+#pragma endregion
+
+#pragma region DEC nn
+//DEC nn
+opcodes[0x0B] = { "DEC_nn",&CPU::DEC_nn,&CPU::getBC,&CPU::getNULL,8 };
+opcodes[0x1B] = { "DEC_nn",&CPU::DEC_nn,&CPU::getDE,&CPU::getNULL,8 };
+opcodes[0x2B] = { "DEC_nn",&CPU::DEC_nn,&CPU::getHL,&CPU::getNULL,8 };
+opcodes[0x3B] = { "DEC_nn",&CPU::DEC_nn,&CPU::getSP,&CPU::getNULL,8 };
+#pragma endregion
+
+#pragma region SWAP n
+//SWAP n
+opcodes[0xCB37] = { "SWAP_n",&CPU::SWAP_n,&CPU::getA,&CPU::getNULL,8 };
+opcodes[0xCB30] = { "SWAP_n",&CPU::SWAP_n,&CPU::getB,&CPU::getNULL,8 };
+opcodes[0xCB31] = { "SWAP_n",&CPU::SWAP_n,&CPU::getC,&CPU::getNULL,8 };
+opcodes[0xCB32] = { "SWAP_n",&CPU::SWAP_n,&CPU::getD,&CPU::getNULL,8 };
+opcodes[0xCB33] = { "SWAP_n",&CPU::SWAP_n,&CPU::getE,&CPU::getNULL,8 };
+opcodes[0xCB34] = { "SWAP_n",&CPU::SWAP_n,&CPU::getH,&CPU::getNULL,8 };
+opcodes[0xCB35] = { "SWAP_n",&CPU::SWAP_n,&CPU::getL,&CPU::getNULL,8 };
+//write to memory
+opcodes[0xCB36] = { "SWAP_$HL",&CPU::SWAP_$HL,&CPU::getHL,&CPU::getNULL,16 };
+#pragma endregion
+
+#pragma region DAA
+//DAA
+opcodes[0x27] = { "DAA",&CPU::DAA,&CPU::getNULL,&CPU::getNULL,4 };
+#pragma endregion
+
+#pragma region CPL
+//CPL
+opcodes[0x2F] = { "CPL",&CPU::CPL,&CPU::getNULL,&CPU::getNULL,4 };
+#pragma endregion
+
+#pragma region CCF
+//CCF
+opcodes[0x3F] = { "CCF",&CPU::CCF,&CPU::getNULL,&CPU::getNULL,4 };
+#pragma endregion
+
+#pragma region SCF
+//SCF
+opcodes[0x37] = { "SCF",&CPU::SCF,&CPU::getNULL,&CPU::getNULL,4 };
+#pragma endregion
+
+#pragma region NOP
+//NOP
+opcodes[0x00] = { "NOP",&CPU::NOP,&CPU::getNULL,&CPU::getNULL,4 };
+#pragma endregion
+
+#pragma region HALT
+//HALT
+opcodes[0x76] = { "HALT",&CPU::HALT,&CPU::getNULL,&CPU::getNULL,4 };
+#pragma endregion
+
+#pragma region STOP
+//STOP
+opcodes[0x10] = opcodes[0x1000] = { "STOP",&CPU::STOP,&CPU::getNULL,&CPU::getNULL,4 };//changed
+#pragma endregion
+
+#pragma region DI
+//DI
+opcodes[0xF3] = { "DI",&CPU::DI,&CPU::getNULL,&CPU::getNULL,4 };
+#pragma endregion
+
+#pragma region EI
+//EI
+opcodes[0xFB] = { "EI",&CPU::EI,&CPU::getNULL,&CPU::getNULL,4 };
+#pragma endregion
+
+#pragma region RLCA
+//RLCA
+opcodes[0x07] = { "RLCA",&CPU::RLCA,&CPU::getNULL,&CPU::getNULL,4 };
+#pragma endregion
+
+#pragma region RLA
+//RLA
+opcodes[0x17] = { "RLA",&CPU::RLA,&CPU::getNULL,&CPU::getNULL,4 };
+#pragma endregion
+
+#pragma region RRCA
+//RRCA
+opcodes[0x0F] = { "RRCA",&CPU::RRCA,&CPU::getNULL,&CPU::getNULL,4 };
+#pragma endregion
+
+#pragma region RRA
+//RRA
+opcodes[0x1F] = { "RRA",&CPU::RRA,&CPU::getNULL,&CPU::getNULL,4 };
+#pragma endregion
+
+#pragma region RLC n
+//RLC n
+opcodes[0xCB07] = { "RLC_n",&CPU::RLC_n,&CPU::getA,&CPU::getNULL,8 };
+opcodes[0xCB00] = { "RLC_n",&CPU::RLC_n,&CPU::getB,&CPU::getNULL,8 };
+opcodes[0xCB01] = { "RLC_n",&CPU::RLC_n,&CPU::getC,&CPU::getNULL,8 };
+opcodes[0xCB02] = { "RLC_n",&CPU::RLC_n,&CPU::getD,&CPU::getNULL,8 };
+opcodes[0xCB03] = { "RLC_n",&CPU::RLC_n,&CPU::getE,&CPU::getNULL,8 };
+opcodes[0xCB04] = { "RLC_n",&CPU::RLC_n,&CPU::getH,&CPU::getNULL,8 };
+opcodes[0xCB05] = { "RLC_n",&CPU::RLC_n,&CPU::getL,&CPU::getNULL,8 };
+//write to memory
+opcodes[0xCB06] = { "RLC_$HL",&CPU::RLC_$HL,&CPU::getHL,&CPU::getNULL,16 };
+#pragma endregion
+
+#pragma region RL n
+//RL n
+opcodes[0xCB17] = { "RL_n",&CPU::RL_n,&CPU::getA,&CPU::getNULL,8 };
+opcodes[0xCB10] = { "RL_n",&CPU::RL_n,&CPU::getB,&CPU::getNULL,8 };
+opcodes[0xCB11] = { "RL_n",&CPU::RL_n,&CPU::getC,&CPU::getNULL,8 };
+opcodes[0xCB12] = { "RL_n",&CPU::RL_n,&CPU::getD,&CPU::getNULL,8 };
+opcodes[0xCB13] = { "RL_n",&CPU::RL_n,&CPU::getE,&CPU::getNULL,8 };
+opcodes[0xCB14] = { "RL_n",&CPU::RL_n,&CPU::getH,&CPU::getNULL,8 };
+opcodes[0xCB15] = { "RL_n",&CPU::RL_n,&CPU::getL,&CPU::getNULL,8 };
+//write to memory
+opcodes[0xCB16] = { "RL_$HL",&CPU::RL_$HL,&CPU::getHL,&CPU::getNULL,16 };
+#pragma endregion
+
+#pragma region RRC n
+//RRC n
+opcodes[0xCB0F] = { "RRC_n",&CPU::RRC_n,&CPU::getA,&CPU::getNULL,8 };
+opcodes[0xCB08] = { "RRC_n",&CPU::RRC_n,&CPU::getB,&CPU::getNULL,8 };
+opcodes[0xCB09] = { "RRC_n",&CPU::RRC_n,&CPU::getC,&CPU::getNULL,8 };
+opcodes[0xCB0A] = { "RRC_n",&CPU::RRC_n,&CPU::getD,&CPU::getNULL,8 };
+opcodes[0xCB0B] = { "RRC_n",&CPU::RRC_n,&CPU::getE,&CPU::getNULL,8 };
+opcodes[0xCB0C] = { "RRC_n",&CPU::RRC_n,&CPU::getH,&CPU::getNULL,8 };
+opcodes[0xCB0D] = { "RRC_n",&CPU::RRC_n,&CPU::getL,&CPU::getNULL,8 };
+//write to memory
+opcodes[0xCB0E] = { "RRC_$HL",&CPU::RRC_$HL,&CPU::getHL,&CPU::getNULL,16 };
+#pragma endregion
+
+#pragma region RR n
+//RR n
+opcodes[0xCB1F] = { "RR_n",&CPU::RR_n,&CPU::getA,&CPU::getNULL,8 };
+opcodes[0xCB18] = { "RR_n",&CPU::RR_n,&CPU::getB,&CPU::getNULL,8 };
+opcodes[0xCB19] = { "RR_n",&CPU::RR_n,&CPU::getC,&CPU::getNULL,8 };
+opcodes[0xCB1A] = { "RR_n",&CPU::RR_n,&CPU::getD,&CPU::getNULL,8 };
+opcodes[0xCB1B] = { "RR_n",&CPU::RR_n,&CPU::getE,&CPU::getNULL,8 };
+opcodes[0xCB1C] = { "RR_n",&CPU::RR_n,&CPU::getH,&CPU::getNULL,8 };
+opcodes[0xCB1D] = { "RR_n",&CPU::RR_n,&CPU::getL,&CPU::getNULL,8 };
+//write to memory
+opcodes[0xCB1E] = { "RR_$HL",&CPU::RR_$HL,&CPU::getHL,&CPU::getNULL,16 };
+#pragma endregion
+
+#pragma region SLA n
+//SLA n
+opcodes[0xCB27] = { "SLA_n",&CPU::SLA_n,&CPU::getA,&CPU::getNULL,8 };
+opcodes[0xCB20] = { "SLA_n",&CPU::SLA_n,&CPU::getB,&CPU::getNULL,8 };
+opcodes[0xCB21] = { "SLA_n",&CPU::SLA_n,&CPU::getC,&CPU::getNULL,8 };
+opcodes[0xCB22] = { "SLA_n",&CPU::SLA_n,&CPU::getD,&CPU::getNULL,8 };
+opcodes[0xCB23] = { "SLA_n",&CPU::SLA_n,&CPU::getE,&CPU::getNULL,8 };
+opcodes[0xCB24] = { "SLA_n",&CPU::SLA_n,&CPU::getH,&CPU::getNULL,8 };
+opcodes[0xCB25] = { "SLA_n",&CPU::SLA_n,&CPU::getL,&CPU::getNULL,8 };
+//write to memory
+opcodes[0xCB26] = { "SLA_$HL",&CPU::SLA_$HL,&CPU::getHL,&CPU::getNULL,16 };
+#pragma endregion
+#pragma region SRA n
+//SRA n
+opcodes[0xCB2F] = { "SRA_n",&CPU::SRA_n,&CPU::getA,&CPU::getNULL,8 };
+opcodes[0xCB28] = { "SRA_n",&CPU::SRA_n,&CPU::getB,&CPU::getNULL,8 };
+opcodes[0xCB29] = { "SRA_n",&CPU::SRA_n,&CPU::getC,&CPU::getNULL,8 };
+opcodes[0xCB2A] = { "SRA_n",&CPU::SRA_n,&CPU::getD,&CPU::getNULL,8 };
+opcodes[0xCB2B] = { "SRA_n",&CPU::SRA_n,&CPU::getE,&CPU::getNULL,8 };
+opcodes[0xCB2C] = { "SRA_n",&CPU::SRA_n,&CPU::getH,&CPU::getNULL,8 };
+opcodes[0xCB2D] = { "SRA_n",&CPU::SRA_n,&CPU::getL,&CPU::getNULL,8 };
+//write to memory
+opcodes[0xCB2E] = { "SRA_$HL",&CPU::SRA_$HL,&CPU::getHL,&CPU::getNULL,16 };
+#pragma endregion
+
+#pragma region SRL n
+//SRL n
+opcodes[0xCB3F] = { "SRL_n",&CPU::SRL_n,&CPU::getA,&CPU::getNULL,8 };
+opcodes[0xCB38] = { "SRL_n",&CPU::SRL_n,&CPU::getB,&CPU::getNULL,8 };
+opcodes[0xCB39] = { "SRL_n",&CPU::SRL_n,&CPU::getC,&CPU::getNULL,8 };
+opcodes[0xCB3A] = { "SRL_n",&CPU::SRL_n,&CPU::getD,&CPU::getNULL,8 };
+opcodes[0xCB3B] = { "SRL_n",&CPU::SRL_n,&CPU::getE,&CPU::getNULL,8 };
+opcodes[0xCB3C] = { "SRL_n",&CPU::SRL_n,&CPU::getH,&CPU::getNULL,8 };
+opcodes[0xCB3D] = { "SRL_n",&CPU::SRL_n,&CPU::getL,&CPU::getNULL,8 };
+//write to memory
+opcodes[0xCB3E] = { "SRL_$HL",&CPU::SRL_$HL,&CPU::getHL,&CPU::getNULL,16 };
+#pragma endregion
+
+#pragma region BIT (n),r
+//BIT (n),r
+
+opcodes[0xCB40] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT0,&CPU::getB,8 };
+opcodes[0xCB41] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT0,&CPU::getC,8 };
+opcodes[0xCB42] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT0,&CPU::getD,8 };
+opcodes[0xCB43] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT0,&CPU::getE,8 };
+opcodes[0xCB44] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT0,&CPU::getH,8 };
+opcodes[0xCB45] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT0,&CPU::getL,8 };
+//read from memory
+opcodes[0xCB46] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT0,&CPU::get$HL,16 };
+opcodes[0xCB47] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT0,&CPU::getA,8 };
+
+opcodes[0xCB48] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT1,&CPU::getB,8 };
+opcodes[0xCB49] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT1,&CPU::getC,8 };
+opcodes[0xCB4A] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT1,&CPU::getD,8 };
+opcodes[0xCB4B] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT1,&CPU::getE,8 };
+opcodes[0xCB4C] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT1,&CPU::getH,8 };
+opcodes[0xCB4D] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT1,&CPU::getL,8 };
+//read from memory										
+opcodes[0xCB4E] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT1,&CPU::get$HL,16 };
+opcodes[0xCB4F] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT1,&CPU::getA,8 };
+
+opcodes[0xCB50] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT2,&CPU::getB,8 };
+opcodes[0xCB51] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT2,&CPU::getC,8 };
+opcodes[0xCB52] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT2,&CPU::getD,8 };
+opcodes[0xCB53] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT2,&CPU::getE,8 };
+opcodes[0xCB54] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT2,&CPU::getH,8 };
+opcodes[0xCB55] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT2,&CPU::getL,8 };
+//read from memory										  
+opcodes[0xCB56] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT2,&CPU::get$HL,16 };
+opcodes[0xCB57] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT2,&CPU::getA,8 };
+
+opcodes[0xCB58] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT3,&CPU::getB,8 };
+opcodes[0xCB59] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT3,&CPU::getC,8 };
+opcodes[0xCB5A] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT3,&CPU::getD,8 };
+opcodes[0xCB5B] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT3,&CPU::getE,8 };
+opcodes[0xCB5C] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT3,&CPU::getH,8 };
+opcodes[0xCB5D] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT3,&CPU::getL,8 };
+//read from memory										 
+opcodes[0xCB5E] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT3,&CPU::get$HL,16 };
+opcodes[0xCB5F] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT3,&CPU::getA,8 };
+
+opcodes[0xCB60] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT4,&CPU::getB,8 };
+opcodes[0xCB61] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT4,&CPU::getC,8 };
+opcodes[0xCB62] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT4,&CPU::getD,8 };
+opcodes[0xCB63] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT4,&CPU::getE,8 };
+opcodes[0xCB64] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT4,&CPU::getH,8 };
+opcodes[0xCB65] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT4,&CPU::getL,8 };
+//read from memory										 
+opcodes[0xCB66] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT4,&CPU::get$HL,16 };
+opcodes[0xCB67] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT4,&CPU::getA,8 };
+
+opcodes[0xCB68] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT5,&CPU::getB,8 };
+opcodes[0xCB69] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT5,&CPU::getC,8 };
+opcodes[0xCB6A] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT5,&CPU::getD,8 };
+opcodes[0xCB6B] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT5,&CPU::getE,8 };
+opcodes[0xCB6C] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT5,&CPU::getH,8 };
+opcodes[0xCB6D] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT5,&CPU::getL,8 };
+//read from memory										 
+opcodes[0xCB6E] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT5,&CPU::get$HL,16 };
+opcodes[0xCB6F] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT5,&CPU::getA,8 };
+
+opcodes[0xCB70] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT6,&CPU::getB,8 };
+opcodes[0xCB71] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT6,&CPU::getC,8 };
+opcodes[0xCB72] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT6,&CPU::getD,8 };
+opcodes[0xCB73] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT6,&CPU::getE,8 };
+opcodes[0xCB74] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT6,&CPU::getH,8 };
+opcodes[0xCB75] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT6,&CPU::getL,8 };
+//read from memory										  
+opcodes[0xCB76] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT6,&CPU::get$HL,16 };
+opcodes[0xCB77] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT6,&CPU::getA,8 };
+
+opcodes[0xCB78] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT7,&CPU::getB,8 };
+opcodes[0xCB79] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT7,&CPU::getC,8 };
+opcodes[0xCB7A] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT7,&CPU::getD,8 };
+opcodes[0xCB7B] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT7,&CPU::getE,8 };
+opcodes[0xCB7C] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT7,&CPU::getH,8 };
+opcodes[0xCB7D] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT7,&CPU::getL,8 };
+//read from memory										 
+opcodes[0xCB7E] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT7,&CPU::get$HL,16 };
+opcodes[0xCB7F] = { "BIT_$n_r",&CPU::BIT_$n_r,&CPU::getBIT7,&CPU::getA,8 };
+#pragma endregion
+
+#pragma region RES (n),r
+//RES (n),r
+opcodes[0xCB80] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT0,&CPU::getB,8 };
+opcodes[0xCB81] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT0,&CPU::getC,8 };
+opcodes[0xCB82] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT0,&CPU::getD,8 };
+opcodes[0xCB83] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT0,&CPU::getE,8 };
+opcodes[0xCB84] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT0,&CPU::getH,8 };
+opcodes[0xCB85] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT0,&CPU::getL,8 };
+//write to memory
+opcodes[0xCB86] = { "RES_$n_$HL",&CPU::RES_$n_$HL,&CPU::getBIT0,&CPU::getNULL,16 };
+opcodes[0xCB87] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT0,&CPU::getA,8 };
+
+opcodes[0xCB88] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT1,&CPU::getB,8 };
+opcodes[0xCB89] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT1,&CPU::getC,8 };
+opcodes[0xCB8A] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT1,&CPU::getD,8 };
+opcodes[0xCB8B] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT1,&CPU::getE,8 };
+opcodes[0xCB8C] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT1,&CPU::getH,8 };
+opcodes[0xCB8D] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT1,&CPU::getL,8 };
+//read from memory
+opcodes[0xCB8E] = { "RES_$n_$HL",&CPU::RES_$n_$HL,&CPU::getBIT1,&CPU::getNULL,16 };
+opcodes[0xCB8F] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT1,&CPU::getA,8 };
+
+opcodes[0xCB90] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT2,&CPU::getB,8 };
+opcodes[0xCB91] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT2,&CPU::getC,8 };
+opcodes[0xCB92] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT2,&CPU::getD,8 };
+opcodes[0xCB93] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT2,&CPU::getE,8 };
+opcodes[0xCB94] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT2,&CPU::getH,8 };
+opcodes[0xCB95] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT2,&CPU::getL,8 };
+//read from memory
+opcodes[0xCB96] = { "RES_$n_$HL",&CPU::RES_$n_$HL,&CPU::getBIT2,&CPU::getNULL,16 };
+opcodes[0xCB97] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT2,&CPU::getA,8 };
+
+opcodes[0xCB98] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT3,&CPU::getB,8 };
+opcodes[0xCB99] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT3,&CPU::getC,8 };
+opcodes[0xCB9A] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT3,&CPU::getD,8 };
+opcodes[0xCB9B] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT3,&CPU::getE,8 };
+opcodes[0xCB9C] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT3,&CPU::getH,8 };
+opcodes[0xCB9D] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT3,&CPU::getL,8 };
+//read from memory
+opcodes[0xCB9E] = { "RES_$n_$HL",&CPU::RES_$n_$HL,&CPU::getBIT3,&CPU::getNULL,16 };
+opcodes[0xCB9F] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT3,&CPU::getA,8 };
+
+opcodes[0xCBA0] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT4,&CPU::getB,8 };
+opcodes[0xCBA1] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT4,&CPU::getC,8 };
+opcodes[0xCBA2] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT4,&CPU::getD,8 };
+opcodes[0xCBA3] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT4,&CPU::getE,8 };
+opcodes[0xCBA4] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT4,&CPU::getH,8 };
+opcodes[0xCBA5] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT4,&CPU::getL,8 };
+//read from memory
+opcodes[0xCBA6] = { "RES_$n_$HL",&CPU::RES_$n_$HL,&CPU::getBIT4,&CPU::getNULL,16 };
+opcodes[0xCBA7] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT4,&CPU::getA,8 };
+
+opcodes[0xCBA8] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT5,&CPU::getB,8 };
+opcodes[0xCBA9] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT5,&CPU::getC,8 };
+opcodes[0xCBAA] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT5,&CPU::getD,8 };
+opcodes[0xCBAB] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT5,&CPU::getE,8 };
+opcodes[0xCBAC] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT5,&CPU::getH,8 };
+opcodes[0xCBAD] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT5,&CPU::getL,8 };
+//read from memory
+opcodes[0xCBAE] = { "RES_$n_$HL",&CPU::RES_$n_$HL,&CPU::getBIT5,&CPU::getNULL,16 };
+opcodes[0xCBAF] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT5,&CPU::getA,8 };
+
+opcodes[0xCBB0] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT6,&CPU::getB,8 };
+opcodes[0xCBB1] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT6,&CPU::getC,8 };
+opcodes[0xCBB2] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT6,&CPU::getD,8 };
+opcodes[0xCBB3] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT6,&CPU::getE,8 };
+opcodes[0xCBB4] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT6,&CPU::getH,8 };
+opcodes[0xCBB5] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT6,&CPU::getL,8 };
+//read from memory
+opcodes[0xCBB6] = { "RES_$n_$HL",&CPU::RES_$n_$HL,&CPU::getBIT6,&CPU::getNULL,16 };
+opcodes[0xCBB7] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT6,&CPU::getA,8 };
+
+opcodes[0xCBB8] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT7,&CPU::getB,8 };
+opcodes[0xCBB9] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT7,&CPU::getC,8 };
+opcodes[0xCBBA] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT7,&CPU::getD,8 };
+opcodes[0xCBBB] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT7,&CPU::getE,8 };
+opcodes[0xCBBC] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT7,&CPU::getH,8 };
+opcodes[0xCBBD] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT7,&CPU::getL,8 };
+//read from memory
+opcodes[0xCBBE] = { "RES_$n_$HL",&CPU::RES_$n_$HL,&CPU::getBIT7,&CPU::getNULL,16 };
+opcodes[0xCBBF] = { "RES_$n_r",&CPU::RES_$n_r,&CPU::getBIT7,&CPU::getA,8 };
+#pragma endregion
+
+#pragma region SET (n),r
+//SET (n),r
+opcodes[0xCBC0] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT0,&CPU::getB,8 };
+opcodes[0xCBC1] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT0,&CPU::getC,8 };
+opcodes[0xCBC2] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT0,&CPU::getD,8 };
+opcodes[0xCBC3] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT0,&CPU::getE,8 };
+opcodes[0xCBC4] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT0,&CPU::getH,8 };
+opcodes[0xCBC5] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT0,&CPU::getL,8 };
+//write to memory
+opcodes[0xCBC6] = { "SET_$n_$HL",&CPU::SET_$n_$HL,&CPU::getBIT0,&CPU::getHL,16 };
+opcodes[0xCBC7] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT0,&CPU::getA,8 };
+
+opcodes[0xCBC8] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT1,&CPU::getB,8 };
+opcodes[0xCBC9] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT1,&CPU::getC,8 };
+opcodes[0xCBCA] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT1,&CPU::getD,8 };
+opcodes[0xCBCB] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT1,&CPU::getE,8 };
+opcodes[0xCBCC] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT1,&CPU::getH,8 };
+opcodes[0xCBCD] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT1,&CPU::getL,8 };
+//read from memory										
+opcodes[0xCBCE] = { "SET_$n_$HL",&CPU::SET_$n_$HL,&CPU::getBIT1,&CPU::getHL,16 };
+opcodes[0xCBCF] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT1,&CPU::getA,8 };
+
+opcodes[0xCBD0] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT2,&CPU::getB,8 };
+opcodes[0xCBD1] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT2,&CPU::getC,8 };
+opcodes[0xCBD2] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT2,&CPU::getD,8 };
+opcodes[0xCBD3] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT2,&CPU::getE,8 };
+opcodes[0xCBD4] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT2,&CPU::getH,8 };
+opcodes[0xCBD5] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT2,&CPU::getL,8 };
+//read from memory										  
+opcodes[0xCBD6] = { "SET_$n_$HL",&CPU::SET_$n_$HL,&CPU::getBIT2,&CPU::getHL,16 };
+opcodes[0xCBD7] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT2,&CPU::getA,8 };
+
+opcodes[0xCBD8] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT3,&CPU::getB,8 };
+opcodes[0xCBD9] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT3,&CPU::getC,8 };
+opcodes[0xCBDA] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT3,&CPU::getD,8 };
+opcodes[0xCBDB] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT3,&CPU::getE,8 };
+opcodes[0xCBDC] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT3,&CPU::getH,8 };
+opcodes[0xCBDD] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT3,&CPU::getL,8 };
+//read from memory										  
+opcodes[0xCBDE] = { "SET_$n_$HL",&CPU::SET_$n_$HL,&CPU::getBIT3,&CPU::getHL,16 };
+opcodes[0xCBDF] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT3,&CPU::getA,8 };
+
+opcodes[0xCBE0] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT4,&CPU::getB,8 };
+opcodes[0xCBE1] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT4,&CPU::getC,8 };
+opcodes[0xCBE2] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT4,&CPU::getD,8 };
+opcodes[0xCBE3] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT4,&CPU::getE,8 };
+opcodes[0xCBE4] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT4,&CPU::getH,8 };
+opcodes[0xCBE5] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT4,&CPU::getL,8 };
+//read from memory										 
+opcodes[0xCBE6] = { "SET_$n_$HL",&CPU::SET_$n_$HL,&CPU::getBIT4,&CPU::getHL,16 };
+opcodes[0xCBE7] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT4,&CPU::getA,8 };
+
+opcodes[0xCBE8] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT5,&CPU::getB,8 };
+opcodes[0xCBE9] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT5,&CPU::getC,8 };
+opcodes[0xCBEA] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT5,&CPU::getD,8 };
+opcodes[0xCBEB] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT5,&CPU::getE,8 };
+opcodes[0xCBEC] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT5,&CPU::getH,8 };
+opcodes[0xCBED] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT5,&CPU::getL,8 };
+//read from memory										  
+opcodes[0xCBEE] = { "SET_$n_$HL",&CPU::SET_$n_$HL,&CPU::getBIT5,&CPU::getHL,16 };
+opcodes[0xCBEF] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT5,&CPU::getA,8 };
+
+opcodes[0xCBF0] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT6,&CPU::getB,8 };
+opcodes[0xCBF1] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT6,&CPU::getC,8 };
+opcodes[0xCBF2] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT6,&CPU::getD,8 };
+opcodes[0xCBF3] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT6,&CPU::getE,8 };
+opcodes[0xCBF4] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT6,&CPU::getH,8 };
+opcodes[0xCBF5] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT6,&CPU::getL,8 };
+//read from memory										  
+opcodes[0xCBF6] = { "SET_$n_$HL",&CPU::SET_$n_$HL,&CPU::getBIT6,&CPU::getHL,16 };
+opcodes[0xCBF7] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT6,&CPU::getA,8 };
+
+opcodes[0xCBF8] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT7,&CPU::getB,8 };
+opcodes[0xCBF9] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT7,&CPU::getC,8 };
+opcodes[0xCBFA] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT7,&CPU::getD,8 };
+opcodes[0xCBFB] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT7,&CPU::getE,8 };
+opcodes[0xCBFC] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT7,&CPU::getH,8 };
+opcodes[0xCBFD] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT7,&CPU::getL,8 };
+//read from memory										  
+opcodes[0xCBFE] = { "SET_$n_$HL",&CPU::SET_$n_$HL,&CPU::getBIT7,&CPU::getHL,16 };
+opcodes[0xCBFF] = { "SET_$n_r",&CPU::SET_$n_r,&CPU::getBIT7,&CPU::getA,8 };
+#pragma endregion
+
+
+
+#pragma region JP nn
+//JP nn
+opcodes[0xC3] = { "JP_nn",&CPU::JP_nn,&CPU::getNN,&CPU::getNULL,16 };
+#pragma endregion
+
+#pragma region JP cc,nn
+//JP cc,nn
+opcodes[0xC2] = { "JP_cc_nn",&CPU::JP_cc_nn,&CPU::NZFlag,&CPU::getNN,12 };
+opcodes[0xCA] = { "JP_cc_nn",&CPU::JP_cc_nn,&CPU::ZFlag,&CPU::getNN,12 };
+opcodes[0xD2] = { "JP_cc_nn",&CPU::JP_cc_nn,&CPU::NCFlag,&CPU::getNN,12 };
+opcodes[0xDA] = { "JP_cc_nn",&CPU::JP_cc_nn,&CPU::CFlag,&CPU::getNN,12 };
+#pragma endregion
+
+#pragma region JP HL
+//JP HL
+opcodes[0xE9] = { "JP_HL",&CPU::JP_HL,&CPU::getNULL,&CPU::getNULL,4 };
+#pragma endregion
+
+#pragma region JR n
+//JR n
+opcodes[0x18] = { "JR_n",&CPU::JR_n,&CPU::getN,&CPU::getNULL,12 };//changed 8 to 12
+#pragma endregion
+
+#pragma region JR cc,n
+//JR cc,n
+opcodes[0x20] = { "JR_cc_n",&CPU::JR_cc_n,&CPU::NZFlag,&CPU::getN,8 };
+opcodes[0x28] = { "JR_cc_n",&CPU::JR_cc_n,&CPU::ZFlag,&CPU::getN,8 };
+opcodes[0x30] = { "JR_cc_n",&CPU::JR_cc_n,&CPU::NCFlag,&CPU::getN,8 };
+opcodes[0x38] = { "JR_cc_n",&CPU::JR_cc_n,&CPU::CFlag,&CPU::getN,8 };
+#pragma endregion
+
+#pragma region CALL nn
+//CALL nn
+opcodes[0xCD] = { "CALL_nn",&CPU::CALL_nn,&CPU::getNN,&CPU::getNULL,24 };
+#pragma endregion
+
+#pragma region CALL cc,nn
+//CALL cc,nn
+opcodes[0xC4] = { "CALL_cc_nn",&CPU::CALL_cc_nn,&CPU::NZFlag,&CPU::getNN,12 };
+opcodes[0xCC] = { "CALL_cc_nn",&CPU::CALL_cc_nn,&CPU::ZFlag,&CPU::getNN,12 };
+opcodes[0xD4] = { "CALL_cc_nn",&CPU::CALL_cc_nn,&CPU::NCFlag,&CPU::getNN,12 };
+opcodes[0xDC] = { "CALL_cc_nn",&CPU::CALL_cc_nn,&CPU::CFlag,&CPU::getNN,12 };
+#pragma endregion
+
+#pragma region RST n
+//RST n
+opcodes[0xC7] = { "RST_n",&CPU::RST_n,&CPU::getRST00,&CPU::getNULL,16 };
+opcodes[0xCF] = { "RST_n",&CPU::RST_n,&CPU::getRST08,&CPU::getNULL,16 };
+opcodes[0xD7] = { "RST_n",&CPU::RST_n,&CPU::getRST10,&CPU::getNULL,16 };
+opcodes[0xDF] = { "RST_n",&CPU::RST_n,&CPU::getRST18,&CPU::getNULL,16 };
+opcodes[0xE7] = { "RST_n",&CPU::RST_n,&CPU::getRST20,&CPU::getNULL,16 };
+opcodes[0xEF] = { "RST_n",&CPU::RST_n,&CPU::getRST28,&CPU::getNULL,16 };
+opcodes[0xF7] = { "RST_n",&CPU::RST_n,&CPU::getRST30,&CPU::getNULL,16 };
+opcodes[0xFF] = { "RST_n",&CPU::RST_n,&CPU::getRST38,&CPU::getNULL,16 };
+#pragma endregion
+#pragma region RET
+//RET
+opcodes[0xC9] = { "RET",&CPU::RET,&CPU::getNULL,&CPU::getNULL,16 };
+#pragma endregion
+#pragma region RET cc
+//RET cc
+opcodes[0xC0] = { "RET_cc",&CPU::RET_cc,&CPU::NZFlag,&CPU::getNULL,8 };
+opcodes[0xC8] = { "RET_cc",&CPU::RET_cc,&CPU::ZFlag,&CPU::getNULL,8 };
+opcodes[0xD0] = { "RET_cc",&CPU::RET_cc,&CPU::NCFlag,&CPU::getNULL,8 };
+opcodes[0xD8] = { "RET_cc",&CPU::RET_cc,&CPU::CFlag,&CPU::getNULL,8 };
+#pragma endregion
+#pragma region RETI
+//RETI
+opcodes[0xD9] = { "RETI",&CPU::RETI,&CPU::getNULL,&CPU::getNULL,16 };
+#pragma endregion

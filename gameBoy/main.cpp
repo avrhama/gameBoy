@@ -11,77 +11,96 @@
 #include "DISPLAY.h"
 #include "MMU.h"
 #include "INTERRUPT.h"
+#include "JOYPAD.h"
 #include <thread>
+#include "Structures.h"
 #include "pipeChannel.h"
 #include <conio.h>
 using namespace std;
-int testPipe() {
 
-
-		char c;
-		bool f;
-		pipeChannel p;
-		cin >> c;
-		if (c == 'c') {
-			f = p.createPipe(1, "Pipe", 100, 100);
-			printf("created?:%s\n", f ? "true" : "false");
-			if (!f)
-				f = p.wait();
-			printf("connect?:%s\n", f ? "true" : "false");
-			if (f) {
-				p.wBuffer[0] ='a';
-				f=p.write(1);
-				p.wBuffer[0] = 'b';
-				f = p.write(1);
-				printf("write?:%s\n", f ? "true" : "false");
-			}
+void pipeRecive(BUS* bus, uint16_t opcode,uint16_t lastOpcode, int steps,string funcName) {
+	if (bus->pipeEnable) {
+		bus->p->read(14);
+		uint16_t otherOp = bus->p->rBuffer[0];
+		if (bus->p->rBuffer[0] == 0xCB) {
+			otherOp = 0xCB00 | bus->p->rBuffer[1];
 		}
-		else {
-			
-			f = p.createPipe(0, "Pipe", 100, 100);
-			if (!f)
-				f = p.wait();
-			printf("connect?:%s\n", f ? "true" : "false");
-			if (f) {
-				f = p.read();
+		uint16_t otherPC = bus->p->rBuffer[2] << 8 | bus->p->rBuffer[3];
 
-				printf("read?:%s\n", f ? "true" : "false");
-				if (f)
-					printf("read:%c\n", p.rBuffer[0]);
-
+		uint16_t otherAF = bus->p->rBuffer[4] << 8 | bus->p->rBuffer[5];
+		uint16_t otherBC = bus->p->rBuffer[6] << 8 | bus->p->rBuffer[7];
+		uint16_t otherDE = bus->p->rBuffer[8] << 8 | bus->p->rBuffer[9];
+		uint16_t otherHL = bus->p->rBuffer[10] << 8 | bus->p->rBuffer[11];
+		uint16_t otherSP = bus->p->rBuffer[12] << 8 | bus->p->rBuffer[13];
+		int errorCode = -1;
+		if (otherOp != opcode) {
+			errorCode = 0;
+		}
+		else if (otherPC != bus->cpu->PC) {
+			errorCode = 1;
+		}
+		else if (otherAF != bus->cpu->AF) {
+			errorCode = 2;
+		}
+		else if (otherBC != bus->cpu->BC) {
+			errorCode = 3;
+		}
+		else if (otherDE != bus->cpu->DE) {
+			errorCode = 4;
+		}else if (otherHL != bus->cpu->HL) {
+			errorCode = 5;
+		}
+		else if (otherSP != bus->cpu->SP) {
+			errorCode = 6;
+		}
+		/*for (int i = 0;i < 0xffff;i++) {
+			if (bus->p->rBuffer[14 + i] != bus->mmu->read(i)) {
+				errorCode = 14 + i;
+				break;
 			}
+		}*/
+		bus->p->wBuffer[0] = 0;
+		if (errorCode!=-1) {//lastOpcode!=0xf0
 
+			bus->p->wBuffer[0] = 1;
+		}
+		bus->p->write();
+		if (bus->p->wBuffer[0] == 1) {
+			int x = 0;
 		}
 
-		p.close();
-		return 0;
-	
-}
-void displayThreadFunc(DISPLAY display)
-{
-	while (true) {
-		display.update();
+
 	}
-	// do stuff...
-}
-uint16_t AF = 0;
-uint8_t* getA() {
-	return (uint8_t*)&AF + 1;
-}
-uint8_t* getF() {
-	return (uint8_t*)&AF;
-}
-uint16_t BC = 0;
-uint8_t* getB() {
-	return (uint8_t*)&BC + 1;
-}
-uint8_t* getC() {
-	return (uint8_t*)&BC;
 }
 int main(void) {
-	//testPipe();
+
+	
+	
+	//testRun();
 	//return 0;
-	AF = 0xABCD;
+	string romsPaths[18] =
+	{ 
+	"test\\cpu_instrs\\cpu_instrs.gb",
+	"test\\cpu_instrs\\individual\\01-special.gb",//good
+	"test\\cpu_instrs\\individual\\02-interrupts.gb" ,//no answer
+		"test\\cpu_instrs\\individual\\03-op sp,hl.gb",//no answer
+	"test\\cpu_instrs\\individual\\04-op r,imm.gb",//good
+	"test\\cpu_instrs\\individual\\05-op rp.gb",//good
+	"test\\cpu_instrs\\individual\\06-ld r,r.gb",//good
+	"test\\cpu_instrs\\individual\\07-jr,jp,call,ret,rst.gb",//no answer-> crashed
+	"test\\cpu_instrs\\individual\\08-misc instrs.gb",//no answer
+	"test\\cpu_instrs\\individual\\09-op r,r.gb",//faild
+	"test\\cpu_instrs\\individual\\10-bit ops.gb",//good
+	"test\\cpu_instrs\\individual\\11-op a,(hl).gb",//faild
+	"test2\\daa.gb",
+	"roms\\alleyway.gb",
+	 "roms\\megaman.gb",
+	"roms\\pokemon.gb", 
+	"roms\\tetris.gb",
+	"roms\\mooneye-gb_hwtests\\acceptance\\add_sp_e_timing.gb"};//faild
+	uint8_t romIndex = 2;
+	//char * romPath = roms[5];
+	
 	//BC = 0x12FE;
 	//*getA() = *getC();
 	//printf("%02x\n", *getF());
@@ -89,29 +108,35 @@ int main(void) {
 	//return 0;
 	//const char* romPath = "alleyway.gb";
 	//const char* romPath = "megaman.gb";
-	const char* romPath = "test\\cpu_instrs\\individual\\03-op sp,hl.gb";
-	BUS  bus;
-	CPU cpu;
-	GPU gpu;
-	gpu.reset();
-	CARTRIDGE cartridge;
-	INTERRUPT interrupt;
-	interrupt.reset();
-	MMU mmu;
-	DISPLAY display(0, 0, 160, 144, 1);
-	bus.connectCPU(&cpu);
-	bus.connectMMU(&mmu);
-	bus.connectInterrupt(&interrupt);
-	bus.connectGPU(&gpu);
-	bus.connectDisplay(&display);
-	bus.insertCartridge(&cartridge);
-	cartridge.loadRom(romPath);
-	cartridge.load();
-	printf("title:%s\n", cartridge.title);
-	printf("rom banks count:%d\n", cartridge.romSize);
-	printf("romBank size:%d\n", cartridge.romBankSize);
-	printf("ram banks count:%d\n", cartridge.ramSize);
-	printf("romBank size:%d\n", cartridge.ramBankSize);
+	//const char* romPath = "test\\cpu_instrs\\individual\\03-op sp,hl.gb";
+	//const char* romPath = "pokemon.gb";
+	//
+	BUS * bus=new BUS();
+	CPU * cpu=new CPU();
+	GPU * gpu=new GPU();
+	gpu->reset();
+	CARTRIDGE * cartridge=new CARTRIDGE();
+	INTERRUPT * interrupt=new INTERRUPT();
+	JOYPAD * joypad=new JOYPAD();
+	interrupt->reset();
+	MMU * mmu=new MMU();
+	DISPLAY *display=new DISPLAY(0, 0, 160, 144, 1);
+	bus->connectCPU(cpu);
+	bus->connectMMU(mmu);
+	bus->connectInterrupt(interrupt);
+	bus->connectGPU(gpu);
+	bus->connectDisplay(display);
+	bus->connectCartridge(cartridge);
+	bus->connectJoypad(joypad);
+	cartridge->loadRom(romsPaths[romIndex]);
+	cartridge->load();
+	cpu->reset();
+	printf("title:%s\n", cartridge->title);
+	printf("rom banks count:%d\n", cartridge->romSize);
+	printf("romBank size:%d\n", cartridge->romBankSize);
+	printf("ram banks count:%d\n", cartridge->ramSize);
+	printf("romBank size:%d\n", cartridge->ramBankSize);
+	
 	
 	ofstream myfile;
 	myfile.open("C:\\Users\\Brain\\go\\src\\goboy\\goboy-0.4.2\\cmd\\goboy\\instructions_me.txt");
@@ -122,14 +147,13 @@ int main(void) {
 	//return 0;
 	uint16_t opcode;
 	int counter = 270274;
-	char d;
 	char buff[100];
 	unsigned char c = 0;
-	bus.pipeEnable = false;
+	bus->pipeEnable = false;
 	pipeChannel p;
-	bus.p = &p;
+	bus->p = &p;
 	bool f;
-	if (bus.pipeEnable) {
+	if (bus->pipeEnable) {
 		f = p.createPipe(0, "Pipe", 100, 100);
 
 		if (!f) {
@@ -144,120 +168,145 @@ int main(void) {
 	}
 	int renderTimer = 69905;
 	int renderCounter = 0;
-	do {
-		opcode = (uint16_t)*cpu.getN();
-		opcode = opcode == 0xCB ? 0XCB00 | *cpu.getN() : opcode;
-		if (opcode == 0x38) {
-			counter = counter + 0;
-		}
-#pragma region pipeChannelOpcode
-		if (bus.pipeEnable) {
-			f = p.read(1);
-			uint8_t o = p.rBuffer[0];
-			if (f) {
-				if ((p.rBuffer[0] & 0xff00) != 0xcb00) {
-					if (opcode != p.rBuffer[0]) {
-						printf("not same opcode me:%04x pipe:%04x steps:%d\n", opcode, p.rBuffer[0], 270274 - counter);
-						return 0;
-					}
-
-				}
-				else {
-					uint16_t pipeOpcode = (p.rBuffer[0] << 8 | p.rBuffer[1]);
-					if (opcode != pipeOpcode) {
-						printf("not same opcode me:%04x pipe:%04x steps:%d\n", opcode, pipeOpcode, 270274 - counter);
-						return 0;
-					}
-				}
-			}
-			else {
-				printf("faild to read\n");
-				return 0;
-			}
-			p.wBuffer[0] = 'a';
-			f = p.write(1);
-			if (!f) {
-				printf("faild to write\n");
-				return 0;
-			}
-			p.rBuffer[0] = 0;
-		}
-#pragma endregion
-#pragma region writeToFile
-		//myfile << "opcode:0x%01x PC:0x%01x SP:0x%01x AF:0x%01x BC:0x%01x DE:0x%01x HL:0x%01x\n", opcode, * (uint16_t*)cpu.PC, * (uint16_t*)cpu.getSP(), * (uint16_t*)cpu.getAF(), * (uint16_t*)cpu.getBC(), * (uint16_t*)cpu.getDE(), * (uint16_t*)cpu.getHL();
-				//if (counter >= 2000) {
-					//snprintf(buff, sizeof(buff), "opcode:0x%01x PC:0x%01x SP:0x%01x AF:0x%01x BC:0x%01x DE:0x%01x HL:0x%01x\n", opcode, cpu.PC, *(uint16_t*)cpu.getSP(), *(uint16_t*)cpu.getAF(), *(uint16_t*)cpu.getBC(), *(uint16_t*)cpu.getDE(), *(uint16_t*)cpu.getHL());
-					//myfile << buff;
-					//myfile.flush();
-				//}
-#pragma endregion	
-		counter--;
-		if (mmu.read(0xFF02) == 0x81) {
-			char t = mmu.read(0xFF01);
-			if (t != c) {
-				
-				printf("%04x\n",t);
-				c = t;
-			}
-		}
-		if (opcode != 0) {
-			 //printf("lineScan:%d LCD:%d\n", mmu.read(0xFF44), mmu.read(0xFF40));
-			//printf("first opcode:%u\n", opcode);
-			
-		}
-		cpu.Execute(opcode);
-		if (renderCounter == renderTimer)
-			gpu.drawTest();
-#pragma region pipeChannelExe
-		if (bus.pipeEnable) {
-			p.read(2);
-			if (p.rBuffer[0] != 0)
-			{
-				switch (p.rBuffer[0])
-				{
-				case 1:
-					printf("write mem not same address\n");
-					break;
-				case 2:
-					printf("write mem not same value\n");
-					break;
-				}
-			}
-		}
-#pragma endregion
-	} while(counter>0); //(cpu.PC != 0x100 && counter > 0);//||mmu.biosLoaded);//cpu.PC!=0x100
-
-	myfile.close();
-	std::thread displayThread(displayThreadFunc, display);
-	int x=0;
+	bool writeToFile = false;
+	uint8_t last_key = 1;
+	int x = 0;
 	int y = 0;
 	Scalar white = Scalar(255, 255, 255, 0);
-	Scalar black = Scalar(0, 0, 0,0);
+	Scalar black = Scalar(0, 0, 0, 0);
+	//std::thread displayThread(displayThreadFunc, display);
+	int cyclesInFrameCounter = 0;
+	int framesForSeconds = 60;
+	int cyclesInFrame = cpu->cpuFreq/framesForSeconds;
+	uint16_t lastopcode = 0;
+	int steps = 0;
+	while (true) {
+		do {
+			opcode = cpu->getOpcode();
+		
+			opcode = (opcode == 0xCB) ? 0XCB00 | cpu->getOpcode() : opcode;
+
+
+
+			if (opcode == 0x38) {
+				counter = counter + 0;
+			}
+#pragma region pipeChannelOpcode
+			if (bus->pipeEnable && false) {
+				f = p.read(1);
+				uint8_t o = p.rBuffer[0];
+				if (f) {
+					if ((p.rBuffer[0] & 0xff00) != 0xcb00) {
+						if (opcode != p.rBuffer[0]) {
+							printf("not same opcode me:%04x pipe:%04x steps:%d\n", opcode, p.rBuffer[0], 270274 - counter);
+							return 0;
+						}
+
+					}
+					else {
+						uint16_t pipeOpcode = (p.rBuffer[0] << 8 | p.rBuffer[1]);
+						if (opcode != pipeOpcode) {
+							printf("not same opcode me:%04x pipe:%04x steps:%d\n", opcode, pipeOpcode, 270274 - counter);
+							return 0;
+						}
+					}
+				}
+				else {
+					printf("faild to read\n");
+					return 0;
+				}
+				p.wBuffer[0] = 'a';
+				f = p.write(1);
+				if (!f) {
+					printf("faild to write\n");
+					return 0;
+				}
+				p.rBuffer[0] = 0;
+			}
+#pragma endregion
+#pragma region writeToFile
+			if (writeToFile) {
+				//myfile << "opcode:0x%01x PC:0x%01x SP:0x%01x AF:0x%01x BC:0x%01x DE:0x%01x HL:0x%01x\n", opcode, * (uint16_t*)cpu->PC, * (uint16_t*)cpu->getSP(), * (uint16_t*)cpu->getAF(), * (uint16_t*)cpu->getBC(), * (uint16_t*)cpu->getDE(), * (uint16_t*)cpu->getHL();
+						//if (counter >= 2000) {
+				snprintf(buff, sizeof(buff), "opcode:0x%01x PC:0x%01x SP:0x%01x AF:0x%01x BC:0x%01x DE:0x%01x HL:0x%01x\n", opcode, cpu->PC, *(uint16_t*)cpu->getSP(), *(uint16_t*)cpu->getAF(), *(uint16_t*)cpu->getBC(), *(uint16_t*)cpu->getDE(), *(uint16_t*)cpu->getHL());
+				myfile << buff;
+				myfile.flush();
+				//}
+			}
+#pragma endregion	
+			
+			if (opcode != 0) {
+				//printf("lineScan:%d LCD:%d\n", mmu->read(0xFF44), mmu->read(0xFF40));
+			   //printf("first opcode:%u\n", opcode);
+
+			}
+			
+			//cpu->Execute(opcode);
+			//pipeRecive(bus, opcode, lastopcode, steps,"Execute");
+		    cpu->ExecuteOpcode(opcode);
+			cpu->updateTimers();
+			//pipeRecive(bus, opcode, lastopcode, steps, "updateTimers");
+			gpu->tick();
+			//pipeRecive(bus, opcode, lastopcode, steps, "tick");
+			joypad->updateKeys();
+			interrupt->InterruptsHandler();
+			//pipeRecive(bus, opcode, lastopcode, steps, "InterruptsHandler");
+			lastopcode = opcode;
+			cyclesInFrameCounter += cpu->lastOpcodeCycles*4;
+			printf("speed:%d\n", interrupt->io[0x4D]>>7);
+			steps++;
+			/*if (renderCounter == renderTimer)
+				gpu->drawTest();*/
+#pragma region pipeChannelExe
+			if (bus->pipeEnable && false) {
+				p.read(2);
+				if (p.rBuffer[0] != 0)
+				{
+					switch (p.rBuffer[0])
+					{
+					case 1:
+						printf("write mem not same address\n");
+						break;
+					case 2:
+						printf("write mem not same value\n");
+						break;
+					}
+				}
+			}
+#pragma endregion
+		} while (cyclesInFrameCounter<cyclesInFrame); //(cpu.PC != 0x100 && counter > 0);//||mmu.biosLoaded);//cpu.PC!=0x100
+		cyclesInFrameCounter = 0;
+		display->update();
+	}
+
+	myfile.close();
+	
+
 	while (true) {
 		
 		
-		KEYS key=display.waitForKey();
-		display.setPixel(x, y,black);
-		if (display.keysMapper[Up]->isPressed) {
+		KEYS key=display->waitForKey();
+		display->setPixel(x, y,black);
+		if (display->keysMapper[KEYS::Up]->isPressed) {
 			cout << "Up";
 			y = (y - 1) % 144;
 			y = y < 0 ? 144 + y : y;
 			
-		}else if (display.keysMapper[Down]->isPressed) {
+		}else if (display->keysMapper[KEYS::Down]->isPressed) {
 			cout << "Down";
 			y = (y+ 1) % 144;
-		}else if(display.keysMapper[Left]->isPressed){
+		}else if(display->keysMapper[KEYS::Left]->isPressed){
 			cout << "Left";
 			x = (x - 1) % 160;
 			x = x < 0 ? 160 + x :x;
 		}
-		else if (display.keysMapper[Right]->isPressed) {
+		else if (display->keysMapper[KEYS::Right]->isPressed) {
 			
 			cout << "Right: ";
 			x= (x + 1) % 160;
 			
 		}
-		display.setPixel(x, y, white);
+		display->setPixel(x, y, white);
 		Sleep(250);
 
 		
@@ -267,6 +316,7 @@ int main(void) {
 	return 0;
 
 	}
+
 void testRomSwitching(CARTRIDGE cartridge) {
 	cartridge.write(0x2000, 0);
 	printf("romBank:%d\n", cartridge.romBankIndex);
@@ -303,4 +353,168 @@ void testRomSwitching(CARTRIDGE cartridge) {
 	cartridge.write(0x2000, 62);
 	cartridge.write(0x5fff, 1);
 	printf("romBank:%d\n", cartridge.romBankIndex);
+}
+int testPipe() {
+
+
+	char c;
+	bool f;
+	pipeChannel p;
+	cin >> c;
+	if (c == 'c') {
+		f = p.createPipe(1, "Pipe", 100, 100);
+		printf("created?:%s\n", f ? "true" : "false");
+		if (!f)
+			f = p.wait();
+		printf("connect?:%s\n", f ? "true" : "false");
+		if (f) {
+			p.wBuffer[0] = 'a';
+			f = p.write(1);
+			p.wBuffer[0] = 'b';
+			f = p.write(1);
+			printf("write?:%s\n", f ? "true" : "false");
+		}
+	}
+	else {
+
+		f = p.createPipe(0, "Pipe", 100, 100);
+		if (!f)
+			f = p.wait();
+		printf("connect?:%s\n", f ? "true" : "false");
+		if (f) {
+			f = p.read();
+
+			printf("read?:%s\n", f ? "true" : "false");
+			if (f)
+				printf("read:%c\n", p.rBuffer[0]);
+
+		}
+
+	}
+
+	p.close();
+	return 0;
+
+}
+void displayThreadFunc(DISPLAY* display)
+{
+	while (true) {
+		display->update();
+		//Sleep(16.6);
+		Sleep(500);
+	}
+	// do stuff...
+}
+
+void tests(BUS  bus) {
+
+	//testPipe();
+}
+
+
+void runTest(uint8_t romIndex) {
+	string romsPaths[16] =
+	{
+	"test\\cpu_instrs\\cpu_instrs.gb",
+	"test\\cpu_instrs\\individual\\01-special.gb",//good
+	"test\\cpu_instrs\\individual\\02-interrupts.gb" ,//no answer
+		"test\\cpu_instrs\\individual\\03-op sp,hl.gb",//no answer
+	"test\\cpu_instrs\\individual\\04-op r,imm.gb",//good
+	"test\\cpu_instrs\\individual\\05-op rp.gb",//good
+	"test\\cpu_instrs\\individual\\06-ld r,r.gb",//good
+	"test\\cpu_instrs\\individual\\07-jr,jp,call,ret,rst.gb",//no answer-> crashed
+	"test\\cpu_instrs\\individual\\08-misc instrs.gb",//no answer
+	"test\\cpu_instrs\\individual\\09-op r,r.gb",//faild
+	"test\\cpu_instrs\\individual\\10-bit ops.gb",//good
+	"test\\cpu_instrs\\individual\\11-op a,(hl).gb",
+	"test2\\daa.gb",
+	"alleyway.gb",
+	 "megaman.gb",
+	"pokemon.gb", };//faild
+
+	BUS* bus = new BUS();
+	CPU* cpu = new CPU();
+	GPU* gpu = new GPU();
+	gpu->reset();
+	CARTRIDGE* cartridge = new CARTRIDGE();
+	INTERRUPT* interrupt = new INTERRUPT();
+	JOYPAD* joypad = new JOYPAD();
+	interrupt->reset();
+	MMU* mmu = new MMU();
+	DISPLAY* display = new DISPLAY(0, 0, 160, 144, 1, romIndex);
+	bus->connectCPU(cpu);
+	bus->connectMMU(mmu);
+	bus->connectInterrupt(interrupt);
+	bus->connectGPU(gpu);
+	bus->connectDisplay(display);
+	bus->connectCartridge(cartridge);
+	bus->connectJoypad(joypad);
+	cartridge->loadRom(romsPaths[romIndex]);
+	cartridge->load();
+	cpu->reset();
+	printf("title:%s\n", cartridge->title);
+	printf("rom banks count:%d\n", cartridge->romSize);
+	printf("romBank size:%d\n", cartridge->romBankSize);
+	printf("ram banks count:%d\n", cartridge->ramSize);
+	printf("romBank size:%d\n", cartridge->ramBankSize);
+
+
+
+
+
+	//gpu.drawTest();
+
+	//return 0;
+	uint16_t opcode;
+	int counter = 270274;
+	bus->pipeEnable = false;
+	pipeChannel p;
+	bus->p = &p;
+
+	int renderTimer = 69905;
+	int renderCounter = 0;
+	bool writeToFile = false;
+	uint8_t last_key = 1;
+	int x = 0;
+	int y = 0;
+	Scalar white = Scalar(255, 255, 255, 0);
+	Scalar black = Scalar(0, 0, 0, 0);
+	std::thread displayThread(displayThreadFunc, display);
+
+	do {
+		opcode = cpu->getOpcode();
+		opcode = (opcode == 0xCB) ? 0XCB00 | cpu->getOpcode() : opcode;
+		cpu->Execute(opcode);
+		if (last_key != interrupt->io[0]) {
+			printf("keys:%04x\n", interrupt->io[0]);
+			last_key = interrupt->io[0];
+		}
+		cpu->updateTimers();
+		gpu->tick();
+		joypad->updateKeys();
+		interrupt->InterruptsHandler();
+
+	} while (true); //(cpu.PC != 0x100 && counter > 0);//||mmu.biosLoaded);//cpu.PC!=0x100
+		/*std::thread displayThread1(runTest, 1);
+	std::thread displayThread2(runTest, 2);
+	std::thread displayThread3(runTest, 3);
+	std::thread displayThread4(runTest, 4);
+	std::thread displayThread5(runTest, 5);
+	std::thread displayThread6(runTest, 6);
+	std::thread displayThread7(runTest, 7);
+	std::thread displayThread8(runTest, 8);
+	std::thread displayThread9(runTest, 9);
+	std::thread displayThread10(runTest, 10);
+	std::thread displayThread11(runTest, 11);
+	displayThread1.join();
+	displayThread2.join();
+	displayThread3.join();
+	displayThread4.join();
+	displayThread5.join();
+	displayThread6.join();
+	displayThread7.join();
+	displayThread8.join();
+	displayThread9.join();
+	displayThread10.join();
+	displayThread11.join();*/
 }

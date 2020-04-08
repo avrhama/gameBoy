@@ -7,7 +7,7 @@ void DMA::connectToBus(BUS* bus)
 
 void DMA::transfer(uint8_t sourceAddress)
 {
-	bus->mmu->write(0xff46, sourceAddress);
+	//bus->mmu->write(0xff46, sourceAddress);
 	for(int i=0;i<160;i++)
 		bus->mmu->write(0xfe00+i, sourceAddress+i);
 		
