@@ -33,9 +33,11 @@ private:
 
 
 	//Mmu mmu;
-	enum Flag : uint8_t { NZ, Z, NC, C };
-	uint8_t flagsNames[4] = { NZ,Z,NC,C };
+	enum class  ccFlag : uint8_t { NZ, Z, NC, C };
+	ccFlag flagsNames[4] = { ccFlag::NZ,ccFlag::Z,ccFlag::NC,ccFlag::C };
 	uint8_t RSTOffsets[8] = { 0x00,0x08,0x10,0x18,0x20,0x28,0x30,0x38 };
+	enum  Flags : uint8_t {Z,N,H,C };
+	int8_t flagsArray[4] = { -1,-1,-1,-1 };
 	uint8_t bit=0;
 	int steps=0;
 	
@@ -48,6 +50,8 @@ public:
 	uint16_t HL = 0;
 	uint16_t SP = 0xfffe;
 	bool IME=false;
+	bool setIME = false;
+	bool halt = false;
 	int cpuFreq = 4194304;
 	map<uint16_t, Opcode> opcodes;
 	CPU();
@@ -160,6 +164,7 @@ public:
 	uint8_t getFlag(uint8_t flag);
 	void setFlag(uint8_t flag);
 	void resetFlag(uint8_t flag);
+	void updateFlags();
 	uint8_t* NZFlag();
 	uint8_t* ZFlag();
 	uint8_t* NCFlag();

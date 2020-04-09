@@ -1,6 +1,7 @@
 #pragma once
 #include "BUS.h"
 #include "INTERRUPT.h"
+
 class JOYPAD
 {
 private:

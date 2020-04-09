@@ -2,18 +2,23 @@
 
 void INTERRUPT::write(uint16_t address, uint8_t value)
 {
-	if (address == 0x46) {
+	switch (address)
+	{
+	case 0x46:
 		printf("opcode:0x46 // DMA value:%04x\n", value);
-	}
-	if (address == 0x51) {
-		printf("opcode:0x46 // DMA value:%04x\n", value);
-	}
-	if (address == 0x52) {
-		printf("opcode:0x46 // DMA value:%04x\n", value);
+		break;
+	case 0x41:
+		if (value > 0)
+			printf("opcode:0x41 // LCD STATUS value:%04x\n", value);
+		break;
+	case 0x4D:
+		if (value > 0)
+			printf("opcode:0x4D // Speed Mode value:%04x\n", value);
+		break;
 	}
 	//printf("write:");
 	switch (0) {
-	
+
 	case 0x05: {
 		printf("opcode:0x05 // TIMA value:%04x\n", value);
 		break;
@@ -97,7 +102,7 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 	} case 0x46: {
 		printf("opcode:0x46 // DMA value:%04x\n", value);
 		break;
-	
+
 	} case 0x47: {
 		printf("opcode:0x47 // BGP value:%04x\n", value);
 		break;
@@ -105,7 +110,7 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 		printf("opcode:0x48 // OBP0 value:%04x\n", value);
 		break;
 	} case 0x49: {
-		
+
 		printf("opcode:0x49 // OBP1 value:%04x\n", value);
 		break;
 	} case 0x4A: {
@@ -155,7 +160,7 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 		default:
 			io[address] = value;
 		}
-		
+
 }
 
 uint8_t INTERRUPT::read(uint16_t address)
@@ -273,7 +278,7 @@ void INTERRUPT::setInterruptRequest(uint8_t bit)
 
 void INTERRUPT::resetInterruptRequest(uint8_t bit)
 {
-	io[0x0f] &= ((0x1 << bit)^0xff);
+	io[0x0f] &= ((0x1 << bit) ^ 0xff);
 }
 bool INTERRUPT::isInterruptRequsted(uint8_t bit)
 {
@@ -295,22 +300,30 @@ bool INTERRUPT::isInterruptEnable(uint8_t bit)
 
 void INTERRUPT::InterruptsHandler()
 {
-	if (bus->cpu->IME) {
-		for (int i = 0;i < 5;i++) {
-			if (isInterruptRequsted(i)) {
-				if (isInterruptEnable(i)) {
-					bus->cpu->IME = false;
-					resetInterruptRequest(i);
-					InterruptHandler(i);
-					i = 5;
-				}
+	
+	for (int i = 0;i < 5;i++) {
+		if (isInterruptRequsted(i) && isInterruptEnable(i)) {
+			
+			if (bus->cpu->IME) {
+				bus->cpu->IME = false;
+				resetInterruptRequest(i);
+				InterruptHandler(i);
+				i = 5;
+			}
+			if (bus->cpu->halt) {
+				bus->cpu->lastOpcodeCycles += 1;
+				bus->cpu->halt = false;
 			}
 		}
+	}
+	if (bus->cpu->setIME) {
+		bus->cpu->setIME = false;
+		bus->cpu->IME = true;
 	}
 }
 void INTERRUPT::InterruptHandler(uint8_t interrupt)
 {
-	uint8_t interruptHandlerAdd=0;
+	uint8_t interruptHandlerAdd = 0;
 	switch (interrupt) {
 	case 0:
 		interruptHandlerAdd = 0x40;
@@ -328,9 +341,12 @@ void INTERRUPT::InterruptHandler(uint8_t interrupt)
 		interruptHandlerAdd = 0x60;
 		break;
 	}
+	if (bus->cpu->halt)
+		bus->cpu->PC++;
 	bus->cpu->PUSH_nn(((uint8_t*)&bus->cpu->PC), NULL);
 	bus->cpu->PC = interruptHandlerAdd;
 	bus->cpu->lastOpcodeCycles += 5;
+	
 }
 //uint8_t* INTERRUPT::getMemCell(uint16_t address)
 //{
@@ -439,8 +455,9 @@ void INTERRUPT::connectToBus(BUS* bus)
 
 void INTERRUPT::reset()
 {
-	//for (uint8_t i = 0;i < 0x80;i++)
-	
+	for (uint8_t i = 0;i < 0x80;i++)
+		io[i] = 1;
+
 	io[0] = 255;
 	io[0x05] = 0x00;// TIMA
 	io[0x06] = 0x00;// TMA
@@ -473,5 +490,5 @@ void INTERRUPT::reset()
 	io[0x4A] = 0x00;// WY
 	io[0x4B] = 0x00;// WX
 	io[0x44] = 0x88;
- 	io[0x44] = 0x00;
+	io[0x44] = 0x00;
 }

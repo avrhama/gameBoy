@@ -1,5 +1,5 @@
 #include "JOYPAD.h"
-
+#include "CPU.h"
 void JOYPAD::connectToBus(BUS* bus)
 {
 	this->bus = bus;
@@ -14,6 +14,7 @@ bool JOYPAD::scanKeys(int start) {
                 trigerInterrupt = true;
             keys[i].isPressed = true;
             bus->interrupt->io[0x00] |=(0x01 << (i % 4));
+          
         }
         else {
             keys[i].isPressed = false;

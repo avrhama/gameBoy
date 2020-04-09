@@ -15,9 +15,11 @@ void GPU::connectToBus(BUS* bus)
 bool GPU::checkLCDStatus()
 {
 
-	if (!((bus->interrupt->io[0x40] >> 7) & 0x1)) {//LCD Display Enable
+	if (!((bus->interrupt->io[0x40] >> 7) & 0x1)) {//LCD Display Disable
 		//bus->interrupt->io[0x41] &= 252;//web
-		bus->interrupt->io[0x41] &= 253;//me
+		//bus->interrupt->io[0x41] &= 253;//me
+		bus->interrupt->io[0x41] &= 0xFC;
+		bus->interrupt->io[0x41] |= 0x01;
 		bus->interrupt->io[0x44] = 0;
 		cyclesPerScanline = 456;
 		return false;
@@ -29,7 +31,7 @@ bool GPU::checkLCDStatus()
 	uint8_t mode=0;
 	if (currScanLine >= 144) {//V-Blank 
 		mode = 1;
-		bus->interrupt->io[0x41] &= 253;
+		bus->interrupt->io[0x41] &= 0xFC;
 	}
 	//cyclesPerScanline decrement from 456 to 0 split to 3 sections:
 	//mode 2:Searching Sprites Atts 80 [456->376] 
@@ -37,18 +39,18 @@ bool GPU::checkLCDStatus()
 	//mode 0:H-Blank  204 [204->0)
 	else if (cyclesPerScanline>=376) {
 		mode = 2;
-		bus->interrupt->io[0x41] &= 254;
-		
+		bus->interrupt->io[0x41] &= 0xFC;		
 	}
 	else if (cyclesPerScanline >= 204) {
 		mode = 3;
-		bus->interrupt->io[0x41] &= 255;
+		bus->interrupt->io[0x41] &= 0xFC;
 	}
 	else {
 		mode = 0;
-		bus->interrupt->io[0x41] &= 252;
-	}
+		bus->interrupt->io[0x41] &= 0xFC;
 	
+	}
+	bus->interrupt->io[0x41] |= mode;
 	if(mode!=oldLCDmode)
 	if ((mode!=3) && ((bus->interrupt->io[0x41] >> (mode + 3)) & 0x01)) {//checks mode interrupt requested and enabled
 		bus->interrupt->setInterruptRequest(1);
@@ -56,8 +58,8 @@ bool GPU::checkLCDStatus()
 
 	if (currScanLine == bus->interrupt->io[0x45]) {//coincidence occured
 		bus->interrupt->io[0x41] |= 0x4;//set coinciedence
-		if ((bus->interrupt->io[0x44] >> 6) & 0x1)//coinciedence is set
-			bus->interrupt->resetInterruptRequest(1);
+		if ((bus->interrupt->io[0x41] >> 6) & 0x1)//coinciedence is set
+			bus->interrupt->setInterruptRequest(1);
 	}
 	else
 		bus->interrupt->io[0x41]&=0xfb;//reset coinciedence

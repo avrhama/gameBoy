@@ -81,7 +81,7 @@ int main(void) {
 	string romsPaths[18] =
 	{ 
 	"test\\cpu_instrs\\cpu_instrs.gb",
-	"test\\cpu_instrs\\individual\\01-special.gb",//good
+	"test\\cpu_instrs\\individual\\01-special.gb",//good//blargg
 	"test\\cpu_instrs\\individual\\02-interrupts.gb" ,//no answer
 		"test\\cpu_instrs\\individual\\03-op sp,hl.gb",//no answer
 	"test\\cpu_instrs\\individual\\04-op r,imm.gb",//good
@@ -98,7 +98,7 @@ int main(void) {
 	"roms\\pokemon.gb", 
 	"roms\\tetris.gb",
 	"roms\\mooneye-gb_hwtests\\acceptance\\add_sp_e_timing.gb"};//faild
-	uint8_t romIndex = 2;
+	uint8_t romIndex = 1;
 	//char * romPath = roms[5];
 	
 	//BC = 0x12FE;
@@ -244,16 +244,18 @@ int main(void) {
 			//cpu->Execute(opcode);
 			//pipeRecive(bus, opcode, lastopcode, steps,"Execute");
 		    cpu->ExecuteOpcode(opcode);
+			cpu->lastOpcodeCycles *=4;
 			cpu->updateTimers();
 			//pipeRecive(bus, opcode, lastopcode, steps, "updateTimers");
 			gpu->tick();
 			//pipeRecive(bus, opcode, lastopcode, steps, "tick");
 			joypad->updateKeys();
+		
 			interrupt->InterruptsHandler();
 			//pipeRecive(bus, opcode, lastopcode, steps, "InterruptsHandler");
 			lastopcode = opcode;
-			cyclesInFrameCounter += cpu->lastOpcodeCycles*4;
-			printf("speed:%d\n", interrupt->io[0x4D]>>7);
+			cyclesInFrameCounter += cpu->lastOpcodeCycles;
+			//printf("speed:%d\n", interrupt->io[0x4D]>>7);
 			steps++;
 			/*if (renderCounter == renderTimer)
 				gpu->drawTest();*/
