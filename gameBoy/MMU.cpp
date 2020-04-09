@@ -83,7 +83,8 @@ uint8_t MMU::read(uint16_t address)
 	if (0<=address &&address <= 0x7fff) {//bios ROM0 and ROM1 (unbanked) (16k)
 		if (biosLoaded) {
 			if (address < 0x0100)
-				return bios[address];
+				//return bios[address];
+				return bus->cartridge->read(address);
 			else if (bus->cpu->PC == 0x100)
 				biosLoaded = false;
 		}

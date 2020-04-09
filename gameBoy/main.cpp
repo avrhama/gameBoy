@@ -19,6 +19,9 @@
 using namespace std;
 
 void pipeRecive(BUS* bus, uint16_t opcode,uint16_t lastOpcode, int steps,string funcName) {
+	if (steps == 16506) {
+		int h = 0;
+	}
 	if (bus->pipeEnable) {
 		bus->p->read(14);
 		uint16_t otherOp = bus->p->rBuffer[0];
@@ -40,7 +43,7 @@ void pipeRecive(BUS* bus, uint16_t opcode,uint16_t lastOpcode, int steps,string 
 			errorCode = 1;
 		}
 		else if (otherAF != bus->cpu->AF) {
-			errorCode = 2;
+			//errorCode = 2;
 		}
 		else if (otherBC != bus->cpu->BC) {
 			errorCode = 3;
@@ -89,16 +92,16 @@ int main(void) {
 	"test\\cpu_instrs\\individual\\06-ld r,r.gb",//good
 	"test\\cpu_instrs\\individual\\07-jr,jp,call,ret,rst.gb",//no answer-> crashed
 	"test\\cpu_instrs\\individual\\08-misc instrs.gb",//no answer
-	"test\\cpu_instrs\\individual\\09-op r,r.gb",//faild
+	"test\\cpu_instrs\\individual\\09-op r,r.gb",//good
 	"test\\cpu_instrs\\individual\\10-bit ops.gb",//good
-	"test\\cpu_instrs\\individual\\11-op a,(hl).gb",//faild
+	"test\\cpu_instrs\\individual\\11-op a,(hl).gb",//good
 	"test2\\daa.gb",
 	"roms\\alleyway.gb",
 	 "roms\\megaman.gb",
 	"roms\\pokemon.gb", 
 	"roms\\tetris.gb",
-	"roms\\mooneye-gb_hwtests\\acceptance\\add_sp_e_timing.gb"};//faild
-	uint8_t romIndex = 1;
+	"test\\instr_timing\\instr_timing.gb"};//faild
+	uint8_t romIndex =3;
 	//char * romPath = roms[5];
 	
 	//BC = 0x12FE;
@@ -244,7 +247,9 @@ int main(void) {
 			//cpu->Execute(opcode);
 			//pipeRecive(bus, opcode, lastopcode, steps,"Execute");
 		    cpu->ExecuteOpcode(opcode);
-			cpu->lastOpcodeCycles *=4;
+			pipeRecive(bus, opcode, lastopcode, steps, "Execute");
+			cpu->cycelsCounter += cpu->lastOpcodeCycles;
+			//cpu->lastOpcodeCycles *=4;
 			cpu->updateTimers();
 			//pipeRecive(bus, opcode, lastopcode, steps, "updateTimers");
 			gpu->tick();
@@ -276,7 +281,11 @@ int main(void) {
 				}
 			}
 #pragma endregion
-		} while (cyclesInFrameCounter<cyclesInFrame); //(cpu.PC != 0x100 && counter > 0);//||mmu.biosLoaded);//cpu.PC!=0x100
+			if (cpu->cycelsCounter > 4)
+				cpu->cycelsCounter = cpu->cycelsCounter%4;
+			/*if(cyclesInFrameCounter%250==0)
+				Sleep(1);*/
+		} while (cyclesInFrameCounter<cyclesInFrame*cpu->speedMode); //(cpu.PC != 0x100 && counter > 0);//||mmu.biosLoaded);//cpu.PC!=0x100
 		cyclesInFrameCounter = 0;
 		display->update();
 	}

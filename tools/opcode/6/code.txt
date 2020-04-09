@@ -1,0 +1,120 @@
+void CPU::RRCA(uint8_t* none, uint8_t* none2) {
+	uint8_t A = *getA();
+	uint8_t bitLeaving = 1 & A;
+	*getA() = (bitLeaving << 7) | (A >> 1);
+	bitLeaving ? setFlag('C') : resetFlag('C');
+
+	resetFlag('N');
+	resetFlag('H');
+	resetFlag('Z');
+	/*if (*getA() == 0)
+		setFlag('Z');
+	else
+		resetFlag('Z');*/
+
+
+		//AF &= 0xfff0;
+}
+void CPU::RRA(uint8_t* none, uint8_t* none2) {
+	uint8_t A = *getA();
+	uint8_t bitLeaving = 1 & A;
+	*getA() = (getFlag('C') << 7) | (A >> 1);
+	bitLeaving ? setFlag('C') : resetFlag('C');
+
+	/*if (*getA() == 0)
+		setFlag('Z');
+	else
+		resetFlag('Z');*/
+	resetFlag('Z');
+	resetFlag('N');
+	resetFlag('H');
+
+	//AF &= 0xfff0;
+}
+void CPU::RLC_n(uint8_t* n, uint8_t* none) {
+	uint8_t bitLeaving = (1 & (*n >> 7));
+	*n = (*n << 1) | bitLeaving;
+	bitLeaving ? setFlag('C') : resetFlag('C');
+
+	resetFlag('N');
+	resetFlag('H');
+	if (*n == 0)
+		setFlag('Z');
+	else
+		resetFlag('Z');
+
+	/*if(n==getA())
+		AF &= 0xfff0;*/
+}
+void CPU::RLC_$HL(uint8_t* none1, uint8_t* none2) {
+	uint8_t n = bus->mmu->read(HL);
+	uint8_t bitLeaving = (1 & (n >> 7));
+	n = (n << 1) | bitLeaving;
+	bus->mmu->write(HL, n);
+	bitLeaving ? setFlag('C') : resetFlag('C');
+	if (n == 0)
+		setFlag('Z');
+	else
+		resetFlag('Z');
+	resetFlag('N');
+	resetFlag('H');
+}
+void CPU::RL_n(uint8_t* n, uint8_t* none) {
+	uint8_t bitLeaving = (1 & (*n >> 7));
+	*n = (*n << 1) | getFlag('C');
+	bitLeaving ? setFlag('C') : resetFlag('C');
+
+	resetFlag('N');
+	resetFlag('H');
+	if (*n == 0)
+		setFlag('Z');
+	else
+		resetFlag('Z');
+
+
+	/*if (n == getA())
+		AF &= 0xfff0;*/
+}
+void CPU::RL_$HL(uint8_t* none1, uint8_t* none2) {
+	uint8_t n = bus->mmu->read(HL);
+	uint8_t bitLeaving = (1 & (n >> 7));
+	n = (n << 1) | getFlag('C');
+	bus->mmu->write(HL, n);
+	bitLeaving ? setFlag('C') : resetFlag('C');
+
+	resetFlag('N');
+	resetFlag('H');
+	if (n == 0)
+		setFlag('Z');
+	else
+		resetFlag('Z');
+
+}
+void CPU::RRC_n(uint8_t* n, uint8_t* none) {
+	uint8_t bitLeaving = 1 & *n;
+	*n = (bitLeaving << 7) | (*n >> 1);
+	bitLeaving ? setFlag('C') : resetFlag('C');
+
+	resetFlag('N');
+	resetFlag('H');
+	if (*n == 0)
+		setFlag('Z');
+	else
+		resetFlag('Z');
+
+
+	/*if (n == getA())
+		AF &= 0xfff0;*/
+}
+void CPU::RRC_$HL(uint8_t* none1, uint8_t* none2) {
+	uint8_t n = bus->mmu->read(HL);
+	uint8_t bitLeaving = 1 & n;
+	n = (bitLeaving << 7) | (n >> 1);
+	bus->mmu->write(HL, n);
+	bitLeaving ? setFlag('C') : resetFlag('C');
+	if (n == 0)
+		setFlag('Z');
+	else
+		resetFlag('Z');
+	resetFlag('N');
+	resetFlag('H');

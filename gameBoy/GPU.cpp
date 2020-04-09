@@ -70,9 +70,12 @@ bool GPU::checkLCDStatus()
 }
 void GPU::tick()
 {
+	
 	if (!checkLCDStatus())
 		return;
-	
+	/*if (bus->cpu->cycelsCounter < 4)
+		return;
+	uint8_t cycels = bus->cpu->cycelsCounter / 4;*/
 	cyclesPerScanline -= bus->cpu->lastOpcodeCycles;
 	if (bus->pipeEnable&&false) {
 		bus->p->read();
@@ -102,7 +105,7 @@ void GPU::tick()
 		}*/
 	
 	if (cyclesPerScanline <= 0) {
-		cyclesPerScanline += 456;
+		cyclesPerScanline += 456 * bus->cpu->speedMode;
 		bus->interrupt->io[0x44]++;
 		uint8_t currScanLine = bus->interrupt->io[0x44];
 		if (currScanLine == 144)
@@ -344,6 +347,7 @@ void GPU::draw() {
 	drawBG();
 	drawSprites();
 	bus->display->setLock(false);
+	//bus->display->update();
 	//uint8_t currScanLine = bus->mmu->read(0xFF44);
 	//for (uint8_t i = 0;i < 160;i+=4) {//loop 4 byte(sprite) in OAM
 	//	uint8_t posY = bus->mmu->read(0xFE00+i);

@@ -996,28 +996,39 @@ void CPU::LDHL_SP_$n(uint8_t* none1, uint8_t* none2)
 {
 	signed char N_ = bus->mmu->read(PC++);
 	HL = SP + N_;
-	resetFlag('Z');
-	resetFlag('N');
+	flagsArray[Z] = 0;
+	flagsArray[N] = 0;
+	//resetFlag('Z');
+	//resetFlag('N');
 	if (SP + N_ >= 0) {
 		if (SP + N_ > 0xffff)
-			setFlag('C');
+			//setFlag('C');
+			flagsArray[C] = 1;
 		else
-			resetFlag('C');
+			//resetFlag('C');
+			flagsArray[C] = 0;
 		if ((SP & 0xF) + (N_ & 0xF) > 0xF)
-			setFlag('H');
+			//setFlag('H');
+			flagsArray[H] = 1;
 		else
-			resetFlag('H');
+			//resetFlag('H');
+			flagsArray[H] = 0;
 	}
 	else {
 		if (SP < N_)
-			setFlag('C');
+			//setFlag('C');
+			flagsArray[C] = 1;
 		else
-			resetFlag('C');
+			//resetFlag('C');
+			flagsArray[C] = 0;
 		if ((SP & 0xF) < (N_ & 0xF))
-			setFlag('H');
+			//setFlag('H');
+			flagsArray[H] = 1;
 		else
-			resetFlag('H');
+			//resetFlag('H');
+			flagsArray[H] = 0;
 	}
+	updateFlags();
 
 }
 void CPU::LD_$NN_SP(uint8_t* $NN, uint8_t* none)
@@ -1073,27 +1084,41 @@ void CPU::ADD_A_n(uint8_t* A, uint8_t* n_)
 		int y = 0;
 	*A += n;
 
-	resetFlag('N');
+	//resetFlag('N');
+
+	flagsArray[N] = 0;
 	if (*A == 0)
-		setFlag('Z');
+		//setFlag('Z');
+
+		flagsArray[Z] = 1;
 	else
-		resetFlag('Z');
+		//resetFlag('Z');
+
+		flagsArray[Z] = 0;
 	if (oldA + n > 0xff)
-		setFlag('C');
+		//setFlag('C');
+
+		flagsArray[C] = 1;
 	else
-		resetFlag('C');
+		//resetFlag('C');
+
+		flagsArray[C] = 0;
 
 	if (byteR.lsn + (n & 0xf) > 0xf)
-		setFlag('H');
+		//setFlag('H');
+
+		flagsArray[H] = 1;
 	else
-		resetFlag('H');
+		//resetFlag('H');
+		flagsArray[H] = 0;
+	updateFlags();
 
 	//AF &= 0xfff0;
 }
 
 void CPU::ADC_A_n(uint8_t* A, uint8_t* n_)
 {
-	
+
 	/**A += n + getFlag('C');
 
 	resetFlag('N');
@@ -1114,28 +1139,28 @@ void CPU::ADC_A_n(uint8_t* A, uint8_t* n_)
 
 
 
-	/*BYTE before = *A;
-	BYTE adding = *n+getFlag('C');
+		/*BYTE before = *A;
+		BYTE adding = *n+getFlag('C');
 
 
-	*A += adding;
+		*A += adding;
 
 
-	resetFlag('Z');
-	resetFlag('N');
-	resetFlag('C');
-	resetFlag('H');
-	if (*A == 0)
-		setFlag('Z');
+		resetFlag('Z');
+		resetFlag('N');
+		resetFlag('C');
+		resetFlag('H');
+		if (*A == 0)
+			setFlag('Z');
 
-	WORD htest = (before & 0xF);
-	htest += (adding & 0xF);
+		WORD htest = (before & 0xF);
+		htest += (adding & 0xF);
 
-	if (htest > 0xF)
-		setFlag('H');
+		if (htest > 0xF)
+			setFlag('H');
 
-	if ((before + adding) > 0xFF)
-		setFlag('C');*/
+		if ((before + adding) > 0xFF)
+			setFlag('C');*/
 	if (n_ == getC()) {
 		int d = 4;
 	}
@@ -1143,24 +1168,38 @@ void CPU::ADC_A_n(uint8_t* A, uint8_t* n_)
 
 	uint8_t n = *n_;
 	Byte byteR = getByte(*A);
-		uint8_t oldA = *A;
-		*A += n + getFlag('C');
+	uint8_t oldA = *A;
+	*A += n + getFlag('C');
 
-		resetFlag('N');
-		if (*A == 0)
-			setFlag('Z');
-		else
-			resetFlag('Z');
-		if (oldA + n + getFlag('C') > 0xff)
-			setFlag('C');
-		else
-			resetFlag('C');
-		if ((byteR.lsn + (n) & 0xf + getFlag('C')) > 0xf)
-			setFlag('H');
-		else
-			resetFlag('H');
+	//resetFlag('N');
 
-			//AF &= 0xfff0;
+	flagsArray[N] = 0;
+	if (*A == 0)
+		//setFlag('Z');
+
+		flagsArray[Z] = 1;
+	else
+		//resetFlag('Z');
+
+		flagsArray[Z] = 0;
+	if (oldA + n + getFlag('C') > 0xff)
+		//setFlag('C');
+
+		flagsArray[C] = 1;
+	else
+		//resetFlag('C');
+
+		flagsArray[C] = 0;
+	if ((byteR.lsn + (n & 0xf) + getFlag('C')) > 0xf)
+		//setFlag('H');
+
+		flagsArray[H] = 1;
+	else
+		//resetFlag('H');
+		flagsArray[H] = 0;
+	updateFlags();
+
+	//AF &= 0xfff0;
 }
 void CPU::SUB_n(uint8_t* A, uint8_t* n_) {
 	uint8_t n = *n_;
@@ -1168,41 +1207,70 @@ void CPU::SUB_n(uint8_t* A, uint8_t* n_) {
 	uint8_t oldA = *A;
 	*A -= n;
 
-	setFlag('N');
+	//setFlag('N');
+
+	flagsArray[N] = 1;
 	if (*A == 0)
-		setFlag('Z');
+		//setFlag('Z');
+
+		flagsArray[Z] = 1;
 	else
-		resetFlag('Z');
+		//resetFlag('Z');
+
+		flagsArray[Z] = 0;
 	if (oldA < n)
-		setFlag('C');
+		//setFlag('C');
+
+		flagsArray[C] = 1;
 	else
-		resetFlag('C');
+		//resetFlag('C');
+
+		flagsArray[C] = 0;
 	if (byteR.lsn < (n & 0xf))
-		setFlag('H');
+		//setFlag('H');
+
+		flagsArray[H] = 1;
 	else
-		resetFlag('H');
+		//resetFlag('H');
+		flagsArray[H] = 0;
+	updateFlags();
 
 	//AF &= 0xfff0;
 
 }
-void CPU::SBC_A_n(uint8_t* A, uint8_t* n) {
+void CPU::SBC_A_n(uint8_t* A, uint8_t* n_) {
+	uint8_t n = *n_;
 	Byte byteR = getByte(*A);
 	uint8_t oldA = *A;
-	*A -= (*n + getFlag('C'));
+	*A -= (n + getFlag('C'));
 
-	setFlag('N');
+	//setFlag('N');
+
+	flagsArray[N] = 1;
 	if (*A == 0)
-		setFlag('Z');
+		//setFlag('Z');
+
+		flagsArray[Z] = 1;
 	else
-		resetFlag('Z');
-	if (oldA < *n + getFlag('C'))
-		setFlag('C');
+		//resetFlag('Z');
+
+		flagsArray[Z] = 0;
+	if (oldA < n + getFlag('C'))
+		//setFlag('C');
+
+		flagsArray[C] = 1;
 	else
-		resetFlag('C');
-	if (byteR.lsn < ((*n + getFlag('C')) & 0xf))
-		setFlag('H');
+		//resetFlag('C');
+
+		flagsArray[C] = 0;
+	if (byteR.lsn < (n & 0xf) + getFlag('C'))
+		//setFlag('H');
+
+		flagsArray[H] = 1;
 	else
-		resetFlag('H');
+		//resetFlag('H');
+		flagsArray[H] = 0;
+	updateFlags();
 
 	//AF &= 0xfff0;
 }
@@ -1211,13 +1279,23 @@ void CPU::AND_n(uint8_t* A, uint8_t* n)
 	Byte byteR = getByte(*A);
 	*A &= *n;
 
-	resetFlag('N');
-	setFlag('H');
-	resetFlag('C');
+	//resetFlag('N');
+
+	flagsArray[N] = 0;
+	//setFlag('H');
+
+	flagsArray[H] = 1;
+	//resetFlag('C');
+
+	flagsArray[C] = 0;
 	if (*A == 0)
-		setFlag('Z');
+		//setFlag('Z');
+
+		flagsArray[Z] = 1;
 	else
-		resetFlag('Z');
+		//resetFlag('Z');
+		flagsArray[Z] = 0;
+	updateFlags();
 
 	//AF &= 0xfff0;
 }
@@ -1226,13 +1304,23 @@ void CPU::OR_n(uint8_t* A, uint8_t* n)
 	Byte byteR = getByte(*A);
 	*A |= *n;
 
-	resetFlag('N');
-	resetFlag('H');
-	resetFlag('C');
+	//resetFlag('N');
+
+	flagsArray[N] = 0;
+	//resetFlag('H');
+
+	flagsArray[H] = 0;
+	//resetFlag('C');
+
+	flagsArray[C] = 0;
 	if (*A == 0)
-		setFlag('Z');
+		//setFlag('Z');
+
+		flagsArray[Z] = 1;
 	else
-		resetFlag('Z');
+		//resetFlag('Z');
+		flagsArray[Z] = 0;
+	updateFlags();
 
 	//AF &= 0xfff0;
 }
@@ -1242,13 +1330,23 @@ void CPU::XOR_n(uint8_t* A, uint8_t* n)
 	Byte byteR = getByte(*A);
 	*A ^= *n;
 
-	resetFlag('N');
-	resetFlag('H');
-	resetFlag('C');
+	//resetFlag('N');
+
+	flagsArray[N] = 0;
+	//resetFlag('H');
+
+	flagsArray[H] = 0;
+	//resetFlag('C');
+
+	flagsArray[C] = 0;
 	if (*A == 0)
-		setFlag('Z');
+		//setFlag('Z');
+
+		flagsArray[Z] = 1;
 	else
-		resetFlag('Z');
+		//resetFlag('Z');
+		flagsArray[Z] = 0;
+	updateFlags();
 
 	//AF &= 0xfff0;
 }
@@ -1258,19 +1356,33 @@ void CPU::CP_n(uint8_t* n_, uint8_t* none) {
 	Byte byteR = getByte(A);
 	uint8_t res = A - n;
 
-	setFlag('N');
+	//setFlag('N');
+
+	flagsArray[N] = 1;
 	if (res == 0)
-		setFlag('Z');
+		//setFlag('Z');
+
+		flagsArray[Z] = 1;
 	else
-		resetFlag('Z');
+		//resetFlag('Z');
+
+		flagsArray[Z] = 0;
 	if (A < n)
-		setFlag('C');
+		//setFlag('C');
+
+		flagsArray[C] = 1;
 	else
-		resetFlag('C');
+		//resetFlag('C');
+
+		flagsArray[C] = 0;
 	if (byteR.lsn < (n & 0xf))
-		setFlag('H');
+		//setFlag('H');
+
+		flagsArray[H] = 1;
 	else
-		resetFlag('H');
+		//resetFlag('H');
+		flagsArray[H] = 0;
+	updateFlags();
 
 	//AF &= 0xfff0;
 }
@@ -1278,15 +1390,25 @@ void CPU::INC_n(uint8_t* n, uint8_t* none) {
 	Byte byteN = getByte(*n);
 	(*n)++;
 
-	resetFlag('N');
+	//resetFlag('N');
+
+	flagsArray[N] = 0;
 	if (*n == 0)
-		setFlag('Z');
+		//setFlag('Z');
+
+		flagsArray[Z] = 1;
 	else
-		resetFlag('Z');
+		//resetFlag('Z');
+
+		flagsArray[Z] = 0;
 	if (byteN.lsn + 1 > 0xf)
-		setFlag('H');
+		//setFlag('H');
+
+		flagsArray[H] = 1;
 	else
-		resetFlag('H');
+		//resetFlag('H');
+		flagsArray[H] = 0;
+	updateFlags();
 	/*if (n == getA())
 		AF &= 0xfff0;*/
 
@@ -1297,30 +1419,51 @@ void CPU::INC_$HL(uint8_t* none1, uint8_t* none2) {
 	n++;
 	bus->mmu->write(HL, n);
 
-	resetFlag('N');
+	//resetFlag('N');
+
+	flagsArray[N] = 0;
 	if (n == 0)
-		setFlag('Z');
+		//setFlag('Z');
+
+		flagsArray[Z] = 1;
 	else
-		resetFlag('Z');
+		//resetFlag('Z');
+
+		flagsArray[Z] = 0;
 
 	if (byteN.lsn + 1 > 0xf)
-		setFlag('H');
+		//setFlag('H');
+
+		flagsArray[H] = 1;
 	else
-		resetFlag('H');
+		//resetFlag('H');
+
+		flagsArray[H] = 0;
+	updateFlags();
 }
 void CPU::DEC_n(uint8_t* n, uint8_t* none) {
 	Byte byteN = getByte(*n);
 	(*n)--;
 
-	setFlag('N');
+	//setFlag('N');
+
+	flagsArray[N] = 1;
 	if (*n == 0)
-		setFlag('Z');
+		//setFlag('Z');
+
+		flagsArray[Z] = 1;
 	else
-		resetFlag('Z');
+		//resetFlag('Z');
+
+		flagsArray[Z] = 0;
 	if (byteN.lsn == 0)
-		setFlag('H');
+		//setFlag('H');
+
+		flagsArray[H] = 1;
 	else
-		resetFlag('H');
+		//resetFlag('H');
+		flagsArray[H] = 0;
+	updateFlags();
 	/*if (n == getA())
 		AF &= 0xfff0;*/
 }
@@ -1330,15 +1473,26 @@ void CPU::DEC_$HL(uint8_t* none1, uint8_t* none2) {
 	n--;
 	bus->mmu->write(HL, n);
 
-	setFlag('N');
+	//setFlag('N');
+
+	flagsArray[N] = 1;
 	if (n == 0)
-		setFlag('Z');
+		//setFlag('Z');
+
+		flagsArray[Z] = 1;
 	else
-		resetFlag('Z');
+		//resetFlag('Z');
+
+		flagsArray[Z] = 0;
 	if (byteN.lsn == 0)
-		setFlag('H');
+		//setFlag('H');
+
+		flagsArray[H] = 1;
 	else
-		resetFlag('H');
+		//resetFlag('H');
+
+		flagsArray[H] = 0;
+	updateFlags();
 }
 void CPU::ADD_HL_n(uint8_t* none, uint8_t* n) {
 
@@ -1346,31 +1500,53 @@ void CPU::ADD_HL_n(uint8_t* none, uint8_t* n) {
 	uint16_t n_ = *(uint16_t*)n;
 	HL += n_;
 
-	resetFlag('N');
-	if (oldHL + n_ > 0xffff)
-		setFlag('C');
-	else
-		resetFlag('C');
-	if ((oldHL & 0xfff) + (n_ & 0xfff) > 0xfff)
-		setFlag('H');
-	else
-		resetFlag('H');
+	//resetFlag('N');
 
+	flagsArray[N] = 0;
+	if (oldHL + n_ > 0xffff)
+		//setFlag('C');
+
+		flagsArray[C] = 1;
+	else
+		//resetFlag('C');
+
+		flagsArray[C] = 0;
+	if ((oldHL & 0xfff) + (n_ & 0xfff) > 0xfff)
+		//setFlag('H');
+
+		flagsArray[H] = 1;
+	else
+		//resetFlag('H');
+
+		flagsArray[H] = 0;
+	updateFlags();
 }
 void CPU::ADD_SP_n(uint8_t* none, uint8_t* n) {
 	uint16_t oldSP = SP;
 	signed char n_ = *(signed char*)n;
 	SP += n_;
-	resetFlag('Z');
-	resetFlag('N');
+	//resetFlag('Z');
+
+	flagsArray[Z] = 0;
+	//resetFlag('N');
+
+	flagsArray[N] = 0;
 	if (oldSP + n_ > 0xFFFF)
-		setFlag('C');
+		//setFlag('C');
+
+		flagsArray[C] = 1;
 	else
-		resetFlag('C');
+		//resetFlag('C');
+
+		flagsArray[C] = 0;
 	if ((oldSP & 0xF) + (n_ & 0xF) > 0xF)
-		setFlag('H');
+		//setFlag('H');
+
+		flagsArray[H] = 1;
 	else
-		resetFlag('H');
+		//resetFlag('H');
+		flagsArray[H] = 0;
+	updateFlags();
 }
 void CPU::INC_nn(uint8_t* nn, uint8_t* none) {
 	(*(uint16_t*)nn)++;
@@ -1387,17 +1563,28 @@ void CPU::SWAP_n(uint8_t* n, uint8_t* none) {
 	Byte newByte{ oldByte.lsn,oldByte.msn };
 	*n = getByte(newByte);
 
-	resetFlag('N');
-	resetFlag('H');
-	resetFlag('C');
+	//resetFlag('N');
+
+	flagsArray[N] = 0;
+	//resetFlag('H');
+
+	flagsArray[H] = 0;
+	//resetFlag('C');
+
+	flagsArray[C] = 0;
 	if (*n == 0)
-		setFlag('Z');
+		//setFlag('Z');
+
+		flagsArray[Z] = 1;
 	else
-		resetFlag('Z');
+		//resetFlag('Z');
 
+		flagsArray[Z] = 0;
 
+	updateFlags();
 	/*if (n == getA())
 		AF &= 0xfff0;*/
+
 
 }
 void CPU::SWAP_$HL(uint8_t* none1, uint8_t* none2) {
@@ -1408,13 +1595,24 @@ void CPU::SWAP_$HL(uint8_t* none1, uint8_t* none2) {
 	bus->mmu->write(HL, n);
 
 	if (n == 0)
-		setFlag('Z');
-	else
-		resetFlag('Z');
-	resetFlag('N');
-	resetFlag('H');
-	resetFlag('C');
+		//setFlag('Z');
 
+		flagsArray[Z] = 1;
+	else
+		//resetFlag('Z');
+
+		flagsArray[Z] = 0;
+	//resetFlag('N');
+
+	flagsArray[N] = 0;
+	//resetFlag('H');
+
+	flagsArray[H] = 0;
+	//resetFlag('C');
+
+	flagsArray[C] = 0;
+
+	updateFlags();
 }
 void CPU::DAA(uint8_t* none, uint8_t* none2) {
 	uint8_t* A_ = getA();
@@ -1428,22 +1626,19 @@ void CPU::DAA(uint8_t* none, uint8_t* none2) {
 	else {
 		if (*A_ > 0x99 || getFlag('C')) {
 			(*A_) += 0x60;
-			//setFlag('C');
 			flagsArray[C] = 1;
 		}
 		if ((*A_ & 0xf) > 0x09 || getFlag('H'))
 			(*A_) += 0x06;
 	}
 	if (*A_ == 0) {
-		//setFlag('Z');
 		flagsArray[Z] = 1;
 	}
 	else {
-		//resetFlag('Z');
+
 		flagsArray[Z] = 0;
 	}
 	flagsArray[H] = 0;
-	//resetFlag('H');
 
 	updateFlags();
 	//uint8_t* A = getA();
@@ -1474,21 +1669,38 @@ void CPU::DAA(uint8_t* none, uint8_t* none2) {
 }
 void CPU::CPL(uint8_t* none, uint8_t* none2) {
 	*getA() ^= 0xff;
-	setFlag('N');
-	setFlag('H');
+	//setFlag('N');
 
+	flagsArray[N] = 1;
+	//setFlag('H');
+
+	flagsArray[H] = 1;
 	//AF &= 0xfff0;
+	updateFlags();
 }
 void CPU::CCF(uint8_t* none, uint8_t* none2) {
 
-	getFlag('C') ? resetFlag('C') : setFlag('C');
-	resetFlag('N');
-	resetFlag('H');
+	//getFlag('C') ? //resetFlag('C') : setFlag('C');
+
+	getFlag('C') ? flagsArray[C] = 0 : flagsArray[C] = 1;
+	//resetFlag('N');
+
+	flagsArray[N] = 0;
+	//resetFlag('H');
+
+	flagsArray[H] = 0;
+	updateFlags();
 }
 void CPU::SCF(uint8_t* none, uint8_t* none2) {
-	setFlag('C');
-	resetFlag('N');
-	resetFlag('H');
+	//setFlag('C');
+
+	flagsArray[C] = 1;
+	//resetFlag('N');
+
+	flagsArray[N] = 0;
+	//resetFlag('H');
+	flagsArray[H] = 0;
+	updateFlags();
 }
 void CPU::NOP(uint8_t* none, uint8_t* none2) {
 }
@@ -1498,26 +1710,43 @@ void CPU::HALT(uint8_t* none, uint8_t* none2) {
 }
 void CPU::STOP(uint8_t* none, uint8_t* none2) {
 	halt = true;
+	if (bus->cartridge->colorGB) {
+		uint8_t prepareSpeedSwitch = bus->interrupt->io[0x4d];
+		if (prepareSpeedSwitch & 0x01) {
+			speedMode = 1 + (bus->interrupt->io[0x4d] >> 7) & 0x01;
+			bus->interrupt->io[0x4d] &= 0xfe;
+
+		}
+	}
+
 	//haltCPU = 1;
 	//haltDisplay = 1;
-	if (none == NULL)
-		return;
+
 }
 void CPU::DI(uint8_t* none, uint8_t* none2) {
 	IME = false;
 }
 void CPU::EI(uint8_t* none, uint8_t* none2) {
 	bus->cpu->setIME = true;
+	//IME = true;
 }
 void CPU::RLCA(uint8_t* none, uint8_t* none2) {
 	uint8_t A = *getA();
 	uint8_t bitLeaving = (1 & (A >> 7));
 	*getA() = (A << 1) | bitLeaving;
-	bitLeaving ? setFlag('C') : resetFlag('C');
+	//bitLeaving ? //setFlag('C') : resetFlag('C');
 
-	resetFlag('Z');
-	resetFlag('N');
-	resetFlag('H');
+	bitLeaving ? flagsArray[C] = 1 : flagsArray[C] = 0;
+
+	//resetFlag('Z');
+
+	flagsArray[Z] = 0;
+	//resetFlag('N');
+
+	flagsArray[N] = 0;
+	//resetFlag('H');
+	flagsArray[H] = 0;
+	updateFlags();
 	/*if (*getA() == 0)
 		setFlag('Z');
 	else
@@ -1530,11 +1759,19 @@ void CPU::RLA(uint8_t* none, uint8_t* none2) {
 	uint8_t A = *getA();
 	uint8_t bitLeaving = (1 & (A >> 7));
 	*getA() = (A << 1) | getFlag('C');
-	bitLeaving ? setFlag('C') : resetFlag('C');
+	//bitLeaving ? //setFlag('C') : resetFlag('C');
 
-	resetFlag('N');
-	resetFlag('H');
-	resetFlag('Z');
+	bitLeaving ? flagsArray[C] = 1 : flagsArray[C] = 0;
+
+	//resetFlag('N');
+
+	flagsArray[N] = 0;
+	//resetFlag('H');
+
+	flagsArray[H] = 0;
+	//resetFlag('Z');
+	flagsArray[Z] = 0;
+	updateFlags();
 	/*if (*getA() == 0)
 		setFlag('Z');
 	else
@@ -1547,15 +1784,28 @@ void CPU::RRCA(uint8_t* none, uint8_t* none2) {
 	uint8_t A = *getA();
 	uint8_t bitLeaving = 1 & A;
 	*getA() = (bitLeaving << 7) | (A >> 1);
-	bitLeaving ? setFlag('C') : resetFlag('C');
+	//bitLeaving ? //setFlag('C') : resetFlag('C');
 
-	resetFlag('N');
-	resetFlag('H');
-	resetFlag('Z');
+	bitLeaving ? flagsArray[C] = 1 : flagsArray[C] = 0;
+
+	//resetFlag('N');
+
+	flagsArray[N] = 0;
+	//resetFlag('H');
+
+	flagsArray[H] = 0;
+	//resetFlag('Z');
+
+	flagsArray[Z] = 0;
+	updateFlags();
 	/*if (*getA() == 0)
-		setFlag('Z');
+		//setFlag('Z');
+
+
 	else
-		resetFlag('Z');*/
+		//resetFlag('Z');*/
+
+
 
 
 		//AF &= 0xfff0;
@@ -1564,30 +1814,52 @@ void CPU::RRA(uint8_t* none, uint8_t* none2) {
 	uint8_t A = *getA();
 	uint8_t bitLeaving = 1 & A;
 	*getA() = (getFlag('C') << 7) | (A >> 1);
-	bitLeaving ? setFlag('C') : resetFlag('C');
+	//bitLeaving ? //setFlag('C') : resetFlag('C');
+
+	bitLeaving ? flagsArray[C] = 1 : flagsArray[C] = 0;
 
 	/*if (*getA() == 0)
-		setFlag('Z');
-	else
-		resetFlag('Z');*/
-	resetFlag('Z');
-	resetFlag('N');
-	resetFlag('H');
+		//setFlag('Z');
 
+
+	else
+		//resetFlag('Z');*/
+
+
+		//resetFlag('Z');
+
+	flagsArray[Z] = 0;
+	//resetFlag('N');
+
+	flagsArray[N] = 0;
+	//resetFlag('H');
+
+	flagsArray[H] = 0;
+	updateFlags();
 	//AF &= 0xfff0;
 }
 void CPU::RLC_n(uint8_t* n, uint8_t* none) {
 	uint8_t bitLeaving = (1 & (*n >> 7));
 	*n = (*n << 1) | bitLeaving;
-	bitLeaving ? setFlag('C') : resetFlag('C');
+	//bitLeaving ? //setFlag('C') : resetFlag('C');
 
-	resetFlag('N');
-	resetFlag('H');
+	bitLeaving ? flagsArray[C] = 1 : flagsArray[C] = 0;
+
+	//resetFlag('N');
+
+	flagsArray[N] = 0;
+	//resetFlag('H');
+
+	flagsArray[H] = 0;
 	if (*n == 0)
-		setFlag('Z');
-	else
-		resetFlag('Z');
+		//setFlag('Z');
 
+		flagsArray[Z] = 1;
+	else
+		//resetFlag('Z');
+
+		flagsArray[Z] = 0;
+	updateFlags();
 	/*if(n==getA())
 		AF &= 0xfff0;*/
 }
@@ -1596,27 +1868,48 @@ void CPU::RLC_$HL(uint8_t* none1, uint8_t* none2) {
 	uint8_t bitLeaving = (1 & (n >> 7));
 	n = (n << 1) | bitLeaving;
 	bus->mmu->write(HL, n);
-	bitLeaving ? setFlag('C') : resetFlag('C');
+	//bitLeaving ? //setFlag('C') : resetFlag('C');
+
+	bitLeaving ? flagsArray[C] = 1 : flagsArray[C] = 0;
 	if (n == 0)
-		setFlag('Z');
+		//setFlag('Z');
+
+		flagsArray[Z] = 1;
 	else
-		resetFlag('Z');
-	resetFlag('N');
-	resetFlag('H');
+		//resetFlag('Z');
+
+		flagsArray[Z] = 0;
+	//resetFlag('N');
+
+	flagsArray[N] = 0;
+	//resetFlag('H');
+
+	flagsArray[H] = 0;
+	updateFlags();
 }
 void CPU::RL_n(uint8_t* n, uint8_t* none) {
 	uint8_t bitLeaving = (1 & (*n >> 7));
 	*n = (*n << 1) | getFlag('C');
-	bitLeaving ? setFlag('C') : resetFlag('C');
+	//bitLeaving ? //setFlag('C') : resetFlag('C');
 
-	resetFlag('N');
-	resetFlag('H');
+	bitLeaving ? flagsArray[C] = 1 : flagsArray[C] = 0;
+
+	//resetFlag('N');
+
+	flagsArray[N] = 0;
+	//resetFlag('H');
+
+	flagsArray[H] = 0;
 	if (*n == 0)
-		setFlag('Z');
+		//setFlag('Z');
+
+		flagsArray[Z] = 1;
 	else
-		resetFlag('Z');
+		//resetFlag('Z');
 
+		flagsArray[Z] = 0;
 
+	updateFlags();
 	/*if (n == getA())
 		AF &= 0xfff0;*/
 }
@@ -1625,29 +1918,50 @@ void CPU::RL_$HL(uint8_t* none1, uint8_t* none2) {
 	uint8_t bitLeaving = (1 & (n >> 7));
 	n = (n << 1) | getFlag('C');
 	bus->mmu->write(HL, n);
-	bitLeaving ? setFlag('C') : resetFlag('C');
+	//bitLeaving ? //setFlag('C') : resetFlag('C');
 
-	resetFlag('N');
-	resetFlag('H');
+	bitLeaving ? flagsArray[C] = 1 : flagsArray[C] = 0;
+
+	//resetFlag('N');
+
+	flagsArray[N] = 0;
+	//resetFlag('H');
+
+	flagsArray[H] = 0;
 	if (n == 0)
-		setFlag('Z');
+		//setFlag('Z');
+
+		flagsArray[Z] = 1;
 	else
-		resetFlag('Z');
+		//resetFlag('Z');
+
+		flagsArray[Z] = 0;
+	updateFlags();
 
 }
 void CPU::RRC_n(uint8_t* n, uint8_t* none) {
 	uint8_t bitLeaving = 1 & *n;
 	*n = (bitLeaving << 7) | (*n >> 1);
-	bitLeaving ? setFlag('C') : resetFlag('C');
+	//bitLeaving ? //setFlag('C') : resetFlag('C');
 
-	resetFlag('N');
-	resetFlag('H');
+	bitLeaving ? flagsArray[C] = 1 : flagsArray[C] = 0;
+
+	//resetFlag('N');
+
+	flagsArray[N] = 0;
+	//resetFlag('H');
+
+	flagsArray[H] = 0;
 	if (*n == 0)
-		setFlag('Z');
+		//setFlag('Z');
+
+		flagsArray[Z] = 1;
 	else
-		resetFlag('Z');
+		//resetFlag('Z');
 
+		flagsArray[Z] = 0;
 
+	updateFlags();
 	/*if (n == getA())
 		AF &= 0xfff0;*/
 }
@@ -1656,26 +1970,46 @@ void CPU::RRC_$HL(uint8_t* none1, uint8_t* none2) {
 	uint8_t bitLeaving = 1 & n;
 	n = (bitLeaving << 7) | (n >> 1);
 	bus->mmu->write(HL, n);
-	bitLeaving ? setFlag('C') : resetFlag('C');
+	//bitLeaving ? //setFlag('C') : resetFlag('C');
+
+	bitLeaving ? flagsArray[C] = 1 : flagsArray[C] = 0;
 	if (n == 0)
-		setFlag('Z');
+		//setFlag('Z');
+
+		flagsArray[Z] = 1;
 	else
-		resetFlag('Z');
-	resetFlag('N');
-	resetFlag('H');
+		//resetFlag('Z');
+
+		flagsArray[Z] = 0;
+	//resetFlag('N');
+
+	flagsArray[N] = 0;
+	//resetFlag('H');
+	flagsArray[H] = 0;
+	updateFlags();
 }
 void CPU::RR_n(uint8_t* n, uint8_t* none) {
 	uint8_t bitLeaving = 1 & *n;
 	*n = (getFlag('C') << 7) | (*n >> 1);
-	bitLeaving ? setFlag('C') : resetFlag('C');
+	//bitLeaving ? //setFlag('C') : resetFlag('C');
 
-	resetFlag('N');
-	resetFlag('H');
+	bitLeaving ? flagsArray[C] = 1 : flagsArray[C] = 0;
+
+	//resetFlag('N');
+
+	flagsArray[N] = 0;
+	//resetFlag('H');
+
+	flagsArray[H] = 0;
 
 	if (*n == 0)
-		setFlag('Z');
+		//setFlag('Z');
+
+		flagsArray[Z] = 1;
 	else
-		resetFlag('Z');
+		//resetFlag('Z');
+		flagsArray[Z] = 0;
+	updateFlags();
 
 
 	/*if (n == getA())
@@ -1683,28 +2017,48 @@ void CPU::RR_n(uint8_t* n, uint8_t* none) {
 }
 void CPU::RR_$HL(uint8_t* none1, uint8_t* none2) {
 	uint8_t n = bus->mmu->read(HL);
-	uint8_t bitLeaving = 1 & n;
-	n = getFlag('C') | (n >> 1);
+	uint8_t bitLeaving = 0X01 & n;
+	n = (getFlag('C') << 7) | (n >> 1);
 	bus->mmu->write(HL, n);
-	bitLeaving ? setFlag('C') : resetFlag('C');
+	//bitLeaving ? //setFlag('C') : resetFlag('C');
+
+	bitLeaving ? flagsArray[C] = 1 : flagsArray[C] = 0;
 	if (n == 0)
-		setFlag('Z');
+		//setFlag('Z');
+
+		flagsArray[Z] = 1;
 	else
-		resetFlag('Z');
-	resetFlag('N');
-	resetFlag('H');
+		//resetFlag('Z');
+
+		flagsArray[Z] = 0;
+	//resetFlag('N');
+
+	flagsArray[N] = 0;
+	//resetFlag('H');
+	flagsArray[H] = 0;
+	updateFlags();
 }
 void CPU::SLA_n(uint8_t* n, uint8_t* none) {
 	uint8_t bitLeaving = (1 & (*n >> 7));
 	*n <<= 1;
-	bitLeaving ? setFlag('C') : resetFlag('C');
+	//bitLeaving ? //setFlag('C') : resetFlag('C');
 
-	resetFlag('N');
-	resetFlag('H');
+	bitLeaving ? flagsArray[C] = 1 : flagsArray[C] = 0;
+
+	//resetFlag('N');
+
+	flagsArray[N] = 0;
+	//resetFlag('H');
+
+	flagsArray[H] = 0;
 	if (*n == 0)
-		setFlag('Z');
+		//setFlag('Z');
+
+		flagsArray[Z] = 1;
 	else
-		resetFlag('Z');
+		//resetFlag('Z');
+		flagsArray[Z] = 0;
+	updateFlags();
 
 
 	//if (n == getA())
@@ -1716,31 +2070,53 @@ void CPU::SLA_$HL(uint8_t* none1, uint8_t* none2) {
 	uint8_t bitLeaving = (1 & (n >> 7));
 	n <<= 1;
 	bus->mmu->write(HL, n);
-	bitLeaving ? setFlag('C') : resetFlag('C');
+	//bitLeaving ? //setFlag('C') : resetFlag('C');
 
-	resetFlag('N');
-	resetFlag('H');
+	bitLeaving ? flagsArray[C] = 1 : flagsArray[C] = 0;
+
+	//resetFlag('N');
+
+	flagsArray[N] = 0;
+	//resetFlag('H');
+
+	flagsArray[H] = 0;
 	if (n == 0)
-		setFlag('Z');
+		//setFlag('Z');
+
+		flagsArray[Z] = 1;
 	else
-		resetFlag('Z');
+		//resetFlag('Z');
+		flagsArray[Z] = 0;
+	updateFlags();
 
 
 }
 void CPU::SRA_n(uint8_t* n, uint8_t* none) {
-	uint8_t bitLeaving = (1 & *n);
+	uint8_t bitLeaving = (0x01 & *n);
 	*n >>= 1;
-	bitLeaving ? setFlag('C') : resetFlag('C');
-	bitLeaving = (1 & (*n >> 6));
-	*n &= bitLeaving << 7;
+	//bitLeaving ? //setFlag('C') : resetFlag('C');
 
-	resetFlag('N');
-	resetFlag('H');
-	//resetFlag('C');//web table
+	bitLeaving ? flagsArray[C] = 1 : flagsArray[C] = 0;
+	bitLeaving = (0x01 & (*n >> 6));
+	*n |= bitLeaving << 7;
+
+	//resetFlag('N');
+
+	flagsArray[N] = 0;
+	//resetFlag('H');
+
+	flagsArray[H] = 0;
+	////resetFlag('C');//web table
+
+	//flagsArray[C] = 0;//web table
 	if (*n == 0)
-		setFlag('Z');
+		//setFlag('Z');
+
+		flagsArray[Z] = 1;
 	else
-		resetFlag('Z');
+		//resetFlag('Z');
+		flagsArray[Z] = 0;
+	updateFlags();
 
 
 	/*if (n == getA())
@@ -1748,31 +2124,51 @@ void CPU::SRA_n(uint8_t* n, uint8_t* none) {
 }
 void CPU::SRA_$HL(uint8_t* none1, uint8_t* none2) {
 	uint8_t n = bus->mmu->read(HL);
-	uint8_t bitLeaving = (1 & n);
+	uint8_t bitLeaving = (0x01 & n);
 	n >>= 1;
-	bitLeaving ? setFlag('C') : resetFlag('C');
-	bitLeaving = (1 & (n >> 6));
-	n &= bitLeaving << 7;
+	//bitLeaving ? //setFlag('C') : resetFlag('C');
+
+	bitLeaving ? flagsArray[C] = 1 : flagsArray[C] = 0;
+	bitLeaving = (0x01 & (n >> 6));
+	n |= bitLeaving << 7;
 	bus->mmu->write(HL, n);
 	if (n == 0)
-		setFlag('Z');
+		//setFlag('Z');
+
+		flagsArray[Z] = 1;
 	else
-		resetFlag('Z');
-	resetFlag('N');
-	resetFlag('H');
+		//resetFlag('Z');
+
+		flagsArray[Z] = 0;
+	//resetFlag('N');
+
+	flagsArray[N] = 0;
+	//resetFlag('H');
+	flagsArray[H] = 0;
+	updateFlags();
 }
 void CPU::SRL_n(uint8_t* n, uint8_t* none) {
 	uint8_t bitLeaving = (1 & *n);
 	*n >>= 1;
-	bitLeaving ? setFlag('C') : resetFlag('C');
+	//bitLeaving ? //setFlag('C') : resetFlag('C');
+
+	bitLeaving ? flagsArray[C] = 1 : flagsArray[C] = 0;
 	*n &= 0x7f;
 
-	resetFlag('N');
-	resetFlag('H');
+	//resetFlag('N');
+
+	flagsArray[N] = 0;
+	//resetFlag('H');
+
+	flagsArray[H] = 0;
 	if (*n == 0)
-		setFlag('Z');
+		//setFlag('Z');
+
+		flagsArray[Z] = 1;
 	else
-		resetFlag('Z');
+		//resetFlag('Z');
+		flagsArray[Z] = 0;
+	updateFlags();
 
 
 	//if (n == getA())
@@ -1782,24 +2178,40 @@ void CPU::SRL_$HL(uint8_t* none1, uint8_t* none2) {
 	uint8_t n = bus->mmu->read(HL);
 	uint8_t bitLeaving = (1 & n);
 	n >>= 1;
-	bitLeaving ? setFlag('C') : resetFlag('C');
+	//bitLeaving ? //setFlag('C') : resetFlag('C');
+
+	bitLeaving ? flagsArray[C] = 1 : flagsArray[C] = 0;
 	n &= 0x7f;
 	bus->mmu->write(HL, n);
 
-	resetFlag('N');
-	resetFlag('H');
+	//resetFlag('N');
+
+	flagsArray[N] = 0;
+	//resetFlag('H');
+
+	flagsArray[H] = 0;
 	if (n == 0)
-		setFlag('Z');
+		//setFlag('Z');
+
+		flagsArray[Z] = 1;
 	else
-		resetFlag('Z');
+		//resetFlag('Z');
+		flagsArray[Z] = 0;
+	updateFlags();
 
 }
 void CPU::BIT_$n_r(uint8_t* $n, uint8_t* r) {
 	uint8_t bit = 1 & (*r >> *$n);
-	bit ? resetFlag('Z') : setFlag('Z');
+	//bit ? //resetFlag('Z') : setFlag('Z');
 
-	resetFlag('N');
-	setFlag('H');
+	bit ? flagsArray[Z] = 0 : flagsArray[Z] = 1;
+
+	//resetFlag('N');
+
+	flagsArray[N] = 0;
+	//setFlag('H');
+	flagsArray[H] = 1;
+	updateFlags();
 
 }
 void CPU::SET_$n_r(uint8_t* $n, uint8_t* r) {
@@ -1918,6 +2330,7 @@ void CPU::RETI(uint8_t* none, uint8_t* none2) {
 	PC = BytesToWord(msb, lsb);*/
 	POP_nn(NULL, (uint8_t*)&PC);
 	IME = true;
+	//setIME = true;
 }
 
 
@@ -2894,7 +3307,7 @@ void CPU::ExecuteOpcode(uint16_t opcode) {
 		LD_n_$HL(param1, param2);
 		break;
 	case 0x76:
-		lastOpcodeCycles = 0;
+		lastOpcodeCycles = 1;
 		param1 = NULL;
 		param2 = NULL;
 		HALT(param1, param2);
@@ -5475,6 +5888,13 @@ void CPU::reset()
 		AF = 0x01B0;
 
 	AF = 0x01B0;
+	//PC = 0x100;
+	BC = 0x0000;
+	DE = 0xFF56;
+	HL = 0x000D;
+	SP = 0xFFFE;
+
+	/*AF = 0x01B0;
 	PC = 0x100;
 	BC = 0x0000;
 	BC = 0x0013;
@@ -5482,7 +5902,7 @@ void CPU::reset()
 	DE = 0x00D8;
 	HL = 0x000D;
 	HL = 0X014D;
-	SP = 0xFFFE;
+	SP = 0xFFFE;*/
 
 
 }
@@ -5502,6 +5922,53 @@ void CPU::updateCycelPerIncrementTIMA(uint8_t freqIndex) {
 		break;
 	}
 }
+//void CPU::updateTimers()
+//{
+//
+//	//if (cyclesPerIncrementDIVIDER<=0) {
+//	//	bus->interrupt->io[0x04]++;//divider increment
+//	//	cyclesPerIncrementDIVIDER += 255;
+//	//}
+//	//else {
+//	//	cyclesPerIncrementDIVIDER -= lastOpcodeCycles;
+//	//}
+//	if (cycelsCounter <4)
+//		return;
+//	uint8_t cycels = cycelsCounter / 4;
+//
+//
+//
+//	
+//	if (cyclesPerIncrementDIVIDER <= 0) {
+//		bus->interrupt->io[0x04]++;//divider increment
+//		cyclesPerIncrementDIVIDER += 255;
+//	}
+//	else {
+//		cyclesPerIncrementDIVIDER -= cycels;
+//	}
+//
+//
+//	uint8_t timcont = bus->mmu->read(0xff07);//timer controler reister
+//	if ((timcont >> 2) & 0x1) {//counting
+//		
+//		if (cyclesPerIncrementTIMA <= 0) {
+//			updateCycelPerIncrementTIMA(timcont & 0x3);
+//
+//			if (bus->mmu->read(0xff05)+1 == 0x100) {//tima overflow
+//				bus->mmu->write(0xff05, bus->mmu->read(0xff06));//load tma to tima
+//				bus->interrupt->setInterruptRequest(2);
+//			}
+//			else {
+//				bus->mmu->write(0xff05, bus->mmu->read(0xff05) + 1);//tima increment
+//			}
+//		}
+//		else {
+//			cyclesPerIncrementTIMA -= cycels;
+//		}
+//	}
+//
+//}
+
 void CPU::updateTimers()
 {
 
@@ -5529,9 +5996,9 @@ void CPU::updateTimers()
 	}
 
 }
-
 uint8_t CPU::getOpcode()
 {
+	
 	if (halt)
 		return 0x76;
 	uint8_t opcode = *getN();

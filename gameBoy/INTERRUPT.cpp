@@ -310,10 +310,7 @@ void INTERRUPT::InterruptsHandler()
 				InterruptHandler(i);
 				i = 5;
 			}
-			if (bus->cpu->halt) {
-				bus->cpu->lastOpcodeCycles += 1;
-				bus->cpu->halt = false;
-			}
+			bus->cpu->halt = false;
 		}
 	}
 	if (bus->cpu->setIME) {
