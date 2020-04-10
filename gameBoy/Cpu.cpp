@@ -2544,6 +2544,7 @@ void CPU::Execute(uint16_t opcode)
 	}
 
 	(this->*op.operate)(param1, param2);
+	AF &= 0xfff0;
 }
 void CPU::ExecuteOpcode(uint16_t opcode) {
 
@@ -5888,7 +5889,7 @@ void CPU::reset()
 		AF = 0x01B0;
 
 	AF = 0x01B0;
-	//PC = 0x100;
+	PC = 0x100;
 	BC = 0x0000;
 	DE = 0xFF56;
 	HL = 0x000D;
@@ -5922,70 +5923,39 @@ void CPU::updateCycelPerIncrementTIMA(uint8_t freqIndex) {
 		break;
 	}
 }
-//void CPU::updateTimers()
-//{
-//
-//	//if (cyclesPerIncrementDIVIDER<=0) {
-//	//	bus->interrupt->io[0x04]++;//divider increment
-//	//	cyclesPerIncrementDIVIDER += 255;
-//	//}
-//	//else {
-//	//	cyclesPerIncrementDIVIDER -= lastOpcodeCycles;
-//	//}
-//	if (cycelsCounter <4)
-//		return;
-//	uint8_t cycels = cycelsCounter / 4;
-//
-//
-//
-//	
-//	if (cyclesPerIncrementDIVIDER <= 0) {
-//		bus->interrupt->io[0x04]++;//divider increment
-//		cyclesPerIncrementDIVIDER += 255;
-//	}
-//	else {
-//		cyclesPerIncrementDIVIDER -= cycels;
-//	}
-//
-//
-//	uint8_t timcont = bus->mmu->read(0xff07);//timer controler reister
-//	if ((timcont >> 2) & 0x1) {//counting
-//		
-//		if (cyclesPerIncrementTIMA <= 0) {
-//			updateCycelPerIncrementTIMA(timcont & 0x3);
-//
-//			if (bus->mmu->read(0xff05)+1 == 0x100) {//tima overflow
-//				bus->mmu->write(0xff05, bus->mmu->read(0xff06));//load tma to tima
-//				bus->interrupt->setInterruptRequest(2);
-//			}
-//			else {
-//				bus->mmu->write(0xff05, bus->mmu->read(0xff05) + 1);//tima increment
-//			}
-//		}
-//		else {
-//			cyclesPerIncrementTIMA -= cycels;
-//		}
-//	}
-//
-//}
-
 void CPU::updateTimers()
 {
 
-	if (cyclesPerIncrementDIVIDER - lastOpcodeCycles <= 0) {
+	//if (cyclesPerIncrementDIVIDER<=0) {
+	//	bus->interrupt->io[0x04]++;//divider increment
+	//	cyclesPerIncrementDIVIDER += 255;
+	//}
+	//else {
+	//	cyclesPerIncrementDIVIDER -= lastOpcodeCycles;
+	//}
+	if (cycelsCounter <4)
+		return;
+	uint8_t cycels = cycelsCounter / 4;
+
+
+
+	
+	if (cyclesPerIncrementDIVIDER <= 0) {
 		bus->interrupt->io[0x04]++;//divider increment
-		cyclesPerIncrementDIVIDER = 255;
+		cyclesPerIncrementDIVIDER += 255;
 	}
 	else {
-		cyclesPerIncrementDIVIDER -= lastOpcodeCycles;
+		cyclesPerIncrementDIVIDER -= cycels;
 	}
+
+
 	uint8_t timcont = bus->mmu->read(0xff07);//timer controler reister
 	if ((timcont >> 2) & 0x1) {//counting
-		cyclesPerIncrementTIMA -= lastOpcodeCycles;
+		
 		if (cyclesPerIncrementTIMA <= 0) {
 			updateCycelPerIncrementTIMA(timcont & 0x3);
 
-			if (bus->mmu->read(0xff05) == 255) {//tima overflow
+			if (bus->mmu->read(0xff05)+1 == 0x100) {//tima overflow
 				bus->mmu->write(0xff05, bus->mmu->read(0xff06));//load tma to tima
 				bus->interrupt->setInterruptRequest(2);
 			}
@@ -5993,9 +5963,40 @@ void CPU::updateTimers()
 				bus->mmu->write(0xff05, bus->mmu->read(0xff05) + 1);//tima increment
 			}
 		}
+		else {
+			cyclesPerIncrementTIMA -= cycels;
+		}
 	}
 
 }
+
+//void CPU::updateTimers()
+//{
+//
+//	if (cyclesPerIncrementDIVIDER - lastOpcodeCycles <= 0) {
+//		bus->interrupt->io[0x04]++;//divider increment
+//		cyclesPerIncrementDIVIDER = 255;
+//	}
+//	else {
+//		cyclesPerIncrementDIVIDER -= lastOpcodeCycles;
+//	}
+//	uint8_t timcont = bus->mmu->read(0xff07);//timer controler reister
+//	if ((timcont >> 2) & 0x1) {//counting
+//		cyclesPerIncrementTIMA -= lastOpcodeCycles;
+//		if (cyclesPerIncrementTIMA <= 0) {
+//			updateCycelPerIncrementTIMA(timcont & 0x3);
+//
+//			if (bus->mmu->read(0xff05) == 255) {//tima overflow
+//				bus->mmu->write(0xff05, bus->mmu->read(0xff06));//load tma to tima
+//				bus->interrupt->setInterruptRequest(2);
+//			}
+//			else {
+//				bus->mmu->write(0xff05, bus->mmu->read(0xff05) + 1);//tima increment
+//			}
+//		}
+//	}
+//
+//}
 uint8_t CPU::getOpcode()
 {
 	

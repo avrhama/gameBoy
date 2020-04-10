@@ -5,11 +5,13 @@ void DMA::connectToBus(BUS* bus)
 	this->bus = bus;
 }
 
-void DMA::transfer(uint8_t sourceAddress)
+void DMA::transfer(uint8_t sourceAddressPrefix)
 {
-	//bus->mmu->write(0xff46, sourceAddress);
-	for(int i=0;i<160;i++)
-		bus->mmu->write(0xfe00+i, sourceAddress+i);
+	transfering = true;
+	uint16_t sourceAddress = sourceAddressPrefix << 8;
+	for(uint8_t i=0;i<160;i++)
+		bus->gpu->oam[i] = bus->mmu->read(sourceAddress + i);
+	transfering = false;
 		
 	//Sleep(160);
 }

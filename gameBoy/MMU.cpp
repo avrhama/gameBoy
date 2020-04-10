@@ -17,6 +17,9 @@ void MMU::connectToBus(BUS* bus)
 }
 void MMU::write(uint16_t address, uint8_t value)
 {
+	if (bus->dma->transfering)
+		if (address < 0xff80)
+			return;
 	if (bus->pipeEnable&&false) {
 		bus->p->read();
 		uint16_t pipeAddress = bus->p->rBuffer[0] << 8 | bus->p->rBuffer[1];

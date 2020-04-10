@@ -101,7 +101,7 @@ int main(void) {
 	"roms\\pokemon.gb", 
 	"roms\\tetris.gb",
 	"test\\instr_timing\\instr_timing.gb"};//faild
-	uint8_t romIndex =3;
+	uint8_t romIndex =12;
 	//char * romPath = roms[5];
 	
 	//BC = 0x12FE;
@@ -117,17 +117,22 @@ int main(void) {
 	BUS * bus=new BUS();
 	CPU * cpu=new CPU();
 	GPU * gpu=new GPU();
+	DMA* dma = new DMA();
+	CARTRIDGE* cartridge = new CARTRIDGE();
+	INTERRUPT* interrupt = new INTERRUPT();
+	MMU* mmu = new MMU();
+	DISPLAY* display = new DISPLAY(0, 0, 160, 144, 1);
+	JOYPAD* joypad = new JOYPAD();
 	gpu->reset();
-	CARTRIDGE * cartridge=new CARTRIDGE();
-	INTERRUPT * interrupt=new INTERRUPT();
-	JOYPAD * joypad=new JOYPAD();
+	
+
 	interrupt->reset();
-	MMU * mmu=new MMU();
-	DISPLAY *display=new DISPLAY(0, 0, 160, 144, 1);
+
 	bus->connectCPU(cpu);
 	bus->connectMMU(mmu);
 	bus->connectInterrupt(interrupt);
 	bus->connectGPU(gpu);
+	bus->connectDMA(dma);
 	bus->connectDisplay(display);
 	bus->connectCartridge(cartridge);
 	bus->connectJoypad(joypad);

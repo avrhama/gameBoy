@@ -153,6 +153,9 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 		case 0x44:
 			io[0x44] = 0;
 			break;
+		case 0x46:
+			bus->dma->transfer(value);
+			break;
 		case 0x07:
 			if ((value & 0x03) != (io[0x07] & 0x03))
 				bus->cpu->updateCycelPerIncrementTIMA(value & 0x03);

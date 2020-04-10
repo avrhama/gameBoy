@@ -4,6 +4,7 @@
 #include "BUS.h"
 #include "CPU.h"
 #include "GPU.h"
+#include "DMA.h"
 #include "CARTRIDGE.h"
 #include "INTERRUPT.h"
 class  MMU

@@ -3,6 +3,7 @@
 #include "BUS.h"
 #include "CPU.h"
 #include "MMU.h"
+#include "DMA.h"
 #include<iostream>
 class INTERRUPT
 {
