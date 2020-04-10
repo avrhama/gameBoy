@@ -81,7 +81,7 @@ int main(void) {
 	
 	//testRun();
 	//return 0;
-	string romsPaths[18] =
+	string romsPaths[19] =
 	{ 
 	"test\\cpu_instrs\\cpu_instrs.gb",
 	"test\\cpu_instrs\\individual\\01-special.gb",//good//blargg
@@ -100,8 +100,9 @@ int main(void) {
 	 "roms\\megaman.gb",
 	"roms\\pokemon.gb", 
 	"roms\\tetris.gb",
-	"test\\instr_timing\\instr_timing.gb"};//faild
-	uint8_t romIndex =12;
+	"test\\instr_timing\\instr_timing.gb",
+	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\tima_reload.gb"};//faild
+	uint8_t romIndex =2;
 	//char * romPath = roms[5];
 	
 	//BC = 0x12FE;
@@ -188,6 +189,8 @@ int main(void) {
 	int cyclesInFrame = cpu->cpuFreq/framesForSeconds;
 	uint16_t lastopcode = 0;
 	int steps = 0;
+	
+	
 	while (true) {
 		do {
 			opcode = cpu->getOpcode();
@@ -254,6 +257,7 @@ int main(void) {
 		    cpu->ExecuteOpcode(opcode);
 			pipeRecive(bus, opcode, lastopcode, steps, "Execute");
 			cpu->cycelsCounter += cpu->lastOpcodeCycles;
+			cpu->lastOpcodeCycles *= 4;
 			//cpu->lastOpcodeCycles *=4;
 			cpu->updateTimers();
 			//pipeRecive(bus, opcode, lastopcode, steps, "updateTimers");
@@ -261,7 +265,8 @@ int main(void) {
 			//pipeRecive(bus, opcode, lastopcode, steps, "tick");
 			joypad->updateKeys();
 		
-			interrupt->InterruptsHandler();
+			cpu->cycelsCounter += interrupt->InterruptsHandler()*4;
+			
 			//pipeRecive(bus, opcode, lastopcode, steps, "InterruptsHandler");
 			lastopcode = opcode;
 			cyclesInFrameCounter += cpu->lastOpcodeCycles;
@@ -290,6 +295,10 @@ int main(void) {
 				cpu->cycelsCounter = cpu->cycelsCounter%4;
 			/*if(cyclesInFrameCounter%250==0)
 				Sleep(1);*/
+		/*	int t = time.milliSec;
+			time.addMicroSec(cpu->lastOpcodeCycles);
+	if(t!=time.milliSec)
+			time.print();*/
 		} while (cyclesInFrameCounter<cyclesInFrame*cpu->speedMode); //(cpu.PC != 0x100 && counter > 0);//||mmu.biosLoaded);//cpu.PC!=0x100
 		cyclesInFrameCounter = 0;
 		display->update();

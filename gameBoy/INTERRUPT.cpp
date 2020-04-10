@@ -27,7 +27,6 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 		break;
 	} case 0x07: {
 		if ((value & 0x03) != (io[0x07] & 0x03))
-			bus->cpu->updateCycelPerIncrementTIMA(value & 0x03);
 		printf("opcode:0x07 // TAC value:%04x\n", value);
 		break;
 	} case 0x10: {
@@ -149,6 +148,7 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 		{
 		case 0x04:
 			io[0x04] = 0;
+			bus->cpu->updateCycelPerIncrementTIMA(io[0x07] & 0x03);
 			break;
 		case 0x44:
 			io[0x44] = 0;
@@ -301,9 +301,9 @@ bool INTERRUPT::isInterruptEnable(uint8_t bit)
 	return (InterruptEnabledRegister >> bit) & 0x01;
 }
 
-void INTERRUPT::InterruptsHandler()
+uint8_t INTERRUPT::InterruptsHandler()
 {
-	
+	uint8_t cycles = 0;
 	for (int i = 0;i < 5;i++) {
 		if (isInterruptRequsted(i) && isInterruptEnable(i)) {
 			
@@ -311,15 +311,19 @@ void INTERRUPT::InterruptsHandler()
 				bus->cpu->IME = false;
 				resetInterruptRequest(i);
 				InterruptHandler(i);
-				i = 5;
+				return 5;
 			}
-			bus->cpu->halt = false;
+			if (bus->cpu->halt) {
+				bus->cpu->halt = false;
+				cycles = 0;
+			}
 		}
 	}
 	if (bus->cpu->setIME) {
 		bus->cpu->setIME = false;
 		bus->cpu->IME = true;
 	}
+	return cycles;
 }
 void INTERRUPT::InterruptHandler(uint8_t interrupt)
 {
@@ -345,7 +349,7 @@ void INTERRUPT::InterruptHandler(uint8_t interrupt)
 		bus->cpu->PC++;
 	bus->cpu->PUSH_nn(((uint8_t*)&bus->cpu->PC), NULL);
 	bus->cpu->PC = interruptHandlerAdd;
-	bus->cpu->lastOpcodeCycles += 5;
+	//bus->cpu->lastOpcodeCycles += 5;
 	
 }
 //uint8_t* INTERRUPT::getMemCell(uint16_t address)
@@ -491,4 +495,6 @@ void INTERRUPT::reset()
 	io[0x4B] = 0x00;// WX
 	io[0x44] = 0x88;
 	io[0x44] = 0x00;
+	//io[0x40] = 0;// LCDC
+	
 }

@@ -105,7 +105,7 @@ switch(opcode){
 			RRCA(param1,param2);
 			break;
 		case 0x10:
-			lastOpcodeCycles=0;
+			lastOpcodeCycles=1;
 			param1=NULL;
 			param2=NULL;
 			STOP(param1,param2);
@@ -210,7 +210,7 @@ switch(opcode){
 		case 0x20:
 			lastOpcodeCycles=2;
 			immidiateN = bus->mmu->read(PC++);
-			param1=flagsNames;
+			param1=(uint8_t*)flagsNames;
 			param2=&immidiateN;
 			JR_cc_n(param1,param2);
 			break;
@@ -263,7 +263,7 @@ switch(opcode){
 		case 0x28:
 			lastOpcodeCycles=2;
 			immidiateN = bus->mmu->read(PC++);
-			param1=flagsNames+1;
+			param1=(uint8_t*)flagsNames+1;
 			param2=&immidiateN;
 			JR_cc_n(param1,param2);
 			break;
@@ -313,7 +313,7 @@ switch(opcode){
 		case 0x30:
 			lastOpcodeCycles=2;
 			immidiateN = bus->mmu->read(PC++);
-			param1=flagsNames+2;
+			param1=(uint8_t*)flagsNames+2;
 			param2=&immidiateN;
 			JR_cc_n(param1,param2);
 			break;
@@ -368,7 +368,7 @@ switch(opcode){
 		case 0x38:
 			lastOpcodeCycles=2;
 			immidiateN = bus->mmu->read(PC++);
-			param1=flagsNames+3;
+			param1=(uint8_t*)flagsNames+3;
 			param2=&immidiateN;
 			JR_cc_n(param1,param2);
 			break;
@@ -746,7 +746,7 @@ switch(opcode){
 			LD_n_$HL(param1,param2);
 			break;
 		case 0x76:
-			lastOpcodeCycles=0;
+			lastOpcodeCycles=1;
 			param1=NULL;
 			param2=NULL;
 			HALT(param1,param2);
@@ -1200,7 +1200,7 @@ switch(opcode){
 			break;
 		case 0xc0:
 			lastOpcodeCycles=2;
-			param1=flagsNames;
+			param1=(uint8_t*)flagsNames;
 			param2=NULL;
 			RET_cc(param1,param2);
 			break;
@@ -1215,7 +1215,7 @@ switch(opcode){
 			lsb = bus->mmu->read(PC++);
 			msb = bus->mmu->read(PC++);
 			immidiateNN = msb << 8 | lsb;
-			param1=flagsNames;
+			param1=(uint8_t*)flagsNames;
 			param2=(uint8_t*)&immidiateNN;
 			JP_cc_nn(param1,param2);
 			break;
@@ -1233,7 +1233,7 @@ switch(opcode){
 			lsb = bus->mmu->read(PC++);
 			msb = bus->mmu->read(PC++);
 			immidiateNN = msb << 8 | lsb;
-			param1=flagsNames;
+			param1=(uint8_t*)flagsNames;
 			param2=(uint8_t*)&immidiateNN;
 			CALL_cc_nn(param1,param2);
 			break;
@@ -1258,7 +1258,7 @@ switch(opcode){
 			break;
 		case 0xc8:
 			lastOpcodeCycles=2;
-			param1=flagsNames+1;
+			param1=(uint8_t*)flagsNames+1;
 			param2=NULL;
 			RET_cc(param1,param2);
 			break;
@@ -1273,7 +1273,7 @@ switch(opcode){
 			lsb = bus->mmu->read(PC++);
 			msb = bus->mmu->read(PC++);
 			immidiateNN = msb << 8 | lsb;
-			param1=flagsNames+1;
+			param1=(uint8_t*)flagsNames+1;
 			param2=(uint8_t*)&immidiateNN;
 			JP_cc_nn(param1,param2);
 			break;
@@ -1282,7 +1282,7 @@ switch(opcode){
 			lsb = bus->mmu->read(PC++);
 			msb = bus->mmu->read(PC++);
 			immidiateNN = msb << 8 | lsb;
-			param1=flagsNames+1;
+			param1=(uint8_t*)flagsNames+1;
 			param2=(uint8_t*)&immidiateNN;
 			CALL_cc_nn(param1,param2);
 			break;
@@ -1310,7 +1310,7 @@ switch(opcode){
 			break;
 		case 0xd0:
 			lastOpcodeCycles=2;
-			param1=flagsNames+2;
+			param1=(uint8_t*)flagsNames+2;
 			param2=NULL;
 			RET_cc(param1,param2);
 			break;
@@ -1325,7 +1325,7 @@ switch(opcode){
 			lsb = bus->mmu->read(PC++);
 			msb = bus->mmu->read(PC++);
 			immidiateNN = msb << 8 | lsb;
-			param1=flagsNames+2;
+			param1=(uint8_t*)flagsNames+2;
 			param2=(uint8_t*)&immidiateNN;
 			JP_cc_nn(param1,param2);
 			break;
@@ -1334,7 +1334,7 @@ switch(opcode){
 			lsb = bus->mmu->read(PC++);
 			msb = bus->mmu->read(PC++);
 			immidiateNN = msb << 8 | lsb;
-			param1=flagsNames+2;
+			param1=(uint8_t*)flagsNames+2;
 			param2=(uint8_t*)&immidiateNN;
 			CALL_cc_nn(param1,param2);
 			break;
@@ -1359,7 +1359,7 @@ switch(opcode){
 			break;
 		case 0xd8:
 			lastOpcodeCycles=2;
-			param1=flagsNames+3;
+			param1=(uint8_t*)flagsNames+3;
 			param2=NULL;
 			RET_cc(param1,param2);
 			break;
@@ -1374,7 +1374,7 @@ switch(opcode){
 			lsb = bus->mmu->read(PC++);
 			msb = bus->mmu->read(PC++);
 			immidiateNN = msb << 8 | lsb;
-			param1=flagsNames+3;
+			param1=(uint8_t*)flagsNames+3;
 			param2=(uint8_t*)&immidiateNN;
 			JP_cc_nn(param1,param2);
 			break;
@@ -1383,7 +1383,7 @@ switch(opcode){
 			lsb = bus->mmu->read(PC++);
 			msb = bus->mmu->read(PC++);
 			immidiateNN = msb << 8 | lsb;
-			param1=flagsNames+3;
+			param1=(uint8_t*)flagsNames+3;
 			param2=(uint8_t*)&immidiateNN;
 			CALL_cc_nn(param1,param2);
 			break;
@@ -1984,7 +1984,7 @@ switch(opcode){
 			BIT_$n_r(param1,param2);
 			break;
 		case 0xcb46:
-			lastOpcodeCycles=3;
+			lastOpcodeCycles=4;
 			bit = 0;
 			immidiateN = bus->mmu->read(HL);
 			param1=&bit;
@@ -2041,7 +2041,7 @@ switch(opcode){
 			BIT_$n_r(param1,param2);
 			break;
 		case 0xcb4e:
-			lastOpcodeCycles=3;
+			lastOpcodeCycles=4;
 			bit = 1;
 			immidiateN = bus->mmu->read(HL);
 			param1=&bit;
@@ -2098,7 +2098,7 @@ switch(opcode){
 			BIT_$n_r(param1,param2);
 			break;
 		case 0xcb56:
-			lastOpcodeCycles=3;
+			lastOpcodeCycles=4;
 			bit = 2;
 			immidiateN = bus->mmu->read(HL);
 			param1=&bit;
@@ -2155,7 +2155,7 @@ switch(opcode){
 			BIT_$n_r(param1,param2);
 			break;
 		case 0xcb5e:
-			lastOpcodeCycles=3;
+			lastOpcodeCycles=4;
 			bit = 3;
 			immidiateN = bus->mmu->read(HL);
 			param1=&bit;
@@ -2212,7 +2212,7 @@ switch(opcode){
 			BIT_$n_r(param1,param2);
 			break;
 		case 0xcb66:
-			lastOpcodeCycles=3;
+			lastOpcodeCycles=4;
 			bit = 4;
 			immidiateN = bus->mmu->read(HL);
 			param1=&bit;
@@ -2269,7 +2269,7 @@ switch(opcode){
 			BIT_$n_r(param1,param2);
 			break;
 		case 0xcb6e:
-			lastOpcodeCycles=3;
+			lastOpcodeCycles=4;
 			bit = 5;
 			immidiateN = bus->mmu->read(HL);
 			param1=&bit;
@@ -2326,7 +2326,7 @@ switch(opcode){
 			BIT_$n_r(param1,param2);
 			break;
 		case 0xcb76:
-			lastOpcodeCycles=3;
+			lastOpcodeCycles=4;
 			bit = 6;
 			immidiateN = bus->mmu->read(HL);
 			param1=&bit;
@@ -2383,7 +2383,7 @@ switch(opcode){
 			BIT_$n_r(param1,param2);
 			break;
 		case 0xcb7e:
-			lastOpcodeCycles=3;
+			lastOpcodeCycles=4;
 			bit = 7;
 			immidiateN = bus->mmu->read(HL);
 			param1=&bit;

@@ -34,7 +34,7 @@ for prefix in range(16):
 			if cycles!=opcodesMap[opcode]['cycles']:
 				print(hex(opcode),opcodesMap[opcode]['func'],'me:',opcodesMap[opcode]['cycles'],'other:',cycles)
 				#input('press to continue')
-			opcodesMap[opcode]['cycles']=int(cycelsRow[suffix])
+			opcodesMap[opcode]['cycles']=opcodesMap[opcode]['cycles']//4#int(cycelsRow[suffix])
 
 
 cyclesFile=open("cycles2.txt","r+")
@@ -48,7 +48,7 @@ for prefix in range(16):
 			if cycles!=opcodesMap[opcode]['cycles']:
 				print(hex(opcode),opcodesMap[opcode]['func'],'me:',opcodesMap[opcode]['cycles'],'other:',cycles)
 				#input('press to continue')
-			opcodesMap[opcode]['cycles']=int(cycelsRow[suffix])
+			opcodesMap[opcode]['cycles']=opcodesMap[opcode]['cycles']//4#int(cycelsRow[suffix])
 
 opcodesList=list(opcodesMap.values())
 print(opcodesList[0])

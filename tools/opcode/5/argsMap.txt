@@ -71,13 +71,13 @@ getBIT7:
 bit = 7;
 &bit
 NZFlag:
-flagsNames
+(uint8_t*)flagsNames
 ZFlag:
-flagsNames+1
+(uint8_t*)flagsNames+1
 NCFlag:
-flagsNames+2
+(uint8_t*)flagsNames+2
 CFlag:
-flagsNames+3
+(uint8_t*)flagsNames+3
 getRST00:
 RSTOffsets
 getRST08:

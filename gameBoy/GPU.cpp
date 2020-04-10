@@ -105,7 +105,7 @@ void GPU::tick()
 		}*/
 	
 	if (cyclesPerScanline <= 0) {
-		cyclesPerScanline += 456 * bus->cpu->speedMode;
+		cyclesPerScanline += 455 * bus->cpu->speedMode;
 		bus->interrupt->io[0x44]++;
 		uint8_t currScanLine = bus->interrupt->io[0x44];
 		if (currScanLine == 144)

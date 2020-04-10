@@ -2559,7 +2559,6 @@ void CPU::ExecuteOpcode(uint16_t opcode) {
 	//uint8_t* param1 = (this->*op.param1)();
 	//uint8_t* param2 = (this->*op.param2)();
 
-
 	switch (opcode) {
 	case 0x0:
 		lastOpcodeCycles = 1;
@@ -2667,7 +2666,7 @@ void CPU::ExecuteOpcode(uint16_t opcode) {
 		RRCA(param1, param2);
 		break;
 	case 0x10:
-		lastOpcodeCycles = 0;
+		lastOpcodeCycles = 1;
 		param1 = NULL;
 		param2 = NULL;
 		STOP(param1, param2);
@@ -4546,7 +4545,7 @@ void CPU::ExecuteOpcode(uint16_t opcode) {
 		BIT_$n_r(param1, param2);
 		break;
 	case 0xcb46:
-		lastOpcodeCycles = 3;
+		lastOpcodeCycles = 4;
 		bit = 0;
 		immidiateN = bus->mmu->read(HL);
 		param1 = &bit;
@@ -4603,7 +4602,7 @@ void CPU::ExecuteOpcode(uint16_t opcode) {
 		BIT_$n_r(param1, param2);
 		break;
 	case 0xcb4e:
-		lastOpcodeCycles = 3;
+		lastOpcodeCycles = 4;
 		bit = 1;
 		immidiateN = bus->mmu->read(HL);
 		param1 = &bit;
@@ -4660,7 +4659,7 @@ void CPU::ExecuteOpcode(uint16_t opcode) {
 		BIT_$n_r(param1, param2);
 		break;
 	case 0xcb56:
-		lastOpcodeCycles = 3;
+		lastOpcodeCycles = 4;
 		bit = 2;
 		immidiateN = bus->mmu->read(HL);
 		param1 = &bit;
@@ -4717,7 +4716,7 @@ void CPU::ExecuteOpcode(uint16_t opcode) {
 		BIT_$n_r(param1, param2);
 		break;
 	case 0xcb5e:
-		lastOpcodeCycles = 3;
+		lastOpcodeCycles = 4;
 		bit = 3;
 		immidiateN = bus->mmu->read(HL);
 		param1 = &bit;
@@ -4774,7 +4773,7 @@ void CPU::ExecuteOpcode(uint16_t opcode) {
 		BIT_$n_r(param1, param2);
 		break;
 	case 0xcb66:
-		lastOpcodeCycles = 3;
+		lastOpcodeCycles = 4;
 		bit = 4;
 		immidiateN = bus->mmu->read(HL);
 		param1 = &bit;
@@ -4831,7 +4830,7 @@ void CPU::ExecuteOpcode(uint16_t opcode) {
 		BIT_$n_r(param1, param2);
 		break;
 	case 0xcb6e:
-		lastOpcodeCycles = 3;
+		lastOpcodeCycles = 4;
 		bit = 5;
 		immidiateN = bus->mmu->read(HL);
 		param1 = &bit;
@@ -4888,7 +4887,7 @@ void CPU::ExecuteOpcode(uint16_t opcode) {
 		BIT_$n_r(param1, param2);
 		break;
 	case 0xcb76:
-		lastOpcodeCycles = 3;
+		lastOpcodeCycles = 4;
 		bit = 6;
 		immidiateN = bus->mmu->read(HL);
 		param1 = &bit;
@@ -4945,7 +4944,7 @@ void CPU::ExecuteOpcode(uint16_t opcode) {
 		BIT_$n_r(param1, param2);
 		break;
 	case 0xcb7e:
-		lastOpcodeCycles = 3;
+		lastOpcodeCycles = 4;
 		bit = 7;
 		immidiateN = bus->mmu->read(HL);
 		param1 = &bit;
@@ -5856,12 +5855,15 @@ void CPU::ExecuteOpcode(uint16_t opcode) {
 		SET_$n_r(param1, param2);
 		break;
 	}
+	
 
 	AF &= 0xfff0;
 	lastOpcode = opcode;
 	if ((opcode & 0xFF00) == 0xCB00) {
-		lastOpcodeCycles += 1;
+		//lastOpcodeCycles += 1;
 	}
+
+	time.addMicroSec(lastOpcodeCycles);
 }
 void CPU::reset()
 {
@@ -5923,39 +5925,73 @@ void CPU::updateCycelPerIncrementTIMA(uint8_t freqIndex) {
 		break;
 	}
 }
+//void CPU::updateTimers()
+//{
+//
+//	//if (cyclesPerIncrementDIVIDER<=0) {
+//	//	bus->interrupt->io[0x04]++;//divider increment
+//	//	cyclesPerIncrementDIVIDER += 255;
+//	//}
+//	//else {
+//	//	cyclesPerIncrementDIVIDER -= lastOpcodeCycles;
+//	//}
+//	if (cycelsCounter <4)
+//		return;
+//	uint8_t cycels = cycelsCounter / 4;
+//
+//
+//
+//	
+//	if (cyclesPerIncrementDIVIDER <= 0) {
+//		bus->interrupt->io[0x04]++;//divider increment
+//		cyclesPerIncrementDIVIDER += 255;
+//	}
+//	else {
+//		cyclesPerIncrementDIVIDER -= cycels;
+//	}
+//
+//
+//	uint8_t timcont = bus->mmu->read(0xff07);//timer controler reister
+//	if ((timcont >> 2) & 0x1) {//counting
+//		
+//		if (cyclesPerIncrementTIMA <= 0) {
+//			updateCycelPerIncrementTIMA(timcont & 0x3);
+//
+//			if (bus->mmu->read(0xff05)+1 == 0x100) {//tima overflow
+//				bus->mmu->write(0xff05, bus->mmu->read(0xff06));//load tma to tima
+//				if (bus->mmu->read(0xff06) != 0)
+//					int y= 0;
+//				bus->interrupt->setInterruptRequest(2);
+//			}
+//			else {
+//				bus->mmu->write(0xff05, bus->mmu->read(0xff05) + 1);//tima increment
+//			}
+//		}
+//		else {
+//			cyclesPerIncrementTIMA -= cycels;
+//		}
+//	}
+//
+//}
+
 void CPU::updateTimers()
 {
 
-	//if (cyclesPerIncrementDIVIDER<=0) {
-	//	bus->interrupt->io[0x04]++;//divider increment
-	//	cyclesPerIncrementDIVIDER += 255;
-	//}
-	//else {
-	//	cyclesPerIncrementDIVIDER -= lastOpcodeCycles;
-	//}
-	if (cycelsCounter <4)
-		return;
-	uint8_t cycels = cycelsCounter / 4;
-
-
-
-	
-	if (cyclesPerIncrementDIVIDER <= 0) {
+	if (cyclesPerIncrementDIVIDER - lastOpcodeCycles <= 0) {
 		bus->interrupt->io[0x04]++;//divider increment
 		cyclesPerIncrementDIVIDER += 255;
 	}
 	else {
-		cyclesPerIncrementDIVIDER -= cycels;
+		cyclesPerIncrementDIVIDER -= lastOpcodeCycles;
 	}
-
-
 	uint8_t timcont = bus->mmu->read(0xff07);//timer controler reister
 	if ((timcont >> 2) & 0x1) {//counting
-		
+		cyclesPerIncrementTIMA -= lastOpcodeCycles;
 		if (cyclesPerIncrementTIMA <= 0) {
+			int reminder = cyclesPerIncrementTIMA;
 			updateCycelPerIncrementTIMA(timcont & 0x3);
-
-			if (bus->mmu->read(0xff05)+1 == 0x100) {//tima overflow
+			cyclesPerIncrementTIMA = cyclesPerIncrementTIMA +reminder;
+			if (bus->mmu->read(0xff05)== 0xff) {//tima overflow
 				bus->mmu->write(0xff05, bus->mmu->read(0xff06));//load tma to tima
 				bus->interrupt->setInterruptRequest(2);
 			}
@@ -5963,40 +5999,9 @@ void CPU::updateTimers()
 				bus->mmu->write(0xff05, bus->mmu->read(0xff05) + 1);//tima increment
 			}
 		}
-		else {
-			cyclesPerIncrementTIMA -= cycels;
-		}
 	}
 
 }
-
-//void CPU::updateTimers()
-//{
-//
-//	if (cyclesPerIncrementDIVIDER - lastOpcodeCycles <= 0) {
-//		bus->interrupt->io[0x04]++;//divider increment
-//		cyclesPerIncrementDIVIDER = 255;
-//	}
-//	else {
-//		cyclesPerIncrementDIVIDER -= lastOpcodeCycles;
-//	}
-//	uint8_t timcont = bus->mmu->read(0xff07);//timer controler reister
-//	if ((timcont >> 2) & 0x1) {//counting
-//		cyclesPerIncrementTIMA -= lastOpcodeCycles;
-//		if (cyclesPerIncrementTIMA <= 0) {
-//			updateCycelPerIncrementTIMA(timcont & 0x3);
-//
-//			if (bus->mmu->read(0xff05) == 255) {//tima overflow
-//				bus->mmu->write(0xff05, bus->mmu->read(0xff06));//load tma to tima
-//				bus->interrupt->setInterruptRequest(2);
-//			}
-//			else {
-//				bus->mmu->write(0xff05, bus->mmu->read(0xff05) + 1);//tima increment
-//			}
-//		}
-//	}
-//
-//}
 uint8_t CPU::getOpcode()
 {
 	

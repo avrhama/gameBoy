@@ -21,7 +21,7 @@ public:
 	void resetInterruptEnabledRegister(uint8_t bit);
 	bool isInterruptEnable(uint8_t bit);
 	bool isInterruptRequsted(uint8_t bit);
-	void InterruptsHandler();
+	uint8_t InterruptsHandler();
 	void InterruptHandler(uint8_t interrupt);
 	void connectToBus(BUS* bus);
 	void reset();

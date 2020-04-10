@@ -44,6 +44,7 @@ private:
 	int cyclesPerIncrementTIMA = 1024;//each cyclesPerSecond cycles of cpu increment tima register by 1.
 	int16_t cyclesPerIncrementDIVIDER = 255;// 4194304/16382
 public:
+	TIME time;
 	uint8_t cycelsCounter = 0;
 	uint16_t AF = 0;
 	uint16_t BC = 0;

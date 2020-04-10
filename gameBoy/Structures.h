@@ -227,3 +227,49 @@ enum COLOUR
 {
 	WHITE, LIGHT_GRAY, DARK_GRAY, BLACK
 };
+struct TIME {
+	uint16_t microSec=0;
+	uint16_t milliSec=0;
+	uint8_t sec=0;
+	uint8_t min=0;
+	uint8_t hour=0;
+	void print() {
+		printf("h:%d m:%d s:%d mil:%d micro:%d\n",hour,min,sec,milliSec,microSec);
+	}
+	void addMicroSec(uint16_t m) {
+		if (microSec + m >= 1000) {
+			uint16_t temp = (microSec + m);
+			microSec = temp % 1000;
+			m = temp / 1000;
+			if (milliSec + m >= 1000) {
+				temp = (milliSec + m);
+				milliSec = temp % 1000;
+				m = temp / 1000;
+				if (sec + m >= 60) {
+					temp = (sec + m);
+					sec = temp % 60;
+					m = temp / 60;
+					if (min + m >= 60) {
+						temp = (min + m);
+						min = temp % 60;
+						m = temp / 60;
+						hour += m;
+					}
+					else {
+						min + m;
+					}
+				}
+				else {
+					sec +m;
+				}
+
+			}
+			else {
+				milliSec += m;
+			}
+		}
+		else {
+			microSec += m;
+		}
+	}
+};
