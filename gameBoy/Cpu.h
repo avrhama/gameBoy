@@ -40,22 +40,26 @@ private:
 	int8_t flagsArray[4] = { -1,-1,-1,-1 };
 	uint8_t bit=0;
 	
-	
+	int cyclesPerIncrementTIMACounter = 0;
 	int cyclesPerIncrementTIMA = 1024;//each cyclesPerSecond cycles of cpu increment tima register by 1.
-	int16_t cyclesPerIncrementDIVIDER = 255;// 4194304/16382
+	
 public:
+	int steps = 0;
 	TIME time;
 	uint8_t cycelsCounter = 0;
+	int16_t cyclesPerIncrementDIVIDER = 255;// 4194304/16382
 	uint16_t AF = 0;
 	uint16_t BC = 0;
 	uint16_t DE = 0;
 	uint16_t HL = 0;
 	uint16_t SP = 0xfffe;
+	bool timaOverflow = false;
 	bool IME=false;
 	bool setIME = false;
 	bool halt = false;
 	int cpuFreq = 4194304;
 	uint8_t speedMode = 1;
+	 
 	map<uint16_t, Opcode> opcodes;
 	CPU();
 	void connectToBus(BUS* bus);
@@ -197,6 +201,8 @@ public:
 	void SetByte(uint16_t* word, uint8_t value);
 
 	void reset();
+	int getCycelPerIncrementTIMA(uint8_t freqIndex);
+	void isCycelPerIncrementTIMAPassedHalf(int currCycelPerIncrementTIMA);
 	void updateCycelPerIncrementTIMA(uint8_t freqIndex);
 	void updateTimers();
 	uint8_t lastOpcodeCycles;

@@ -37,7 +37,8 @@ public:
 	uint8_t rom[0x8000];//rom bank 0...n
 	uint8_t externalRam[0x8000];//by range supposed to be 0x2000 but imrannazar gitup mmu says 0x8000.
     //uint8_t workingRam[0x2000];//working ram
-    uint8_t workingRam[0x3E00];//working ram
+    uint8_t workingRamBank = 1;
+    uint8_t workingRam[0x8000];//working ram
 	//uint8_t zeroRam[0x2000];
     //uint8_t io[0x80];
     uint8_t zeroRam[0x80];

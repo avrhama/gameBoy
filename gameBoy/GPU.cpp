@@ -76,36 +76,11 @@ void GPU::tick()
 	/*if (bus->cpu->cycelsCounter < 4)
 		return;
 	uint8_t cycels = bus->cpu->cycelsCounter / 4;*/
+	
+	
 	cyclesPerScanline -= bus->cpu->lastOpcodeCycles;
-	if (bus->pipeEnable&&false) {
-		bus->p->read();
-		uint16_t otherPC = bus->p->rBuffer[1] << 8 | bus->p->rBuffer[0];
-		uint32_t othercyclesPerScanline = bus->p->rBuffer[5] << 24 | bus->p->rBuffer[4] << 16 | bus->p->rBuffer[3] << 8 | bus->p->rBuffer[2];
-		uint8_t othercycles = bus->p->rBuffer[6];
-		uint8_t otherIO0x44 = bus->p->rBuffer[7];
-		bus->p->wBuffer[0] = 0;
-		if (otherPC != bus->cpu->PC || othercyclesPerScanline != cyclesPerScanline || othercycles != bus->cpu->lastOpcodeCycles || otherIO0x44 != bus->interrupt->io[0x44])
-		{
-			bus->p->wBuffer[0] = 1;
-		}
-		bus->p->write();
-		if (bus->p->wBuffer[0] == 1) {
-			bus->p->wBuffer[1] = 0;
-		}
-	
-	}
-	//bus->pipeEnable == 
-		/*bus->p->read();
-		uint16_t otherPC = bus->p->rBuffer[1] << 8 | bus->p->rBuffer[0];
-		uint32_t othercyclesPerScanline = bus->p->rBuffer[5] << 24 | bus->p->rBuffer[4] << 16 | bus->p->rBuffer[3] << 8 | bus->p->rBuffer[2];
-		uint8_t othercycles = bus->p->rBuffer[6];
-		uint8_t otherIO0x44 = bus->p->rBuffer[7];
-		if (otherPC != bus->cpu->PC || othercyclesPerScanline != cyclesPerScanline || othercycles != bus->cpu->lastOpcodeCycles || otherIO0x44 != bus->interrupt->io[0x44])
-		{
-		}*/
-	
 	if (cyclesPerScanline <= 0) {
-		cyclesPerScanline += 455 * bus->cpu->speedMode;
+		cyclesPerScanline += 456 * bus->cpu->speedMode;
 		bus->interrupt->io[0x44]++;
 		uint8_t currScanLine = bus->interrupt->io[0x44];
 		if (currScanLine == 144)
@@ -115,6 +90,40 @@ void GPU::tick()
 		if (currScanLine < 144)
 			draw();
 			//drawTest();
+
+	}
+	
+	if (bus->pipeEnable) {
+		bus->p->read(8);
+		uint16_t otherPC = bus->p->rBuffer[1] << 8 | bus->p->rBuffer[0];
+		uint32_t othercyclesPerScanline = bus->p->rBuffer[5] << 24 | bus->p->rBuffer[4] << 16 | bus->p->rBuffer[3] << 8 | bus->p->rBuffer[2];
+		uint8_t othercycles = bus->p->rBuffer[6];
+		uint8_t otherIO0x44 = bus->p->rBuffer[7];
+		bus->p->wBuffer[0] = 0;
+		int errorCode = -1;
+		
+	     if (otherPC != bus->cpu->PC) {
+			errorCode = 1;
+		}
+		else if (othercyclesPerScanline != cyclesPerScanline) {
+			errorCode = 2;
+		}
+		else if (othercycles != bus->cpu->lastOpcodeCycles) {
+			errorCode = 3;
+		}
+		else if (otherIO0x44 != bus->interrupt->io[0x44]){
+			errorCode = 4;
+		}
+		
+		
+		if (errorCode!=-1)
+		{
+			bus->p->wBuffer[0] = 1;
+		}
+		bus->p->write();
+		if (bus->p->wBuffer[0] == 1) {
+			bus->p->wBuffer[1] = 0;
+		}
 
 	}
 }

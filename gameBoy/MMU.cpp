@@ -17,6 +17,8 @@ void MMU::connectToBus(BUS* bus)
 }
 void MMU::write(uint16_t address, uint8_t value)
 {
+	if (address == 0xff06)
+		int t=0;
 	if (bus->dma->transfering)
 		if (address < 0xff80)
 			return;
@@ -44,20 +46,23 @@ void MMU::write(uint16_t address, uint8_t value)
 	else if (0x8000 <= address &&address <= 0x9fff) {// Graphics: VRAM (8k)
 		if (vRamLock)
 			return;
-		bus->gpu->vRam[address & 0x1FFF] = value; // GPU._vram[addr & 0x1FFF];
-		if (value != 1)
-			int d = 0;
+		bus->gpu->vRam[address - 0x8000 + (bus->gpu->vRamBank*0x2000)] = value; // GPU._vram[addr & 0x1FFF];
+		
 	}
 	else if (0xa000 <= address &&address <= 0xbfff) {// External RAM (8k)
 		//externalRam[address & 0x1FFF] = value;
 		bus->cartridge->write(address, value);
 	}
-	else if (0xc000 <= address &&address <= 0xdfff) {// Working RAM (8k)
-		workingRam[address & 0x1FFF] = value;
-		workingRam[(address | 0x2000) & 0x1FFF] = value;//echo to wram bank 1
+	else if (0xc000 <= address && address <= 0xcfff) {// Working RAM 0 (8k)
+		workingRam[address - 0xc000] = value;
+		//workingRam[(address | 0x2000) & 0x1FFF] = value;//echo to wram bank 1
 	}
-	else if (0xe000 <= address &&address <= 0xfdff) {// Working RAM (8k)
-		workingRam[address & 0x1FFF] = value;
+	else if (0xd000 <= address &&address <= 0xdfff) {// Working RAM (8k) 1-7
+		workingRam[address - 0xc000+workingRamBank*(0x1000)] = value;
+		//workingRam[(address | 0x2000) & 0x1FFF] = value;//echo to wram bank 1
+	}
+	else if (0xe000 <= address &&address <= 0xfdff) {
+		workingRam[address - 0x1FFF] = value;
 		workingRam[(address & 0xD000) & 0x1FFF] = value;//echo to wram bank 0
 	}
 	else if (0xfe00 <= address &&address <= 0xfe9f) {
@@ -85,7 +90,7 @@ uint8_t MMU::read(uint16_t address)
 {
 	if (0<=address &&address <= 0x7fff) {//bios ROM0 and ROM1 (unbanked) (16k)
 		if (biosLoaded) {
-			if (address < 0x0100)
+			if (address < 0x100)
 				//return bios[address];
 				return bus->cartridge->read(address);
 			else if (bus->cpu->PC == 0x100)
@@ -97,14 +102,19 @@ uint8_t MMU::read(uint16_t address)
 	else if (0x8000<=address &&address <= 0x9fff) {// Graphics: VRAM (8k)
 		if (vRamLock)
 			return 0xff;
-		return bus->gpu->vRam[address & 0x1FFF]; // GPU._vram[addr & 0x1FFF];
+		return bus->gpu->vRam[address - 0x8000 + (bus->gpu->vRamBank * 0x2000)];
 	}
 	else if (0xa000<=address&&address<=0xbfff) {// External RAM (8k)
 		//return externalRam[address & 0x1FFF];
 		return bus->cartridge->read(address);
 	}
-	else if (0xc000 <= address &&address <= 0xfdff) {// Working RAM (8k)
-		return workingRam[address & 0x1FFF];
+	else if (0xc000 <= address && address <= 0xcfff) {// Working RAM 0 (8k)
+		return workingRam[address - 0xc000];
+		//workingRam[(address | 0x2000) & 0x1FFF] = value;//echo to wram bank 1
+	}
+	else if (0xd000 <= address && address <= 0xdfff) {// Working RAM (8k) 1-7
+		return workingRam[address - 0xc000 + workingRamBank * (0x1000)];
+		//workingRam[(address | 0x2000) & 0x1FFF] = value;//echo to wram bank 1
 	}
 	else if (0xfe00 <= address &&address <= 0xfe9f) {
 		if (OAMLock)

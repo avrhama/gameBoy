@@ -19,12 +19,12 @@
 using namespace std;
 
 void pipeRecive(BUS* bus, uint16_t opcode,uint16_t lastOpcode, int steps,string funcName) {
-	if (steps == 16506) {
+	if (steps == 170161) {
 		int h = 0;
 	}
 	if (bus->pipeEnable) {
 		bus->p->read(14);
-		uint16_t otherOp = bus->p->rBuffer[0];
+		uint16_t otherOp = bus->p->rBuffer[1];
 		if (bus->p->rBuffer[0] == 0xCB) {
 			otherOp = 0xCB00 | bus->p->rBuffer[1];
 		}
@@ -39,21 +39,21 @@ void pipeRecive(BUS* bus, uint16_t opcode,uint16_t lastOpcode, int steps,string 
 		if (otherOp != opcode) {
 			errorCode = 0;
 		}
-		else if (otherPC != bus->cpu->PC) {
+		 if (otherPC != bus->cpu->PC) {
 			errorCode = 1;
 		}
-		else if (otherAF != bus->cpu->AF) {
-			//errorCode = 2;
+		 if (otherAF != bus->cpu->AF) {
+			errorCode = 2;
 		}
-		else if (otherBC != bus->cpu->BC) {
+		 if (otherBC != bus->cpu->BC) {
 			errorCode = 3;
 		}
-		else if (otherDE != bus->cpu->DE) {
+		 if (otherDE != bus->cpu->DE) {
 			errorCode = 4;
-		}else if (otherHL != bus->cpu->HL) {
+		} if (otherHL != bus->cpu->HL) {
 			errorCode = 5;
 		}
-		else if (otherSP != bus->cpu->SP) {
+		 if (otherSP != bus->cpu->SP) {
 			errorCode = 6;
 		}
 		/*for (int i = 0;i < 0xffff;i++) {
@@ -81,11 +81,11 @@ int main(void) {
 	
 	//testRun();
 	//return 0;
-	string romsPaths[19] =
+	string romsPaths[22] =
 	{ 
 	"test\\cpu_instrs\\cpu_instrs.gb",
 	"test\\cpu_instrs\\individual\\01-special.gb",//good//blargg
-	"test\\cpu_instrs\\individual\\02-interrupts.gb" ,//no answer
+	"test\\cpu_instrs\\individual\\02-interrupts.gb" ,//good
 		"test\\cpu_instrs\\individual\\03-op sp,hl.gb",//no answer
 	"test\\cpu_instrs\\individual\\04-op r,imm.gb",//good
 	"test\\cpu_instrs\\individual\\05-op rp.gb",//good
@@ -101,8 +101,9 @@ int main(void) {
 	"roms\\pokemon.gb", 
 	"roms\\tetris.gb",
 	"test\\instr_timing\\instr_timing.gb",
-	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\tima_reload.gb"};//faild
-	uint8_t romIndex =2;
+	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\tima_reload.gb",//faild
+	"roms\\mooneye-gb_hwtests\\acceptance\\rst_timing.gb" };
+	uint8_t romIndex =17;
 	//char * romPath = roms[5];
 	
 	//BC = 0x12FE;
@@ -158,7 +159,7 @@ int main(void) {
 	int counter = 270274;
 	char buff[100];
 	unsigned char c = 0;
-	bus->pipeEnable = false;
+	bus->pipeEnable = true;
 	pipeChannel p;
 	bus->p = &p;
 	bool f;
@@ -255,23 +256,23 @@ int main(void) {
 			//cpu->Execute(opcode);
 			//pipeRecive(bus, opcode, lastopcode, steps,"Execute");
 		    cpu->ExecuteOpcode(opcode);
+			steps++;
 			pipeRecive(bus, opcode, lastopcode, steps, "Execute");
 			cpu->cycelsCounter += cpu->lastOpcodeCycles;
 			cpu->lastOpcodeCycles *= 4;
 			//cpu->lastOpcodeCycles *=4;
-			cpu->updateTimers();
-			//pipeRecive(bus, opcode, lastopcode, steps, "updateTimers");
 			gpu->tick();
-			//pipeRecive(bus, opcode, lastopcode, steps, "tick");
+			cpu->updateTimers();
 			joypad->updateKeys();
 		
+
 			cpu->cycelsCounter += interrupt->InterruptsHandler()*4;
 			
 			//pipeRecive(bus, opcode, lastopcode, steps, "InterruptsHandler");
 			lastopcode = opcode;
 			cyclesInFrameCounter += cpu->lastOpcodeCycles;
 			//printf("speed:%d\n", interrupt->io[0x4D]>>7);
-			steps++;
+			
 			/*if (renderCounter == renderTimer)
 				gpu->drawTest();*/
 #pragma region pipeChannelExe
@@ -492,7 +493,7 @@ void runTest(uint8_t romIndex) {
 	//return 0;
 	uint16_t opcode;
 	int counter = 270274;
-	bus->pipeEnable = false;
+	bus->pipeEnable = true;
 	pipeChannel p;
 	bus->p = &p;
 

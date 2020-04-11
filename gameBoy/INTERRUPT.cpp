@@ -27,7 +27,7 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 		break;
 	} case 0x07: {
 		if ((value & 0x03) != (io[0x07] & 0x03))
-		printf("opcode:0x07 // TAC value:%04x\n", value);
+			printf("opcode:0x07 // TAC value:%04x\n", value);
 		break;
 	} case 0x10: {
 		printf("opcode:0x10 // NR10 value:%04x\n", value);
@@ -148,7 +148,19 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 		{
 		case 0x04:
 			io[0x04] = 0;
+			bus->cpu->cyclesPerIncrementDIVIDER = 255;
 			bus->cpu->updateCycelPerIncrementTIMA(io[0x07] & 0x03);
+			break;
+		case 0x07:
+			if ((value & 0x03) != (io[0x07] & 0x03)) {
+				bus->cpu->updateCycelPerIncrementTIMA(value & 0x03);
+			}
+			io[0x07] = value | 0xf8;
+			printf("opcode:0x07 // TAC value:%04x\n", value);
+			break;
+		case 0x0f:
+			io[0x0f] = value | 0xE0;
+			printf("opcode:0x0f // IE value:%04x\n", value);
 			break;
 		case 0x44:
 			io[0x44] = 0;
@@ -156,10 +168,19 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 		case 0x46:
 			bus->dma->transfer(value);
 			break;
-		case 0x07:
-			if ((value & 0x03) != (io[0x07] & 0x03))
-				bus->cpu->updateCycelPerIncrementTIMA(value & 0x03);
-			printf("opcode:0x07 // TAC value:%04x\n", value);
+		case 0x4f:
+			bus->gpu->vRamBank = value & 0x01;
+			io[address] = 0xfe|value;
+			printf("opcode:0x4f // VRAM Bank value:%04x value(io):%04x\n", value, io[address]);
+			break;
+		case 0x70:
+			
+			bus->mmu->workingRamBank = value & 0x07;
+			if ( bus->mmu->workingRamBank == 0)
+				bus->mmu->workingRamBank = 1;
+			io[address] = value;
+			printf("opcode:0x70 // WRAM Bank value:%04x\n", value);
+			break;
 		default:
 			io[address] = value;
 		}
@@ -306,7 +327,7 @@ uint8_t INTERRUPT::InterruptsHandler()
 	uint8_t cycles = 0;
 	for (int i = 0;i < 5;i++) {
 		if (isInterruptRequsted(i) && isInterruptEnable(i)) {
-			
+
 			if (bus->cpu->IME) {
 				bus->cpu->IME = false;
 				resetInterruptRequest(i);
@@ -350,7 +371,7 @@ void INTERRUPT::InterruptHandler(uint8_t interrupt)
 	bus->cpu->PUSH_nn(((uint8_t*)&bus->cpu->PC), NULL);
 	bus->cpu->PC = interruptHandlerAdd;
 	//bus->cpu->lastOpcodeCycles += 5;
-	
+
 }
 //uint8_t* INTERRUPT::getMemCell(uint16_t address)
 //{
@@ -493,8 +514,44 @@ void INTERRUPT::reset()
 	io[0x49] = 0xFF;// OBP1
 	io[0x4A] = 0x00;// WY
 	io[0x4B] = 0x00;// WX
-	io[0x44] = 0x88;
+	//io[0x44] = 0x88;
 	io[0x44] = 0x00;
+
 	//io[0x40] = 0;// LCDC
-	
+
+	io[0x04] = 0x1E;
+	io[0x05] = 0x00;
+	io[0x06] = 0x00;
+	io[0x07] = 0xF8;
+	io[0x0F] = 0xE1;
+	io[0x10] = 0x80;
+	io[0x11] = 0xBF;
+	io[0x12] = 0xF3;
+	io[0x14] = 0xBF;
+	io[0x16] = 0x3F;
+	io[0x17] = 0x00;
+	io[0x19] = 0xBF;
+	io[0x1A] = 0x7F;
+	io[0x1B] = 0xFF;
+	io[0x1C] = 0x9F;
+	io[0x1E] = 0xBF;
+	io[0x20] = 0xFF;
+	io[0x21] = 0x00;
+	io[0x22] = 0x00;
+	io[0x23] = 0xBF;
+	io[0x24] = 0x77;
+	io[0x25] = 0xF3;
+	io[0x26] = 0xF1;
+	io[0x40] = 0x91;
+	io[0x41] = 0x85;
+	io[0x42] = 0x00;
+	io[0x43] = 0x00;
+	io[0x45] = 0x00;
+	io[0x47] = 0xFC;
+	io[0x48] = 0xFF;
+	io[0x49] = 0xFF;
+	io[0x4A] = 0x00;
+	io[0x4B] = 0x00;
+	io[0xFF] = 0x00;
+
 }

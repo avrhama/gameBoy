@@ -105,7 +105,7 @@ switch(opcode){
 			RRCA(param1,param2);
 			break;
 		case 0x10:
-			lastOpcodeCycles=1;
+			lastOpcodeCycles=0;
 			param1=NULL;
 			param2=NULL;
 			STOP(param1,param2);
@@ -746,7 +746,7 @@ switch(opcode){
 			LD_n_$HL(param1,param2);
 			break;
 		case 0x76:
-			lastOpcodeCycles=1;
+			lastOpcodeCycles=0;
 			param1=NULL;
 			param2=NULL;
 			HALT(param1,param2);
@@ -1984,7 +1984,7 @@ switch(opcode){
 			BIT_$n_r(param1,param2);
 			break;
 		case 0xcb46:
-			lastOpcodeCycles=4;
+			lastOpcodeCycles=3;
 			bit = 0;
 			immidiateN = bus->mmu->read(HL);
 			param1=&bit;
@@ -2041,7 +2041,7 @@ switch(opcode){
 			BIT_$n_r(param1,param2);
 			break;
 		case 0xcb4e:
-			lastOpcodeCycles=4;
+			lastOpcodeCycles=3;
 			bit = 1;
 			immidiateN = bus->mmu->read(HL);
 			param1=&bit;
@@ -2098,7 +2098,7 @@ switch(opcode){
 			BIT_$n_r(param1,param2);
 			break;
 		case 0xcb56:
-			lastOpcodeCycles=4;
+			lastOpcodeCycles=3;
 			bit = 2;
 			immidiateN = bus->mmu->read(HL);
 			param1=&bit;
@@ -2155,7 +2155,7 @@ switch(opcode){
 			BIT_$n_r(param1,param2);
 			break;
 		case 0xcb5e:
-			lastOpcodeCycles=4;
+			lastOpcodeCycles=3;
 			bit = 3;
 			immidiateN = bus->mmu->read(HL);
 			param1=&bit;
@@ -2212,7 +2212,7 @@ switch(opcode){
 			BIT_$n_r(param1,param2);
 			break;
 		case 0xcb66:
-			lastOpcodeCycles=4;
+			lastOpcodeCycles=3;
 			bit = 4;
 			immidiateN = bus->mmu->read(HL);
 			param1=&bit;
@@ -2269,7 +2269,7 @@ switch(opcode){
 			BIT_$n_r(param1,param2);
 			break;
 		case 0xcb6e:
-			lastOpcodeCycles=4;
+			lastOpcodeCycles=3;
 			bit = 5;
 			immidiateN = bus->mmu->read(HL);
 			param1=&bit;
@@ -2326,7 +2326,7 @@ switch(opcode){
 			BIT_$n_r(param1,param2);
 			break;
 		case 0xcb76:
-			lastOpcodeCycles=4;
+			lastOpcodeCycles=3;
 			bit = 6;
 			immidiateN = bus->mmu->read(HL);
 			param1=&bit;
@@ -2383,7 +2383,7 @@ switch(opcode){
 			BIT_$n_r(param1,param2);
 			break;
 		case 0xcb7e:
-			lastOpcodeCycles=4;
+			lastOpcodeCycles=3;
 			bit = 7;
 			immidiateN = bus->mmu->read(HL);
 			param1=&bit;
