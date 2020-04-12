@@ -39,8 +39,7 @@ public:
     //uint8_t workingRam[0x2000];//working ram
     uint8_t workingRamBank = 1;
     uint8_t workingRam[0x8000];//working ram
-	//uint8_t zeroRam[0x2000];
-    //uint8_t io[0x80];
+    uint8_t unused[0x60];//unused memory aera
     uint8_t zeroRam[0x80];
     //uint8_t mem[0xffff];
 	bool biosLoaded = true;

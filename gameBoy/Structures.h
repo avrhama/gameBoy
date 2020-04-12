@@ -228,48 +228,72 @@ enum COLOUR
 	WHITE, LIGHT_GRAY, DARK_GRAY, BLACK
 };
 struct TIME {
+	uint8_t dots = 0;//machine cycels
+	uint8_t dotsPerMicroSec = 4;//for this emulator 4 dots equal to 1 microsecond
 	uint16_t microSec=0;
 	uint16_t milliSec=0;
 	uint8_t sec=0;
 	uint8_t min=0;
 	uint8_t hour=0;
-	void print() {
-		printf("h:%d m:%d s:%d mil:%d micro:%d\n",hour,min,sec,milliSec,microSec);
+	bool timeChanged[5] ={ false,false,false,false,false };
+	void print(int8_t unit=-1) {
+		if (unit == -1 || timeChanged[unit]) {
+			printf("h:%d m:%d s:%d mil:%d micro:%d\n", hour, min, sec, milliSec, microSec);
+			timeChanged[0] = false;
+			timeChanged[1] = false;
+			timeChanged[2] = false;
+			timeChanged[3] = false;
+			timeChanged[4] = false;
+		}
 	}
-	void addMicroSec(uint16_t m) {
-		if (microSec + m >= 1000) {
-			uint16_t temp = (microSec + m);
-			microSec = temp % 1000;
-			m = temp / 1000;
-			if (milliSec + m >= 1000) {
-				temp = (milliSec + m);
-				milliSec = temp % 1000;
+	void addMCycles(uint16_t m) {
+		
+		if (dots + m >= dotsPerMicroSec) {
+			uint16_t temp = (dots + m);
+			dots = temp % dotsPerMicroSec;
+			m = temp / dotsPerMicroSec;
+			if (microSec + m >= 1000) {
+				temp = (microSec + m);
+				microSec = temp % 1000;
 				m = temp / 1000;
-				if (sec + m >= 60) {
-					temp = (sec + m);
-					sec = temp % 60;
-					m = temp / 60;
-					if (min + m >= 60) {
-						temp = (min + m);
-						min = temp % 60;
+				if (milliSec + m >= 1000) {
+					temp = (milliSec + m);
+					milliSec = temp % 1000;
+					m = temp / 1000;
+					if (sec + m >= 60) {
+						temp = (sec + m);
+						sec = temp % 60;
 						m = temp / 60;
-						hour += m;
+						if (min + m >= 60) {
+							temp = (min + m);
+							min = temp % 60;
+							m = temp / 60;
+							hour += m;
+							timeChanged[4] = true;
+						}
+						else {
+							min + m;
+							timeChanged[3] = true;
+						}
 					}
 					else {
-						min + m;
+						sec += m;
+						timeChanged[2] = true;
 					}
+
 				}
 				else {
-					sec +m;
+					milliSec += m;
+					timeChanged[1] = true;
 				}
-
 			}
 			else {
-				milliSec += m;
+				microSec += m;
+				timeChanged[0] = true;
 			}
 		}
 		else {
-			microSec += m;
+			dots += m;
 		}
 	}
 };

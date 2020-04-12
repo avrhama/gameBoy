@@ -47,7 +47,7 @@ public:
 	int steps = 0;
 	TIME time;
 	uint8_t cycelsCounter = 0;
-	int16_t cyclesPerIncrementDIVIDER = 255;// 4194304/16382
+	uint16_t cyclesPerIncrementDIVIDER = 0;// 4194304/16382
 	uint16_t AF = 0;
 	uint16_t BC = 0;
 	uint16_t DE = 0;
@@ -58,7 +58,7 @@ public:
 	bool setIME = false;
 	bool halt = false;
 	int cpuFreq = 4194304;
-	uint8_t speedMode = 1;
+	uint8_t speedMode = 0;
 	 
 	map<uint16_t, Opcode> opcodes;
 	CPU();
@@ -205,7 +205,7 @@ public:
 	void isCycelPerIncrementTIMAPassedHalf(int currCycelPerIncrementTIMA);
 	void updateCycelPerIncrementTIMA(uint8_t freqIndex);
 	void updateTimers();
-	uint8_t lastOpcodeCycles;
+	int lastOpcodeCycles;
 	uint8_t getOpcode();
 
 	

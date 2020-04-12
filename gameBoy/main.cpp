@@ -101,9 +101,10 @@ int main(void) {
 	"roms\\pokemon.gb", 
 	"roms\\tetris.gb",
 	"test\\instr_timing\\instr_timing.gb",
-	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\tima_reload.gb",//faild
-	"roms\\mooneye-gb_hwtests\\acceptance\\rst_timing.gb" };
-	uint8_t romIndex =17;
+	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\div_write.gb",//faild
+	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\tima_reload.gb",
+	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\tim01.gb"};
+	uint8_t romIndex =20;
 	//char * romPath = roms[5];
 	
 	//BC = 0x12FE;
@@ -125,10 +126,7 @@ int main(void) {
 	MMU* mmu = new MMU();
 	DISPLAY* display = new DISPLAY(0, 0, 160, 144, 1);
 	JOYPAD* joypad = new JOYPAD();
-	gpu->reset();
 	
-
-	interrupt->reset();
 
 	bus->connectCPU(cpu);
 	bus->connectMMU(mmu);
@@ -141,6 +139,9 @@ int main(void) {
 	cartridge->loadRom(romsPaths[romIndex]);
 	cartridge->load();
 	cpu->reset();
+	mmu->reset();
+	gpu->reset();
+	interrupt->reset();
 	printf("title:%s\n", cartridge->title);
 	printf("rom banks count:%d\n", cartridge->romSize);
 	printf("romBank size:%d\n", cartridge->romBankSize);
@@ -159,7 +160,7 @@ int main(void) {
 	int counter = 270274;
 	char buff[100];
 	unsigned char c = 0;
-	bus->pipeEnable = true;
+	bus->pipeEnable = false;
 	pipeChannel p;
 	bus->p = &p;
 	bool f;
@@ -259,7 +260,7 @@ int main(void) {
 			steps++;
 			pipeRecive(bus, opcode, lastopcode, steps, "Execute");
 			cpu->cycelsCounter += cpu->lastOpcodeCycles;
-			cpu->lastOpcodeCycles *= 4;
+			cpu->lastOpcodeCycles *= (4 * (cpu->speedMode + 1));
 			//cpu->lastOpcodeCycles *=4;
 			gpu->tick();
 			cpu->updateTimers();
@@ -300,7 +301,7 @@ int main(void) {
 			time.addMicroSec(cpu->lastOpcodeCycles);
 	if(t!=time.milliSec)
 			time.print();*/
-		} while (cyclesInFrameCounter<cyclesInFrame*cpu->speedMode); //(cpu.PC != 0x100 && counter > 0);//||mmu.biosLoaded);//cpu.PC!=0x100
+		} while (cyclesInFrameCounter<cyclesInFrame*(cpu->speedMode+1)); //(cpu.PC != 0x100 && counter > 0);//||mmu.biosLoaded);//cpu.PC!=0x100
 		cyclesInFrameCounter = 0;
 		display->update();
 	}
