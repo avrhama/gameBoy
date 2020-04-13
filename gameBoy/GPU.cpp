@@ -85,7 +85,7 @@ void GPU::tick()
 		uint8_t currScanLine = bus->interrupt->io[0x44];
 		if (currScanLine == 144) {
 			bus->interrupt->setInterruptRequest(0);
-			bus->display->render();
+			//bus->display->render();
 		}
 		if (currScanLine > 153)
 			bus->interrupt->io[0x44] = 0;
@@ -129,92 +129,7 @@ void GPU::tick()
 
 	}
 }
-void GPU::drawSprites() {
-	if ((bus->interrupt->io[0x40] >> 1) & 0x1) {//OBJ (Sprite) Display Enable
-		uint8_t spriteSize = ((bus->interrupt->io[0x40] >> 2) & 0x01)?16:8;
 
-
-	for (uint8_t i = 0;i < 160;i+=4) {//loop 4 byte(sprite) in OAM
-		uint8_t posY = bus->mmu->read(0xFE00+i)-16;
-		uint8_t posX = bus->mmu->read(0xFE00 + i+1)-8;
-		uint8_t tileNum = bus->mmu->read(0xFE00 + i + 2);
-		uint8_t attributes = bus->mmu->read(0xFE00 + i + 3);
-
-		uint8_t spriteToBGPriority = attributes >> 7 & 0x01;
-		bool Yflip = (attributes >> 6) & 0x01;
-		bool Xflip = (attributes >> 5) & 0x01;
-		uint8_t paletteNum = (attributes >> 4) & 0x01;
-
-
-		if(posY+posX+tileNum+ attributes !=488)
-		int x = 0;
-	}
-
-
-
-
-
-
-
-
-
-
-
-
-		//uint16_t tileDataTable = 0x8000;
-		//uint8_t offset = 0;
-		//bool windowDisplay = (bus->interrupt->io[0x40] >> 5) & 0x1;
-		//if ((windowDisplay && ((bus->interrupt->io[0x40] >> 6) & 0x1)) ||//window display set and and Window Tile Map is 1 OR window not display and BG Tile Map is 1
-		//	(!windowDisplay && ((bus->interrupt->io[0x40] >> 3) & 0x1))) {//BG & Window Tile Data Select 8800-97FF
-		//	bgTileMap = 0x9C00;
-		//}
-
-		//if (!(bus->interrupt->io[0x40] >> 4) & 0x1) {
-		//	offset = 128;
-		//	tileDataTable = 0x8800;
-		//}
-
-
-		//int windowX = bus->mmu->read(0xFF4B) - 7;
-		//int	yScreen = bus->mmu->read(0xFF44);//curr scan line
-		//if (windowDisplay) {
-		//	yScreen -= bus->mmu->read(0xFF4A);//windowY
-
-		//}
-		//else
-		//	yScreen += bus->mmu->read(0xFF42);//scrollY
-		//int temp = (yScreen / 8);//convert pixels to tiles term. how many tiles rows until we reach y
-		//int tileByteDataY = yScreen * 32;//how many bytes need to reach temp value.
-		//int scrollX = bus->mmu->read(0xFF43);//scrollX
-		//for (int xDisplay = 0;xDisplay < 160;xDisplay++) {
-		//	int xScreen = scrollX + xDisplay;
-		//	if (windowDisplay && xDisplay >= windowX)
-		//		xScreen = xDisplay - windowX;
-		//	int tileByteDataX = xScreen / 8;
-
-		//	uint16_t tileDataAddress = bgTileMap + tileByteDataY + tileByteDataX;
-		//	uint16_t tileIndex = bus->mmu->read(tileDataAddress);
-		//	uint16_t tileDataPosition;
-
-		//	if (tileDataTable == 0x8000) {
-
-		//		tileDataPosition = tileDataTable + (tileIndex) * 16;
-		//	}
-		//	else {
-		//		tileDataPosition = tileDataTable + ((int8_t)tileIndex + 128) * 16;
-		//	}
-		//	temp = 2 * (yScreen % 8);// byte in tile that define current line. bytes per line
-		//	uint16_t bankOffset = 0x8000;
-		//	uint8_t	tileDataLSB = bus->mmu->read(tileDataPosition + temp);
-		//	uint8_t	tileDataMSB = bus->mmu->read(tileDataPosition + temp + 1);
-		//	uint8_t yDisplay = bus->interrupt->io[0x44];
-		//	uint8_t pixelIndex = xDisplay % 8;
-		//	setPixel(xDisplay, yDisplay, tileDataLSB, tileDataMSB, pixelIndex);
-
-		//}
-	}
-
-}
 bool GPU::TestBit(BYTE n, int b) {
 	return (n >> b) & 1;
 }
@@ -265,7 +180,8 @@ void GPU::getPalette(uint16_t paletteAddress, map<int, int>* palette) {
 	(*palette)[2] = (pletteMap >> 4) & 0x03;
 	(*palette)[3] = (pletteMap >> 6) & 0x03;*/
 }
-void GPU::drawBG() {//Backround
+void GPU::drawBG(uint8_t * currBGLine) {
+	//uint8_t currBGLine[18] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 	map<int, int> palette;
 	getPalette(0xff47,&palette);
 	if (bus->interrupt->io[0x40] & 0x1) {//BG Display Enable
@@ -316,18 +232,65 @@ void GPU::drawBG() {//Backround
 			uint8_t lsbData = bus->mmu->read(tileAddress+ tileLine);
 			uint8_t msbData = bus->mmu->read(tileAddress + tileLine+1);
 			uint8_t pixelIndex = bgX % 8;
-			uint8_t offset=setPixel(x, yDisplay, lsbData, msbData, pixelIndex,palette);
-			x += (offset - pixelIndex);
-			//x++;
+			
+			uint8_t colorIndex=setPixel(x, yDisplay, lsbData, msbData, pixelIndex,palette);//x: the leftmost x tile pos[0-159],pixelIndex: pos of pixel in the tile[0-7]
+			//x += (offset - pixelIndex);
+			if (colorIndex == 0) {//set the bit if the pixel color is white.
+				int  index_ = (x + pixelIndex) / 8;
+
+				if (index_ > 19) {
+					int p = 0;
+				}
+				int  c = currBGLine[x / 8] | 0x1 << (7 - (x% 8));
+				if (c > 0xff) {
+					int p = 0;
+				}
+
+				currBGLine[x / 8] |= 0x1 << (7 - (x % 8));
+			}
+			x++;
 		}
 	}
 }
+void GPU::drawSprites(uint8_t* currBGLine) {
+	if ((bus->interrupt->io[0x40] >> 1) & 0x1) {//OBJ (Sprite) Display Enable
+		uint8_t spriteSize = ((bus->interrupt->io[0x40] >> 2) & 0x01) ? 16 : 8;
+		uint currentScanLine = bus->interrupt->io[0x44];
 
+		for (uint8_t i = 0;i < 160;i += 4) {//loop 4 byte(sprite) in OAM
+			uint8_t posY = bus->mmu->read(0xFE00 + i) - 16;//if there are any bugs with drawing consider to change uint8_t to int16.
+			if(posY <= currentScanLine && posY + spriteSize >= currentScanLine) {//check if the sprite is crossing the current scanline
+				uint8_t posX = bus->mmu->read(0xFE00 + i + 1) - 8;
+				uint16_t patternNum = bus->mmu->read(0xFE00 + i + 2);
+				if (spriteSize == 16)
+					patternNum &= 0xfffe;
+				
+				uint8_t attributes = bus->mmu->read(0xFE00 + i + 3);
+				uint8_t priority = attributes >> 7 & 0x01;
+				bool Yflip = (attributes >> 6) & 0x01;
+				bool Xflip = (attributes >> 5) & 0x01;
+				uint16_t paletteAddress = (attributes >> 4) & 0x01?0xff49:0xff48;
+				map<int, int> palette;
+				getPalette(paletteAddress, &palette);
+				uint16_t tileAddress = 0x8000 + 16 * (patternNum)+2 * (currentScanLine - posY);
+				for(uint8_t x = 0;x < 8;x++) {
+					uint8_t lsbData = bus->mmu->read(tileAddress);
+					uint8_t msbData = bus->mmu->read(tileAddress + 1);
+					uint8_t isBgWinWhitePixel = (currBGLine[(posX + x) / 8] >> (7 - (posX + x) % 8)) & 0x01;
+					if(!priority|| isBgWinWhitePixel)
+						setPixel(posX + x, currentScanLine, lsbData, msbData, x, palette);
+				}
+			}
+		}
+	}
+
+}
 
 void GPU::draw() {
 	bus->display->setLock(true);
-	drawBG();
-	drawSprites();
+	uint8_t currBGLine[20] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
+	drawBG(currBGLine);
+	//drawSprites(currBGLine);
 	bus->display->setLock(false);
 	//bus->display->update();
 	//uint8_t currScanLine = bus->mmu->read(0xFF44);
@@ -342,18 +305,34 @@ void GPU::draw() {
 }
 uint8_t GPU::setPixel(int x, int y, uint8_t lsb, uint8_t msb,uint8_t pixelIndex, map<int, int> palette)
 {	
-	uint8_t offset = 0;
-	for (offset = pixelIndex;offset < 8 && (offset + x) < 160;offset++) {
-		uint8_t colorPaletteDataIndex = (((msb >> (7 - offset)) & 0x1) << 1) | ((lsb >> (7 - offset)) & 0x1);
+	//uint8_t offset = 0;
+	//for (offset = pixelIndex;offset < 8 && (offset + x) < 160;offset++) {
+		uint8_t colorPaletteDataIndex = (((msb >> (7 - pixelIndex)) & 0x1) << 1) | ((lsb >> (7 - pixelIndex)) & 0x1);
 		uint8_t colorIndex = (bus->interrupt->io[0x47] >> (2 * colorPaletteDataIndex)) & 0x03;
 		colorIndex = palette[colorPaletteDataIndex];
 		//printf("color id:%d\n",colorIndex);
-		//bus->display->setPixel(x+ (offset- pixelIndex), y, bus->display->colors[colorIndex]);
-		bus->display->setPixel(x + (offset - pixelIndex), y, bus->display->bgPalette[colorIndex]);
-	}
-	return offset;
+	 	//bus->display->setPixel(x+ (offset- pixelIndex), y, bus->display->colors[colorIndex]);
+		//bus->display->setPixel(x , y, bus->display->bgPalette[colorIndex]);
+		bus->display->setPixel(x, y, bus->display->colors[colorIndex]);
+	//}
 	
+		return colorIndex;
 }
+//uint8_t GPU::setPixel(int x, int y, uint8_t lsb, uint8_t msb, uint8_t pixelIndex, map<int, int> palette)
+//{
+//	uint8_t offset = 0;
+//	for (offset = pixelIndex;offset < 8 && (offset + x) < 160;offset++) {
+//		uint8_t colorPaletteDataIndex = (((msb >> (7 - offset)) & 0x1) << 1) | ((lsb >> (7 - offset)) & 0x1);
+//		uint8_t colorIndex = (bus->interrupt->io[0x47] >> (2 * colorPaletteDataIndex)) & 0x03;
+//		colorIndex = palette[colorPaletteDataIndex];
+//		//printf("color id:%d\n",colorIndex);
+//		//bus->display->setPixel(x+ (offset- pixelIndex), y, bus->display->colors[colorIndex]);
+//		bus->display->setPixel(x + (offset - pixelIndex), y, bus->display->bgPalette[colorIndex]);
+//	}
+//	return offset;
+//
+//}
+
 void GPU::drawTest()
 {
 	uint8_t heart[16] = {

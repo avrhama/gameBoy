@@ -112,7 +112,7 @@ int main(void) {
 	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\div_write.gb",//faild
 	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\tima_reload.gb",
 	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\tima_write_reloading.gb"};
-	uint8_t romIndex = 13;
+	uint8_t romIndex = 2;
 	//char * romPath = roms[5];
 	
 	//BC = 0x12FE;
@@ -202,9 +202,9 @@ int main(void) {
 	
 	
 	while (true) {
-		if (SDL_PollEvent(&display->windowEvent)) 
+		/*if (SDL_PollEvent(&display->windowEvent)) 
 					if (SDL_QUIT == display->windowEvent.type) 
-						break;
+						break;*/
 					
 		do {
 			opcode = cpu->getOpcode();
@@ -315,7 +315,9 @@ int main(void) {
 			time.print();*/
 		} while (cyclesInFrameCounter<cyclesInFrame*(cpu->speedMode+1)); //(cpu.PC != 0x100 && counter > 0);//||mmu.biosLoaded);//cpu.PC!=0x100
 		cyclesInFrameCounter = 0;
-		//display->update();
+		//Sleep(1);
+		//display->render();
+		display->update();
 	  
 	}
 

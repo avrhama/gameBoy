@@ -1709,7 +1709,7 @@ void CPU::HALT(uint8_t* none, uint8_t* none2) {
 
 }
 void CPU::STOP(uint8_t* none, uint8_t* none2) {
-	//halt = true;
+	halt = true;
 	if (bus->cartridge->colorGB) {
 		uint8_t prepareSpeedSwitch = bus->interrupt->io[0x4d];
 		if (prepareSpeedSwitch & 0x01) {
@@ -1729,8 +1729,8 @@ void CPU::DI(uint8_t* none, uint8_t* none2) {
 	IME = false;
 }
 void CPU::EI(uint8_t* none, uint8_t* none2) {
-	bus->cpu->setIME = true;
-	//IME = true;
+	//bus->cpu->setIME = true;
+	IME = true;
 }
 void CPU::RLCA(uint8_t* none, uint8_t* none2) {
 	uint8_t A = *getA();
@@ -2310,6 +2310,7 @@ void CPU::RET(uint8_t* none, uint8_t* none2) {
 	SP += 2;*/
 
 	//PC = BytesToWord(msb, lsb);
+	setIME = true;
 	POP_nn(NULL, (uint8_t*)&PC);
 
 }
@@ -5873,7 +5874,7 @@ void CPU::ExecuteOpcode(uint16_t opcode) {
 }
 void CPU::reset()
 {
-	int stage = 2;
+	int stage = 0;
 	switch (stage) {
 	case 0:
 		//antonio reset
@@ -5935,7 +5936,8 @@ int CPU::getCycelPerIncrementTIMA(uint8_t freqIndex) {
 }
 //if tima counter pass half of the counter target, tima incease.
 void CPU::isCycelPerIncrementTIMAPassedHalf(int newCycelPerIncrementTIMA) {
-
+	uint8_t timcont = 0;
+		bool increaseTima = false;
 	int stage = 1;
 	switch (stage) {
 	case 0:
@@ -5962,8 +5964,8 @@ void CPU::isCycelPerIncrementTIMAPassedHalf(int newCycelPerIncrementTIMA) {
 		break;
 	case 1:
 
-		uint8_t timcont = bus->mmu->read(0xff07);//timer controler reister
-		bool increaseTima = (cyclesPerIncrementTIMA == 1024 && newCycelPerIncrementTIMA == 256 && ((timcont >> 2) & 0x1)) ? true : false;
+		 timcont = bus->mmu->read(0xff07);//timer controler reister
+		 increaseTima = (cyclesPerIncrementTIMA == 1024 && newCycelPerIncrementTIMA == 256 && ((timcont >> 2) & 0x1)) ? true : false;
 		if (cyclesPerIncrementTIMA / 2 <= cyclesPerIncrementTIMACounter || (increaseTima)) {
 			int freq = getCycelPerIncrementTIMA(timcont & 0x3);
 
@@ -5985,7 +5987,10 @@ void CPU::isCycelPerIncrementTIMAPassedHalf(int newCycelPerIncrementTIMA) {
 		cyclesPerIncrementTIMACounter = 0;
 
 		break;
-
+	case 2:
+		cyclesPerIncrementTIMA = newCycelPerIncrementTIMA;
+		cyclesPerIncrementTIMACounter = 0;
+		break;
 	}
 
 }
@@ -6117,7 +6122,7 @@ void CPU::updateTimers()
 {
 
 	cyclesPerIncrementDIVIDER += lastOpcodeCycles;
-	while (cyclesPerIncrementDIVIDER >= 256) {
+	if (cyclesPerIncrementDIVIDER >= 256) {
 		bus->interrupt->io[0x04]++;//divider increment
 		cyclesPerIncrementDIVIDER -= 256;
 	}

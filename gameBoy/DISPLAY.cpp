@@ -15,6 +15,7 @@ DISPLAY::DISPLAY(int posX, int posY, int width, int height, int pixelSize,int di
     for(int i=0;i<keysCount;i++)
     keysMapper[keys[i].key] = keys+i;
    
+    return;
     if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
         std::cout << "error with sdl " << SDL_GetError() << std::endl;
     }
@@ -121,7 +122,7 @@ void DISPLAY::setPixelChannel(int posX, int posY,ColorChannel ch,uint8_t value)
 }
 void DISPLAY::update()
 {
-    return;
+   
    /* if (displayLock)
         return;*/
     string windowName = "image" + displayNum;
