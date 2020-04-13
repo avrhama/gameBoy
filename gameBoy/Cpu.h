@@ -47,7 +47,7 @@ public:
 	int steps = 0;
 	TIME time;
 	uint8_t cycelsCounter = 0;
-	uint16_t cyclesPerIncrementDIVIDER = 0;// 4194304/16382
+	int cyclesPerIncrementDIVIDER = 0;// 4194304/16382
 	uint16_t AF = 0;
 	uint16_t BC = 0;
 	uint16_t DE = 0;

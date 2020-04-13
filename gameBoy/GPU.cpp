@@ -83,8 +83,10 @@ void GPU::tick()
 		cyclesPerScanline += 456;// *(bus->cpu->speedMode + 1);
 		bus->interrupt->io[0x44]++;
 		uint8_t currScanLine = bus->interrupt->io[0x44];
-		if (currScanLine == 144)
+		if (currScanLine == 144) {
 			bus->interrupt->setInterruptRequest(0);
+			bus->display->render();
+		}
 		if (currScanLine > 153)
 			bus->interrupt->io[0x44] = 0;
 		if (currScanLine < 144)
@@ -127,53 +129,6 @@ void GPU::tick()
 
 	}
 }
-
-//void GPU::tick()
-//{
-//	modeClock += bus->cpu->lastOpcodeCycles;
-//	switch (mode) {
-//	case 2:
-//		if (modeClock >= 80) {
-//			modeClock = 0;
-//			mode = 3;
-//		}
-//		break;
-//	case 3:
-//		if (modeClock >= 172) {
-//			modeClock = 0;
-//			mode = 0;
-//			// GPU.renderscan();
-//		}
-//		break;
-//	case 0:
-//		if (modeClock >= 204) {
-//			modeClock = 0;
-//			char currScanLine=bus->mmu->read(0xFF44);
-//			bus->mmu->write(0xFF44,currScanLine++);
-//			if (bus->mmu->read(0xFF44) == 143) {
-//				mode = 1;
-//				//GPU._canvas.putImageData(GPU._scrn, 0, 0);
-//			}else {
-//				
-//				mode = 2;
-//			}
-//		}
-//		break;
-//	case 1:
-//		if (modeClock >= 4560) {
-//			modeClock = 0;
-//			char currScanLine = bus->mmu->read(0xFF44);
-//			bus->mmu->write(0xFF44, currScanLine++);
-//			if (bus->mmu->read(0xFF44)==154)
-//			{
-//				// Restart scanning modes
-//				mode = 2;
-//				bus->mmu->write(0xFF44, 0);
-//			}
-//		}
-//		break;
-//	}
-//}
 void GPU::drawSprites() {
 	if ((bus->interrupt->io[0x40] >> 1) & 0x1) {//OBJ (Sprite) Display Enable
 		uint8_t spriteSize = ((bus->interrupt->io[0x40] >> 2) & 0x01)?16:8;
@@ -266,9 +221,9 @@ bool GPU::TestBit(BYTE n, int b) {
 int GPU::BitGetVal(BYTE n, int b) const {
 	return (n >> b) & 1;
 }
-COLOUR GPU::GetColour(BYTE colourNum, WORD address) const
+ColorName GPU::GetColour(BYTE colourNum, WORD address) const
 {
-	COLOUR res = WHITE;
+	ColorName res = WHITE;
 	BYTE palette = bus->mmu->read(address);
 	int hi = 0;
 	int lo = 0;
@@ -298,13 +253,27 @@ COLOUR GPU::GetColour(BYTE colourNum, WORD address) const
 
 	return res;
 }
+void GPU::getPalette(uint16_t paletteAddress, map<int, int>* palette) {
+	uint8_t pletteMap = bus->mmu->read(paletteAddress);
+	(*palette)[0] = pletteMap & 0x03;
+	(*palette)[1] = (pletteMap>>2) & 0x03;
+	(*palette)[2] = (pletteMap >> 4) & 0x03;
+	(*palette)[3] = (pletteMap >> 6) & 0x03;
+
+	/*(*palette)[pletteMap & 0x03] = pletteMap & 0x03;
+	(*palette)[1] = (pletteMap >> 2) & 0x03;
+	(*palette)[2] = (pletteMap >> 4) & 0x03;
+	(*palette)[3] = (pletteMap >> 6) & 0x03;*/
+}
 void GPU::drawBG() {//Backround
+	map<int, int> palette;
+	getPalette(0xff47,&palette);
 	if (bus->interrupt->io[0x40] & 0x1) {//BG Display Enable
 		uint16_t bgTileMap = 0x9800;//store locations of tiles to display	
 		
 		bool windowDisplay = (bus->interrupt->io[0x40] >> 5) & 0x1;
 		if ((windowDisplay && ((bus->interrupt->io[0x40] >> 6) & 0x1)) ||//window display set and and Window Tile Map is 1 OR window not display and BG Tile Map is 1
-			(!windowDisplay && ((bus->interrupt->io[0x40] >> 3) & 0x1))) {//BG & Window Tile Data Select 9c00-9fff
+			(!windowDisplay && ((bus->interrupt->io[0x40] >> 3) & 0x01))) {//BG & Window Tile Data Select 9c00-9fff
 			bgTileMap = 0x9C00;
 		}
 		uint16_t tileDataTable = 0x8800;//signed indexing
@@ -331,21 +300,25 @@ void GPU::drawBG() {//Backround
 				if (x >= windowX)
 					bgX = x - windowX;
 			uint8_t tileCol = bgX / 8;//number of tiles from 0 to scrollX.
-			uint8_t tileIndex = bus->mmu->read(bgTileMap + (tileCol + tileRow));
+			
 			uint16_t tileAddress;
-			if (tileDataTable == 0x8800)
-				tileAddress = 0x8800 + 16 * ((signed)tileIndex + 128);
-			else
+			if (tileDataTable == 0x8800) {
+				uint8_t tileIndex =(int8_t)bus->mmu->read(bgTileMap + (tileCol + tileRow))+128;
+				tileAddress = 0x8800 + 16 * tileIndex;
+			}
+			else {
+				uint8_t tileIndex = bus->mmu->read(bgTileMap + (tileCol + tileRow));
 				tileAddress = 0x8000 + 16 * (tileIndex);
-
+			}
 
 			uint8_t yDisplay = bus->interrupt->io[0x44];//currLine
 			uint8_t tileLine = (tileY % 8) * 2;//each  bytes are a line
 			uint8_t lsbData = bus->mmu->read(tileAddress+ tileLine);
 			uint8_t msbData = bus->mmu->read(tileAddress + tileLine+1);
 			uint8_t pixelIndex = bgX % 8;
-			uint8_t offset=setPixel(x, yDisplay, lsbData, msbData, pixelIndex);
+			uint8_t offset=setPixel(x, yDisplay, lsbData, msbData, pixelIndex,palette);
 			x += (offset - pixelIndex);
+			//x++;
 		}
 	}
 }
@@ -367,13 +340,16 @@ void GPU::draw() {
 	//	int x = 0;
 	//}
 }
-uint8_t GPU::setPixel(int x, int y, uint8_t lsb, uint8_t msb,uint8_t pixelIndex)
+uint8_t GPU::setPixel(int x, int y, uint8_t lsb, uint8_t msb,uint8_t pixelIndex, map<int, int> palette)
 {	
 	uint8_t offset = 0;
 	for (offset = pixelIndex;offset < 8 && (offset + x) < 160;offset++) {
 		uint8_t colorPaletteDataIndex = (((msb >> (7 - offset)) & 0x1) << 1) | ((lsb >> (7 - offset)) & 0x1);
 		uint8_t colorIndex = (bus->interrupt->io[0x47] >> (2 * colorPaletteDataIndex)) & 0x03;
-		bus->display->setPixel(x+ (offset- pixelIndex), y, bus->display->colors[colorIndex]);
+		colorIndex = palette[colorPaletteDataIndex];
+		//printf("color id:%d\n",colorIndex);
+		//bus->display->setPixel(x+ (offset- pixelIndex), y, bus->display->colors[colorIndex]);
+		bus->display->setPixel(x + (offset - pixelIndex), y, bus->display->bgPalette[colorIndex]);
 	}
 	return offset;
 	
@@ -396,7 +372,8 @@ void GPU::drawTest()
 		uint8_t msb = heart[!flipy ? (2 * y+1) : (15 - (2 * y+1))];
 		for (x = 0;x < 8;x++) {
 			uint8_t colorIndex = (((msb >> (7 - x)) & 0x1) << 1) |( (lsb >> (7 - x))&0x1);
-			bus->display->setPixel(x, y, bus->display->colors[colorIndex]);
+			//bus->display->setPixel(x, y, bus->display->colors[colorIndex]);
+			bus->display->setPixel(x, y, bus->display->bgPalette[colorIndex]);
 		}
 	}
 	

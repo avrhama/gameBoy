@@ -2,153 +2,30 @@
 
 void INTERRUPT::write(uint16_t address, uint8_t value)
 {
+	bool print = false;
 	switch (address)
 	{
 	case 0x46:
+		if(print)
 		printf("opcode:0x46 // DMA value:%04x\n", value);
 		break;
 	case 0x41:
 		if (value > 0)
+			if (print)
 			printf("opcode:0x41 // LCD STATUS value:%04x\n", value);
 		break;
 	case 0x4D:
 		if (value > 0)
+			if (print)
 			printf("opcode:0x4D // Speed Mode value:%04x\n", value);
 		break;
-	}
-	//printf("write:");
-	switch (0) {
-
-	case 0x05: {
-		printf("opcode:0x05 // TIMA value:%04x\n", value);
-		break;
-	} case 0x06: {
-		printf("opcode:0x06 // TMA value:%04x\n", value);
-		break;
-	} case 0x07: {
-		if ((value & 0x03) != (io[0x07] & 0x03))
-			printf("opcode:0x07 // TAC value:%04x\n", value);
-		break;
-	} case 0x10: {
-		printf("opcode:0x10 // NR10 value:%04x\n", value);
-		break;
-	} case 0x11: {
-		printf("opcode:0x11 // NR11 value:%04x\n", value);
-		break;
-	} case 0x12: {
-		printf("opcode:0x12 // NR12 value:%04x\n", value);
-		break;
-	} case 0x14: {
-		printf("opcode:0x14 // NR14 value:%04x\n", value);
-		break;
-	} case 0x16: {
-		printf("opcode:0x16 // NR21 value:%04x\n", value);
-		break;
-	} case 0x17: {
-		printf("opcode:0x17 // NR22 value:%04x\n", value);
-		break;
-	} case 0x19: {
-		printf("opcode:0x19 // NR24 value:%04x\n", value);
-		break;
-	} case 0x1A: {
-		printf("opcode:0x1A // NR30 value:%04x\n", value);
-		break;
-	} case 0x1B: {
-		printf("opcode:0x1B // NR31 value:%04x\n", value);
-		break;
-	} case 0x1C: {
-		printf("opcode:0x1C // NR32 value:%04x\n", value);
-		break;
-	} case 0x1E: {
-		printf("opcode:0x1E // NR33 value:%04x\n", value);
-		break;
-	} case 0x20: {
-		printf("opcode:0x20 // NR41 value:%04x\n", value);
-		break;
-	} case 0x21: {
-		printf("opcode:0x21 // NR42 value:%04x\n", value);
-		break;
-	} case 0x22: {
-		printf("opcode:0x22 // NR43 value:%04x\n", value);
-		break;
-	} case 0x23: {
-		printf("opcode:0x23 // NR30 value:%04x\n", value);
-		break;
-	} case 0x24: {
-		printf("opcode:0x24 // NR50 value:%04x\n", value);
-		break;
-	} case 0x25: {
-		printf("opcode:0x25 // NR51 value:%04x\n", value);
-		break;
-	} case 0x26: {
-		printf("opcode:0x26 //-GB, 0xF0-SGB ;// NR52 value:%04x\n", value);
-		break;
-	} case 0x40: {
-		printf("opcode:0x40 // LCDC value:%04x\n", value);
-		break;
-	} case 0x41: {
-		printf("opcode:0x41 // STAT - LCDC Status  value:%04x\n", value);
-		break;
-	} case 0x42: {
-		printf("opcode:0x42 // SCY value:%04x\n", value);
-		break;
-	} case 0x43: {
-		printf("opcode:0x43 // SCX value:%04x\n", value);
-		break;
-	} case 0x45: {
-		printf("opcode:0x45 // LYC value:%04x\n", value);
-		break;
-	} case 0x46: {
-		printf("opcode:0x46 // DMA value:%04x\n", value);
-		break;
-
-	} case 0x47: {
-		printf("opcode:0x47 // BGP value:%04x\n", value);
-		break;
-	} case 0x48: {
-		printf("opcode:0x48 // OBP0 value:%04x\n", value);
-		break;
-	} case 0x49: {
-
-		printf("opcode:0x49 // OBP1 value:%04x\n", value);
-		break;
-	} case 0x4A: {
-		printf("opcode:0x4A // WY value:%04x\n", value);
-		break;
-	} case 0x4B: {
-		printf("opcode:0x4B // W value:%04x\n", value);
-		break;
-	case 0x68: {
-		//int x = 0xff80;
-		//uint8_t index = io[0x68] & 0x3f;
-		//uint8_t n = bus->mmu->read(index);//address a byte in the CGBs Background Palette Memory
-		//bus->mmu->write(index, value);
-		//if ((io[0x68] >> 7) & 0x01) {
-		//	io[0x68]= (io[0x68] >> 6) |(index+1);
-		//}
-		printf("opcode:0x4B //  value:%04x\n", value);
-		break;
-	}
-	case 0x69: {
-		//int x = 0xff80;
-		//uint8_t index = io[0x68] & 0x3f;
-		//uint8_t n = bus->mmu->read(index);//address a byte in the CGBs Background Palette Memory
-		//bus->mmu->write(index, value);
-		//if ((io[0x68] >> 7) & 0x01) {
-		//	io[0x68]= (io[0x68] >> 6) |(index+1);
-		//}
-		printf("opcode:0x4B //  value:%04x\n", value);
-		break;
-	}
-	}
-
 	}
 	if (address < 0x80)
 		switch (address)
 		{
 		case 0x04:
 			io[0x04] = 0;
-			bus->cpu->cyclesPerIncrementDIVIDER = 255;
+			bus->cpu->cyclesPerIncrementDIVIDER = 256;
 			bus->cpu->updateCycelPerIncrementTIMA(io[0x07] & 0x03);
 			break;
 		case 0x07:
@@ -162,6 +39,9 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 			io[0x0f] = value | 0xE0;
 			//printf("opcode:0x0f // IE value:%04x\n", value);
 			break;
+		case 0x41:
+			io[0x41] = value|0x80;
+			break;
 		case 0x44:
 			io[0x44] = 0;
 			break;
@@ -169,17 +49,28 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 			bus->dma->transfer(value);
 			break;
 		case 0x4f:
-			bus->gpu->vRamBank = value & 0x01;
-			io[address] = 0xfe|value;
-			printf("opcode:0x4f // VRAM Bank value:%04x value(io):%04x\n", value, io[address]);
-			break;
+			if(bus->cartridge->colorGB){
+				bus->gpu->vRamBank = value & 0x01;
+				io[address] = 0xfe|value;
+				if (print)
+				printf("opcode:0x4f // VRAM Bank value:%04x value(io):%04x\n", value, io[address]);
+				break;
+			}
+		case 0x55:
+			if (print)
+			printf("opcode:0x55 // Start DMA Transfer value:%04x value(io):%04x\n", value, io[address]);
 		case 0x70:
 			
 			bus->mmu->workingRamBank = value & 0x07;
 			if ( bus->mmu->workingRamBank == 0)
 				bus->mmu->workingRamBank = 1;
 			io[address] = value;
+			if (print)
 			printf("opcode:0x70 // WRAM Bank value:%04x\n", value);
+			break;
+		case 0x76://read 0nly
+		case 0x77://read only
+			return;
 			break;
 		default:
 			io[address] = value;
@@ -189,8 +80,10 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 
 uint8_t INTERRUPT::read(uint16_t address)
 {
-	if (address == 0x44)
-		int y = 0;
+	bool print = false;
+	if (address == 0x55)
+		if (print)
+		printf("dma?\n");
 	if (address < 0x80)
 		return io[address];
 	else {
@@ -198,101 +91,6 @@ uint8_t INTERRUPT::read(uint16_t address)
 		return NULL;
 	}
 
-	//printf("read:");
-	switch (0) {
-	case 0x05: {
-		printf("opcode:0x05 // TIMA\n");
-		break;
-	} case 0x06: {
-		printf("opcode:0x06 // TMA\n");
-		break;
-	} case 0x07: {
-		printf("opcode:0x07 // TAC\n");
-		break;
-	} case 0x10: {
-		printf("opcode:0x10 // NR10\n");
-		break;
-	} case 0x11: {
-		printf("opcode:0x11 // NR11\n");
-		break;
-	} case 0x12: {
-		printf("opcode:0x12 // NR12\n");
-		break;
-	} case 0x14: {
-		printf("opcode:0x14 // NR14\n");
-		break;
-	} case 0x16: {
-		printf("opcode:0x16 // NR21\n");
-		break;
-	} case 0x17: {
-		printf("opcode:0x17 // NR22\n");
-		break;
-	} case 0x19: {
-		printf("opcode:0x19 // NR24\n");
-		break;
-	} case 0x1A: {
-		printf("opcode:0x1A // NR30\n");
-		break;
-	} case 0x1B: {
-		printf("opcode:0x1B // NR31\n");
-		break;
-	} case 0x1C: {
-		printf("opcode:0x1C // NR32\n");
-		break;
-	} case 0x1E: {
-		printf("opcode:0x1E // NR33\n");
-		break;
-	} case 0x20: {
-		printf("opcode:0x20 // NR41\n");
-		break;
-	} case 0x21: {
-		printf("opcode:0x21 // NR42\n");
-		break;
-	} case 0x22: {
-		printf("opcode:0x22 // NR43\n");
-		break;
-	} case 0x23: {
-		printf("opcode:0x23 // NR30\n");
-		break;
-	} case 0x24: {
-		printf("opcode:0x24 // NR50\n");
-		break;
-	} case 0x25: {
-		printf("opcode:0x25 // NR51\n");
-		break;
-	} case 0x26: {
-		printf("opcode:0x26 //-GB, 0xF0-SGB ;// NR52\n");
-		break;
-	} case 0x40: {
-		printf("opcode:0x40 // LCDC\n");
-		break;
-	} case 0x42: {
-		printf("opcode:0x42 // SCY\n");
-		break;
-	} case 0x43: {
-		printf("opcode:0x43 // SCX\n");
-		break;
-	} case 0x45: {
-		printf("opcode:0x45 // LYC\n");
-		break;
-	} case 0x47: {
-		printf("opcode:0x47 // BGP\n");
-		break;
-	} case 0x48: {
-		printf("opcode:0x48 // OBP0\n");
-		break;
-	} case 0x49: {
-
-		printf("opcode:0x49 // OBP1\n");
-		break;
-	} case 0x4A: {
-		printf("opcode:0x4A // WY\n");
-		break;
-	} case 0x4B: {
-		printf("opcode:0x4B // W\n");
-		break;
-	}
-	}
 }
 
 void INTERRUPT::setInterruptRequest(uint8_t bit)
@@ -327,17 +125,18 @@ uint8_t INTERRUPT::InterruptsHandler()
 	uint8_t cycles = 0;
 	for (int i = 0;i < 5;i++) {
 		if (isInterruptRequsted(i) && isInterruptEnable(i)) {
-
+			bus->cpu->halt = false;
 			if (bus->cpu->IME) {
+				
 				bus->cpu->IME = false;
 				resetInterruptRequest(i);
 				InterruptHandler(i);
 				return 5;
 			}
-			if (bus->cpu->halt) {
+			/*if (bus->cpu->halt) {
 				bus->cpu->halt = false;
 				
-			}
+			}*/
 		}
 		
 		
@@ -466,10 +265,12 @@ void INTERRUPT::reset()
 		if (bus->cartridge->colorGB) {
 			io[0x04] = 0x1E;
 			bus->cpu->cyclesPerIncrementDIVIDER = 255 - 0xA0;
+			bus->cpu->cyclesPerIncrementDIVIDER =0xA0;
 		}
 		else {
 			io[0x04] = 0x26;
 			bus->cpu->cyclesPerIncrementDIVIDER = 255 - 0x7c;
+			bus->cpu->cyclesPerIncrementDIVIDER = 0x7c;
 		}
 		break;
 	case 1:
@@ -503,6 +304,29 @@ void INTERRUPT::reset()
 		io[0x49] = 0xFF;//OBP1
 		io[0x4A] = 0x00;//WY
 		io[0x4B] = 0x00;//WX
+
+		
+		io[0x72] = 0x00;// - Undocumented(00h) - Bit 0 - 7 (Read / Write)
+		io[0x73] = 0x00;// - Undocumented(00h) - Bit 0 - 7 (Read / Write)
+		
+		io[0x75] = 0x8F;// - Undocumented(8Fh) - Bit 4 - 6 (Read / Write)
+		io[0x76] = 0x00;// - Undocumented(00h) - Always 00h(Read Only)
+		io[0x77] = 0x00;// - Undocumented(00h) - Always 00h(Read Only)
+		if (bus->cartridge->colorGB) {
+			io[0x04] = 0x1E;
+			bus->cpu->cyclesPerIncrementDIVIDER = 255 - 0xA0;
+			bus->cpu->cyclesPerIncrementDIVIDER = 0xA0;
+			io[0x6C] = 0xFE;// Undocumented(FEh) - Bit 0 (Read / Write) - CGB Mode Only
+			io[0x74] = 0x00;// - Undocumented(00h) - Bit 0 - 7 (Read / Write) - CGB Mode Only
+		}
+		else {
+			io[0x04] = 0x26;
+			bus->cpu->cyclesPerIncrementDIVIDER = 255 - 0x7c;
+			bus->cpu->cyclesPerIncrementDIVIDER = 0x7c;
+			io[0x6C] = 0xFF;// Undocumented(FEh) - Bit 0 (Read / Write) - CGB Mode Only
+			io[0x74] = 0xFF;// - Undocumented(00h) - Bit 0 - 7 (Read / Write) - CGB Mode Only
+		}
+
 		break;
 	}
 

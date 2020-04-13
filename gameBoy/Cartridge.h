@@ -41,7 +41,7 @@ public:
 	
 	void loadRom(string path);
 	void setCartridgeHeader();
-	
+	void printCartridgeType();
 	CartridgeType cartridgeType= CartridgeType::Bandai_TAMA5;
 	RomSizeType romSizeType= RomSizeType::_128_banks;
 	RamSizeType ramSizeType= RamSizeType::None;

@@ -19,6 +19,7 @@ public:
 	uint8_t modeClock = 0;
 	int cyclesPerScanline= 456;
 	uint8_t vRamBank = 0;
+	uint8_t oldScanedline = 0;
 	void reset();
 	void connectToBus(BUS* bus);
 	bool checkLCDStatus();
@@ -26,10 +27,11 @@ public:
 	void drawSprites();
 	bool TestBit(BYTE n, int b);
 	int BitGetVal(BYTE n, int b) const;
-	COLOUR GetColour(BYTE colourNum, WORD address) const;
+	ColorName GetColour(BYTE colourNum, WORD address) const;
+	void getPalette(uint16_t paletteAddress, map<int, int>* palette);
 	void drawBG();
 	void draw();
-	uint8_t setPixel(int x, int y, uint8_t lsb, uint8_t msb,uint8_t pixelIndex);
+	uint8_t setPixel(int x, int y, uint8_t lsb, uint8_t msb,uint8_t pixelIndex,map<int,int> palette);
 	void drawTest();
 };
 

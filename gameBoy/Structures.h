@@ -223,9 +223,54 @@ struct KEY {
 };
 enum ColorChannel:uint8_t { Blue, Green, Red, Alpha };
 
-enum COLOUR
+enum ColorName
 {
 	WHITE, LIGHT_GRAY, DARK_GRAY, BLACK
+};
+struct Color {
+private:
+	uint8_t R;
+	uint8_t B;
+	uint8_t G;
+	//uint8_t A;
+	uint32_t hex;
+public:
+	 Color(uint32_t h) {
+		hex = h;
+		R = (h >> 16)&0xff;
+		G = (h >> 8) & 0xff;
+		B = (h) & 0xff;
+	}
+	 Color(uint8_t r, uint8_t g, uint8_t b) {
+		 setRGB(r, g, b);
+	 }
+	uint32_t getHex() {
+		return hex;
+	}
+	uint8_t getR() {
+		return R;
+	}
+	uint8_t getG() {
+		return G;
+	}
+	uint8_t getB() {
+		return B;
+	}
+	void setR(uint8_t R) {
+		setRGB(R, G, B);
+	}
+	void setG(uint8_t G) {
+		setRGB(R, G, B);
+	}
+	void setB(uint8_t B) {
+		setRGB(R, G, B);
+	}
+	void setRGB(uint8_t r, uint8_t g, uint8_t b) {
+		R = r;
+		G = g;
+		B = b;
+		hex = r << 16 | g << 8 | b;
+	}
 };
 struct TIME {
 	uint8_t dots = 0;//machine cycels
@@ -272,7 +317,7 @@ struct TIME {
 							timeChanged[4] = true;
 						}
 						else {
-							min + m;
+							min += m;
 							timeChanged[3] = true;
 						}
 					}

@@ -42,7 +42,7 @@ public:
     uint8_t unused[0x60];//unused memory aera
     uint8_t zeroRam[0x80];
     //uint8_t mem[0xffff];
-	bool biosLoaded = true;
+	bool biosLoaded = false;
 	void write(uint16_t address, uint8_t value);
 	uint8_t read(uint16_t address);
     //uint8_t* getMemCell(uint16_t address);

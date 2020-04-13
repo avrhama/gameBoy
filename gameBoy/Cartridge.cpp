@@ -25,7 +25,7 @@ void CARTRIDGE::loadRom(string path)
 	setCartridgeHeader();
 	
 	//rom[0x7fff+1] = '\0';
-	colorGB = rom[0x0143];
+	colorGB = (rom[0x0143]==0x80|| rom[0x0143] == 0xc0)?true:false;
 	GB_SGBIndicator = rom[0x0146];
 	cartridgeType =(CartridgeType)rom[0x0147];
 	romSizeType = (RomSizeType)(rom[0x0148]);
@@ -34,13 +34,99 @@ void CARTRIDGE::loadRom(string path)
 	ramSize = getRomSize();
 	ram = (uint8_t*)calloc(((int)ramSize)*ramBankSize, 1);
 	printf("colorGB?:%d\n", colorGB);
-
+	printCartridgeType();
 	
 }
 
 void CARTRIDGE::setCartridgeHeader()
 {
 	memcpy(title, (rom + 0x0134), 9);
+}
+
+void CARTRIDGE::printCartridgeType()
+{
+	switch (cartridgeType) {
+	case CartridgeType::ROM_ONLY:
+		printf("ROM_ONLY\n");
+		break;
+	case CartridgeType::ROM_MBC1:
+		printf("ROM_MBC1\n");
+		break;
+	case CartridgeType::ROM_MBC1_RAM:
+		printf("ROM_MBC1_RAM\n");
+		break;
+	case CartridgeType::ROM_MBC1_RAM_BATT:
+		printf("ROM_MBC1_RAM_BATT\n");
+		break;
+	case CartridgeType::ROM_MBC2:
+		printf("ROM_MBC2\n");
+		break;
+	case CartridgeType::ROM_MBC2_BATTERY:
+		printf("ROM_MBC2_BATTERY\n");
+		break;
+	case CartridgeType::ROM_RAM:
+		printf("ROM_RAM\n");
+		break;
+	case CartridgeType::ROM_RAM_BATTERY:
+		printf("ROM_RAM_BATTERY\n");
+		break;
+	case CartridgeType::ROM_MMM01:
+		printf("ROM_MMM01\n");
+		break;
+	case CartridgeType::ROM_MMM01_SRAM:
+		printf("ROM_MMM01_SRAM\n");
+		break;
+	case CartridgeType::ROM_MMM01_SRAM_BATT:
+		printf("ROM_MMM01_SRAM_BATT\n");
+		break;
+	case CartridgeType::ROM_MBC3_TIMER_BATT:
+		printf("ROM_MBC3_TIMER_BATT\n");
+		break;
+	case CartridgeType::ROM_MBC3_TIMER_RAM_BATT:
+		printf("ROM_MBC3_TIMER_RAM_BATT\n");
+		break;
+	case CartridgeType::ROM_MBC3:
+		printf("ROM_MBC3\n");
+		break;
+	case CartridgeType::ROM_MBC3_RAM:
+		printf("ROM_MBC3_RAM\n");
+		break;
+	case CartridgeType::ROM_MBC3_RAM_BATT:
+		printf("ROM_MBC3_RAM_BATT\n");
+		break;
+	case CartridgeType::ROM_MBC5:
+		printf("ROM_MBC5\n");
+		break;
+	case CartridgeType::ROM_MBC5_RAM:
+		printf("ROM_MBC5_RAM\n");
+		break;
+	case CartridgeType::ROM_MBC5_RAM_BATT:
+		printf("ROM_MBC5_RAM_BATT\n");
+		break;
+	case CartridgeType::ROM_MBC5_RUMBLE:
+		printf("ROM_MBC5_RUMBLE\n");
+		break;
+	case CartridgeType::ROM_MBC5_RUMBLE_SRAM:
+		printf("ROM_MBC5_RUMBLE_SRAM\n");
+		break;
+	case CartridgeType::ROM_MBC5_RUMBLE_SRAM_BATT:
+		printf("ROM_MBC5_RUMBLE_SRAM_BATT\n");
+		break;
+	case CartridgeType::Pocket_Camera:
+		printf("Pocket_Camera\n");
+		break;
+	case CartridgeType::Bandai_TAMA5:
+		printf("Bandai_TAMA5\n");
+		break;
+	case CartridgeType::Hudson_HuC_3:
+		printf("Hudson_HuC_3\n");
+		break;
+	case CartridgeType::Hudson_HuC_1:
+		printf("Hudson_HuC_1\n");
+		break;
+	}
+
+	
 }
 
 
@@ -94,11 +180,13 @@ uint8_t CARTRIDGE::getRamSize()
 
 uint8_t CARTRIDGE::read(uint16_t address)
 {
+	/*if (cartridgeType == CartridgeType::ROM_ONLY)
+		return rom[address];*/
 	if (address <= 0x3fff) {//Rom 0
 		return rom[address];
 	}
 	else if (0x4000 <= address && address <= 0x7fff) {//Rom n
-		return rom[address + (romBankIndex - 1) * romBankSize];
+		return rom[address + (romBankIndex-1) * romBankSize];
 	}
 	else if (0xa000 <= address && address <= 0xbfff) {//Ram m
 		return ram[(address- 0xa000) + ramBankIndex * ramBankSize];
@@ -115,13 +203,15 @@ void CARTRIDGE::setRomBankIndex(uint8_t v) {
 }
 void CARTRIDGE::write(uint16_t address, uint8_t value)
 {
+	//if (cartridgeType == CartridgeType::ROM_ONLY) {
+	//	 //rom[address]=value;
+	//	 return;
+	//}
 	if (address <= 0x3fff) {//ROM 0
-		//mem[address] = value;
 		if (0x2000 <= address) {
 			setRomBankIndex((romBankIndex & 0x60) | value & 0x1f);
 		}
 	}else if (0x4000<= address && address <= 0x7fff) {
-		//mem[address] = value;
 		if (address <= 0x6000)
 			maxMemMode =(MaximumMemoryMode)(value & 1);//0: 16/8 mode, 1: 4/32 mode
 		if (address <= 0x5fff) {
@@ -133,7 +223,7 @@ void CARTRIDGE::write(uint16_t address, uint8_t value)
 		}
 
 	}else if (0xa000 <= address && address <= 0xbfff) {
-		ram[(address - 0xa000) + ramBankIndex * ramBankSize];
+		ram[(address - 0xa000) + ramBankIndex * ramBankSize]=value;
 	}
 }
 
@@ -156,5 +246,5 @@ void CARTRIDGE::load()
 	bus->mmu->biosLoaded = false;
 	for (int i = 0;i < 0x7fff;i++)
 		bus->mmu->write(i, read(i));
-	bus->mmu->biosLoaded = true;
+	//bus->mmu->biosLoaded = true;
 }

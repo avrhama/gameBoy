@@ -16,6 +16,8 @@
 #include "Structures.h"
 #include "pipeChannel.h"
 #include <conio.h>
+#include <SDL.h>
+#undef main
 using namespace std;
 
 void pipeRecive(BUS* bus, uint16_t opcode,uint16_t lastOpcode, int steps,string funcName) {
@@ -78,7 +80,13 @@ void pipeRecive(BUS* bus, uint16_t opcode,uint16_t lastOpcode, int steps,string 
 int main(void) {
 
 	
+
 	
+	//SDL_DestroyTexture(texture);
+	//SDL_DestroyRenderer(renderer);
+	//SDL_DestroyWindow(window);
+	//SDL_Quit();
+	//return EXIT_SUCCESS;
 	//testRun();
 	//return 0;
 	string romsPaths[22] =
@@ -103,8 +111,8 @@ int main(void) {
 	"test\\instr_timing\\instr_timing.gb",
 	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\div_write.gb",//faild
 	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\tima_reload.gb",
-	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\tim01.gb"};
-	uint8_t romIndex =20;
+	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\tima_write_reloading.gb"};
+	uint8_t romIndex = 13;
 	//char * romPath = roms[5];
 	
 	//BC = 0x12FE;
@@ -194,6 +202,10 @@ int main(void) {
 	
 	
 	while (true) {
+		if (SDL_PollEvent(&display->windowEvent)) 
+					if (SDL_QUIT == display->windowEvent.type) 
+						break;
+					
 		do {
 			opcode = cpu->getOpcode();
 		
@@ -303,7 +315,8 @@ int main(void) {
 			time.print();*/
 		} while (cyclesInFrameCounter<cyclesInFrame*(cpu->speedMode+1)); //(cpu.PC != 0x100 && counter > 0);//||mmu.biosLoaded);//cpu.PC!=0x100
 		cyclesInFrameCounter = 0;
-		display->update();
+		//display->update();
+	  
 	}
 
 	myfile.close();
