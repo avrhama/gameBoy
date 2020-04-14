@@ -21,7 +21,7 @@
 using namespace std;
 
 void pipeRecive(BUS* bus, uint16_t opcode,uint16_t lastOpcode, int steps,string funcName) {
-	if (steps == 170161) {
+	if (steps == 5) {
 		int h = 0;
 	}
 	if (bus->pipeEnable) {
@@ -89,17 +89,17 @@ int main(void) {
 	//return EXIT_SUCCESS;
 	//testRun();
 	//return 0;
-	string romsPaths[22] =
+	string romsPaths[30] =
 	{ 
 	"test\\cpu_instrs\\cpu_instrs.gb",
 	"test\\cpu_instrs\\individual\\01-special.gb",//good//blargg
 	"test\\cpu_instrs\\individual\\02-interrupts.gb" ,//good
-		"test\\cpu_instrs\\individual\\03-op sp,hl.gb",//no answer
+		"test\\cpu_instrs\\individual\\03-op sp,hl.gb",//faild
 	"test\\cpu_instrs\\individual\\04-op r,imm.gb",//good
 	"test\\cpu_instrs\\individual\\05-op rp.gb",//good
 	"test\\cpu_instrs\\individual\\06-ld r,r.gb",//good
 	"test\\cpu_instrs\\individual\\07-jr,jp,call,ret,rst.gb",//no answer-> crashed
-	"test\\cpu_instrs\\individual\\08-misc instrs.gb",//no answer
+	"test\\cpu_instrs\\individual\\08-misc instrs.gb",//good
 	"test\\cpu_instrs\\individual\\09-op r,r.gb",//good
 	"test\\cpu_instrs\\individual\\10-bit ops.gb",//good
 	"test\\cpu_instrs\\individual\\11-op a,(hl).gb",//good
@@ -111,8 +111,10 @@ int main(void) {
 	"test\\instr_timing\\instr_timing.gb",
 	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\div_write.gb",//faild
 	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\tima_reload.gb",
-	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\tima_write_reloading.gb"};
-	uint8_t romIndex = 14;
+	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\tima_write_reloading.gb",
+	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\tma_write_reloading.gb",
+	"roms\\mooneye-gb_hwtests\\misc\\boot_regs-cgb.gb" };
+	uint8_t romIndex = 18;
 	//char * romPath = roms[5];
 	
 	//BC = 0x12FE;
@@ -212,13 +214,16 @@ int main(void) {
 			//pipeRecive(bus, opcode, lastopcode, steps,"Execute");
 			if (!cpu->halt) {
 				cpu->ExecuteOpcode(opcode);
+				steps++;
+				pipeRecive(bus, opcode, lastopcode, steps, "Execute");
+				//cpu->Execute(opcode);
 			}
 			else {
 				cpu->lastOpcodeCycles = 1;
 			}
 
-			steps++;
-			//pipeRecive(bus, opcode, lastopcode, steps, "Execute");
+			
+			
 			cpu->lastOpcodeCycles *=(4 * (cpu->speedMode + 1));
 		
 			

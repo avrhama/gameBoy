@@ -3,9 +3,16 @@
 #include "pipeChannel.h"
 void MMU::reset()
 {
-	zeroRam[0x7F] = 0x00;// IE
+	
 	for (int i = 0;i < 0x60;i++)
 		unused[i] = 0;
+	for (int i = 0;i < 0x8000;i++)
+		workingRam[i] = 0;
+	for (int i = 0;i < 0x80;i++)
+		zeroRam[i] = 0;
+
+
+	
 }
 
 MMU::MMU()
@@ -65,8 +72,8 @@ void MMU::write(uint16_t address, uint8_t value)
 		//workingRam[(address | 0x2000) & 0x1FFF] = value;//echo to wram bank 1
 	}
 	else if (0xe000 <= address &&address <= 0xfdff) {
-		//return;
-		workingRam[address - 0x1FFF] = value;
+		return;
+		workingRam[address - 0xe000] = value;
 		workingRam[(address & 0xD000) & 0x1FFF] = value;//echo to wram bank 0
 	}
 	else if (0xfe00 <= address &&address <= 0xfe9f) {

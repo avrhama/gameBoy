@@ -1035,7 +1035,8 @@ void CPU::LD_$NN_SP(uint8_t* $NN, uint8_t* none)
 {
 	Word word = WordToBytes(SP);
 	bus->mmu->write(*(uint16_t*)$NN, word.lsb);
-	bus->mmu->write(*(uint16_t*)$NN + 1, word.msb);
+	bus->mmu->write(*(uint16_t*)$NN+1, word.msb);
+	
 }
 
 void CPU::PUSH_nn(uint8_t* nn, uint8_t* none)
@@ -1051,17 +1052,31 @@ void CPU::PUSH_nn(uint8_t* nn, uint8_t* none)
 	/*SP--;
 	bus->mmu->write(SP, word.msb);
 	SP--;
+
 	bus->mmu->write(SP, word.lsb);*/
+
+	/*bus->mmu->write(SP, word.lsb);
+	bus->mmu->write(SP - 1, word.msb);
+	SP -= 2;*/
+
 	bus->mmu->write(SP - 1, word.msb);
 	bus->mmu->write(SP - 2, word.lsb);
 	SP -= 2;
+
+	
 }
 
 void CPU::POP_nn(uint8_t* none, uint8_t* nn)
 {
+	
+
 	uint8_t lsb = bus->mmu->read(SP);
 	uint8_t msb = bus->mmu->read(SP + 1);
 	SP += 2;
+
+	/*uint8_t lsb = bus->mmu->read(SP + 1);
+	uint8_t msb = bus->mmu->read(SP + 2);
+	SP += 2;*/
 	//uint8_t lsb = bus->mmu->read(SP);
 	//uint8_t msb = bus->mmu->read(SP+1);
 	//SP += 2;
@@ -2328,12 +2343,14 @@ void CPU::RET_cc(uint8_t* cc_, uint8_t* none) {
 	}
 }
 void CPU::RETI(uint8_t* none, uint8_t* none2) {
-	/*uint8_t lsb = bus->mmu->read(++SP);
-	uint8_t msb = bus->mmu->read(++SP);*/
-	/*uint8_t lsb = bus->mmu->read(SP);
+
+	/*	uint8_t lsb = bus->mmu->read(++SP);
+	uint8_t msb = bus->mmu->read(++SP);
+	uint8_t lsb = bus->mmu->read(SP);
 	uint8_t msb = bus->mmu->read(SP + 1);
 	SP += 2;
 	PC = BytesToWord(msb, lsb);*/
+	
 	POP_nn(NULL, (uint8_t*)&PC);
 	IME = true;
 	//setIME = true;
@@ -2543,12 +2560,14 @@ void CPU::Execute(uint16_t opcode)
 	uint8_t* param1 = (this->*op.param1)();
 	uint8_t* param2 = (this->*op.param2)();
 	lastOpcodeCycles = op.cycles;//need to be before execution. look at jp condition
+	lastOpcodeCycles /= 4;
 	if ((opcode & 0xFF00) == 0xCB00) {
-		lastOpcodeCycles += 4;
+		lastOpcodeCycles += 1;
 	}
 
 	(this->*op.operate)(param1, param2);
 	AF &= 0xfff0;
+	printf("%s\n",op.name);
 }
 void CPU::ExecuteOpcode(uint16_t opcode) {
 
@@ -2620,8 +2639,9 @@ void CPU::ExecuteOpcode(uint16_t opcode) {
 		lastOpcodeCycles = 5;
 		lsb = bus->mmu->read(PC++);
 		msb = bus->mmu->read(PC++);
-		immidiateN = bus->mmu->read(msb << 8 | lsb);
-		param1 = &immidiateN;
+		//immidiateN = bus->mmu->read(msb << 8 | lsb);
+		immidiateNN = msb << 8 | lsb;
+		param1 = (uint8_t*)&immidiateNN;
 		param2 = NULL;
 		LD_$NN_SP(param1, param2);
 		break;
@@ -5872,7 +5892,7 @@ void CPU::ExecuteOpcode(uint16_t opcode) {
 }
 void CPU::reset()
 {
-	int stage = 3;
+	int stage = 4;
 	switch (stage) {
 	case 0:
 		//antonio reset
@@ -5896,7 +5916,7 @@ void CPU::reset()
 		SP = 0XFFFE;
 		PC = 0X0100;
 		//if (bus->cartridge->colorGB) {
-			AF = 0X11B0;
+			//AF = 0X11B0;
 		//}
 		break;
 	case 2:
@@ -5917,14 +5937,26 @@ void CPU::reset()
 		DE=0xFF56;
 		HL=0x000D;
 		SP=0xFFFE;
-		AF = 0x1180;
+		AF = 0X1180;
 		/*if (bus->cartridge->colorGB) {
 			AF = 0x1180;
 		}*/
 		break;
+	case 4:
+		
+		AF = 0x1180;
+		BC = 0x0000;
+		DE = 0x0008;
+		HL = 0x007C;
+		SP = 0xFFFE;
+		PC = 0x100;
+		if (bus->cartridge->colorGB) {
+			DE = 0xFF56;
+			HL = 0x000D;
+		}
+		break;
 	}
-	
-
+	//SP = 0XFFFE;
 }
 int CPU::getCycelPerIncrementTIMA(uint8_t freqIndex) {
 	switch (freqIndex) {//read tac selected freq

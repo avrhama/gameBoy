@@ -32,7 +32,8 @@ void CARTRIDGE::loadRom(string path)
 	ramSizeType= (RamSizeType)(rom[0x0149]);
 	romSize = getRomSize();
 	ramSize = getRamSize();
-	ram = (uint8_t*)calloc(((int)ramSize)*ramBankSize, 1);
+	int size_ = (int)ramSize * ramBankSize;
+	ram = (uint8_t*)calloc(size_, 1);
 	printf("colorGB?:%d\n", colorGB);
 	printCartridgeType();
 	

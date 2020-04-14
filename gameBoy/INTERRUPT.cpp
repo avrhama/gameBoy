@@ -80,7 +80,7 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 
 uint8_t INTERRUPT::read(uint16_t address)
 {
-	bool print = true;
+	bool print = false;
 	if (address == 0x55)
 		if (print)
 		printf("read dma?\n");
@@ -284,18 +284,18 @@ void INTERRUPT::reset()
 		io[0x49] = 0xFF;
 		io[0x4A] = 0x00;
 		io[0x4B] = 0x00;
-		//io[0x4d] = 0x7e;
+		io[0x4d] = 0x7e;
 
-		//if (bus->cartridge->colorGB) {
+		if (bus->cartridge->colorGB) {
 			io[0x04] = 0x1E;
-			bus->cpu->cyclesPerIncrementDIVIDER = 255 - 0xA0;
+			bus->cpu->cyclesPerIncrementDIVIDER = 256 - 0xA0;
 			bus->cpu->cyclesPerIncrementDIVIDER = 0xA0;
-	//	}
-		/*else {
+		}
+		else {
 			io[0x04] = 0x26;
-			bus->cpu->cyclesPerIncrementDIVIDER = 255 - 0x7c;
+			bus->cpu->cyclesPerIncrementDIVIDER = 256 - 0x7c;
 			bus->cpu->cyclesPerIncrementDIVIDER = 0x7c;
-		}*/
+		}
 		break;
 	case 2:
 		for (uint8_t i = 0;i < 0x80;i++)
@@ -354,6 +354,7 @@ void INTERRUPT::reset()
 		//}
 
 		break;
+	
 	}
 
 
