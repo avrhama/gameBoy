@@ -34,7 +34,7 @@ public:
     0xF5, 0x06, 0x19, 0x78, 0x86, 0x23, 0x05, 0x20, 0xFB, 0x86, 0x20, 0xFE, 0x3E, 0x01, 0xE0, 0x50 };
     bool vRamLock = false;
     bool OAMLock = false;
-	uint8_t rom[0x8000];//rom bank 0...n
+	//uint8_t rom[0x8000];//rom bank 0...n
 	uint8_t externalRam[0x8000];//by range supposed to be 0x2000 but imrannazar gitup mmu says 0x8000.
     //uint8_t workingRam[0x2000];//working ram
     uint8_t workingRamBank = 1;

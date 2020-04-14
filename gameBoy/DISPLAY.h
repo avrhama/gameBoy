@@ -49,6 +49,7 @@ public:
 	void render();
 	void setPixel(int posX, int posY, Scalar color);
 	void setPixel(int x, int y, Color color);
+	void drawBGLine(uint8_t y, uint32_t* BGLine);
 	void setPixel(int posX, int posY, uint8_t red, uint8_t blue, uint8_t green);
 	void setPixelChannel(int posX, int posY, ColorChannel ch, uint8_t value);
 	void update();

@@ -112,7 +112,7 @@ int main(void) {
 	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\div_write.gb",//faild
 	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\tima_reload.gb",
 	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\tima_write_reloading.gb"};
-	uint8_t romIndex = 2;
+	uint8_t romIndex = 14;
 	//char * romPath = roms[5];
 	
 	//BC = 0x12FE;
@@ -202,123 +202,53 @@ int main(void) {
 	
 	
 	while (true) {
-		/*if (SDL_PollEvent(&display->windowEvent)) 
+		/*if (SDL_PollEvent(&display->windowEvent))
 					if (SDL_QUIT == display->windowEvent.type) 
 						break;*/
-					
 		do {
 			opcode = cpu->getOpcode();
-		
-			opcode = (opcode == 0xCB) ? 0XCB00 | cpu->getOpcode() : opcode;
-
-
-
-			if (opcode == 0x38) {
-				counter = counter + 0;
-			}
-#pragma region pipeChannelOpcode
-			if (bus->pipeEnable && false) {
-				f = p.read(1);
-				uint8_t o = p.rBuffer[0];
-				if (f) {
-					if ((p.rBuffer[0] & 0xff00) != 0xcb00) {
-						if (opcode != p.rBuffer[0]) {
-							printf("not same opcode me:%04x pipe:%04x steps:%d\n", opcode, p.rBuffer[0], 270274 - counter);
-							return 0;
-						}
-
-					}
-					else {
-						uint16_t pipeOpcode = (p.rBuffer[0] << 8 | p.rBuffer[1]);
-						if (opcode != pipeOpcode) {
-							printf("not same opcode me:%04x pipe:%04x steps:%d\n", opcode, pipeOpcode, 270274 - counter);
-							return 0;
-						}
-					}
-				}
-				else {
-					printf("faild to read\n");
-					return 0;
-				}
-				p.wBuffer[0] = 'a';
-				f = p.write(1);
-				if (!f) {
-					printf("faild to write\n");
-					return 0;
-				}
-				p.rBuffer[0] = 0;
-			}
-#pragma endregion
-#pragma region writeToFile
-			if (writeToFile) {
-				//myfile << "opcode:0x%01x PC:0x%01x SP:0x%01x AF:0x%01x BC:0x%01x DE:0x%01x HL:0x%01x\n", opcode, * (uint16_t*)cpu->PC, * (uint16_t*)cpu->getSP(), * (uint16_t*)cpu->getAF(), * (uint16_t*)cpu->getBC(), * (uint16_t*)cpu->getDE(), * (uint16_t*)cpu->getHL();
-						//if (counter >= 2000) {
-				snprintf(buff, sizeof(buff), "opcode:0x%01x PC:0x%01x SP:0x%01x AF:0x%01x BC:0x%01x DE:0x%01x HL:0x%01x\n", opcode, cpu->PC, *(uint16_t*)cpu->getSP(), *(uint16_t*)cpu->getAF(), *(uint16_t*)cpu->getBC(), *(uint16_t*)cpu->getDE(), *(uint16_t*)cpu->getHL());
-				myfile << buff;
-				myfile.flush();
-				//}
-			}
-#pragma endregion	
-			
-			if (opcode != 0) {
-				//printf("lineScan:%d LCD:%d\n", mmu->read(0xFF44), mmu->read(0xFF40));
-			   //printf("first opcode:%u\n", opcode);
-
-			}
-			
+			opcode = (opcode == 0xCB) ? 0XCB00 | cpu->getOpcode() : opcode;			
 			//cpu->Execute(opcode);
 			//pipeRecive(bus, opcode, lastopcode, steps,"Execute");
-		    cpu->ExecuteOpcode(opcode);
+			if (!cpu->halt) {
+				cpu->ExecuteOpcode(opcode);
+			}
+			else {
+				cpu->lastOpcodeCycles = 1;
+			}
+
 			steps++;
-			pipeRecive(bus, opcode, lastopcode, steps, "Execute");
-			cpu->cycelsCounter += cpu->lastOpcodeCycles;
-			cpu->lastOpcodeCycles *= (4 * (cpu->speedMode + 1));
+			//pipeRecive(bus, opcode, lastopcode, steps, "Execute");
+			cpu->lastOpcodeCycles *=(4 * (cpu->speedMode + 1));
+		
+			
 			//cpu->lastOpcodeCycles *=4;
 			gpu->tick();
 			cpu->updateTimers();
-			joypad->updateKeys();
+			
 		
-
-			cpu->cycelsCounter += interrupt->InterruptsHandler()*4;
+			joypad->updateKeys();
+			cpu->lastOpcodeCycles += interrupt->InterruptsHandler()* (4 * (cpu->speedMode + 1));;
 			
 			//pipeRecive(bus, opcode, lastopcode, steps, "InterruptsHandler");
-			lastopcode = opcode;
+			
 			cyclesInFrameCounter += cpu->lastOpcodeCycles;
 			//printf("speed:%d\n", interrupt->io[0x4D]>>7);
 			
 			/*if (renderCounter == renderTimer)
 				gpu->drawTest();*/
-#pragma region pipeChannelExe
-			if (bus->pipeEnable && false) {
-				p.read(2);
-				if (p.rBuffer[0] != 0)
-				{
-					switch (p.rBuffer[0])
-					{
-					case 1:
-						printf("write mem not same address\n");
-						break;
-					case 2:
-						printf("write mem not same value\n");
-						break;
-					}
-				}
-			}
-#pragma endregion
-			if (cpu->cycelsCounter > 4)
-				cpu->cycelsCounter = cpu->cycelsCounter%4;
-			/*if(cyclesInFrameCounter%250==0)
-				Sleep(1);*/
-		/*	int t = time.milliSec;
-			time.addMicroSec(cpu->lastOpcodeCycles);
-	if(t!=time.milliSec)
-			time.print();*/
-		} while (cyclesInFrameCounter<cyclesInFrame*(cpu->speedMode+1)); //(cpu.PC != 0x100 && counter > 0);//||mmu.biosLoaded);//cpu.PC!=0x100
+
+			/*if (cpu->cycelsCounter > 4)
+				cpu->cycelsCounter = cpu->cycelsCounter%4;*/
+			
+			
+			//cpu->cycelsCounter += cpu->lastOpcodeCycles;
+		} while (cyclesInFrameCounter< cyclesInFrame); //(cpu.PC != 0x100 && counter > 0);//||mmu.biosLoaded);//cpu.PC!=0x100
 		cyclesInFrameCounter = 0;
 		//Sleep(1);
 		//display->render();
 		display->update();
-	  
+		//printf("render\n");
 	}
 
 	myfile.close();

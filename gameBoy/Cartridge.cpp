@@ -31,7 +31,7 @@ void CARTRIDGE::loadRom(string path)
 	romSizeType = (RomSizeType)(rom[0x0148]);
 	ramSizeType= (RamSizeType)(rom[0x0149]);
 	romSize = getRomSize();
-	ramSize = getRomSize();
+	ramSize = getRamSize();
 	ram = (uint8_t*)calloc(((int)ramSize)*ramBankSize, 1);
 	printf("colorGB?:%d\n", colorGB);
 	printCartridgeType();
@@ -186,10 +186,18 @@ uint8_t CARTRIDGE::read(uint16_t address)
 		return rom[address];
 	}
 	else if (0x4000 <= address && address <= 0x7fff) {//Rom n
-		return rom[address + (romBankIndex-1) * romBankSize];
+		
+		return rom[address + (romBankIndex - 1) * romBankSize];
 	}
 	else if (0xa000 <= address && address <= 0xbfff) {//Ram m
-		return ram[(address- 0xa000) + ramBankIndex * ramBankSize];
+		if (ramSizeType != RamSizeType::None && ramEnable) {
+			if (maxMemMode == MaximumMemoryMode::_4_32_mode)
+				return ram[(address - 0xa000) + ramBankIndex * ramBankSize];
+			else
+				return ram[address - 0xa000];
+		}
+		else
+			return 0xff;
 	} else{
 		printf("CARTRIDGE::read illeal address!");
 		return NULL;
@@ -199,7 +207,12 @@ void CARTRIDGE::setRomBankIndex(uint8_t v) {
 	romBankIndex = v;
 	if (romBankIndex <= 60 && romBankIndex % 20 == 0)
 		romBankIndex += 1;
-
+	if (romBankIndex > 15)
+		int y = 0;
+	if (maxMemMode == MaximumMemoryMode::_4_32_mode)
+		romBankIndex &= 0x1f;
+	
+	
 }
 void CARTRIDGE::write(uint16_t address, uint8_t value)
 {
@@ -208,22 +221,31 @@ void CARTRIDGE::write(uint16_t address, uint8_t value)
 	//	 return;
 	//}
 	if (address <= 0x3fff) {//ROM 0
-		if (0x2000 <= address) {
+		if (address <= 0x1fff) {
+			ramEnable = ((value & 0xf) == 0xA&&ramSizeType!=RamSizeType::None) ? true : false;
+		}
+		else if (0x2000 <= address) {
+			//selecting the lower 5 bits of rom bank.
 			setRomBankIndex((romBankIndex & 0x60) | value & 0x1f);
 		}
 	}else if (0x4000<= address && address <= 0x7fff) {
 		if (address <= 0x6000)
-			maxMemMode =(MaximumMemoryMode)(value & 1);//0: 16/8 mode, 1: 4/32 mode
+			maxMemMode =(MaximumMemoryMode)(value & 0x1);//0: 16/8 mode, 1: 4/32 mode
 		if (address <= 0x5fff) {
-			uint8_t n = value & 3;
 			if (maxMemMode == MaximumMemoryMode::_4_32_mode)
-				ramBankIndex = n;
-			else
-				setRomBankIndex(n<<5 | (romBankIndex & 0x1f));
+				//selecting the ram bank [0-3].
+				ramBankIndex = value & 0x3;
+			
+			setRomBankIndex((value & 0x60) | (romBankIndex & 0x1f));
+				//selecting the upper 2 bits of rom bank.
+				//setRomBankIndex(value & 0x60 | (romBankIndex & 0x1f));
 		}
 
-	}else if (0xa000 <= address && address <= 0xbfff) {
+	}else if (0xa000 <= address && address <= 0xbfff&&ramSizeType!=RamSizeType::None&& ramEnable) {
+		if (maxMemMode == MaximumMemoryMode::_4_32_mode)
 		ram[(address - 0xa000) + ramBankIndex * ramBankSize]=value;
+		else
+			ram[address - 0xa000] = value;
 	}
 }
 

@@ -57,6 +57,7 @@ public:
 	uint8_t ramSize=0;//How many ram banks( in mbc1 each ram bank is 8KB size[0x2000 B])
 	int romBankSize=0x4000;//MBC1
 	int ramBankSize = 0x2000;//MBC1
+	bool ramEnable = false;
 private:
 	MaximumMemoryMode maxMemMode = MaximumMemoryMode::_16_8_mode;
 	BUS* bus=NULL;

@@ -11,9 +11,12 @@ bool JOYPAD::scanKeys(int start) {
         SHORT v = GetAsyncKeyState((int)keys[i].key);
         if ((v & 0x8000) == 0x8000) {
             if (!keys[i].isPressed)
+                printf("pressed\n");
+            if (!keys[i].isPressed)
                 trigerInterrupt = true;
             keys[i].isPressed = true;
             bus->interrupt->io[0x00] |=(0x01 << (i % 4));
+           
           
         }
         else {

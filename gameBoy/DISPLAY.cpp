@@ -70,25 +70,48 @@ void DISPLAY::setPixel(int posX, int posY, Scalar color)
     *(window.data + offset++) = color.val[1];//Green
     *(window.data + offset++) = color.val[2];//Red
     offset = posY * width * 4 + posX * 4;
-    if (*(window.data + offset) ==0|| *(window.data + offset+1) == 0|| *(window.data + offset+2) == 0) {
-        printf("max y:%d\n", maxY);
-        maxY = posY;
-    }
-   // *(window.data + offset) = color.val[3];//Alpha
-    // resizeWindow("image", width, height);
-    return;
-    if (posY > maxY) {
-        printf("max y:%d\n", maxY);
-        maxY = posY;
-    }
-    else if (posY != lastY) {
-        printf("y:%d\n", posY);
-    }
-    lastY = posY;
-    if (posY > 143)
-        return;
    
    
+   
+}
+void DISPLAY::drawBGLine(uint8_t y, uint32_t* BGLine)
+{
+   
+    
+    uint32_t* p = (uint32_t*)(window.data  + 4*y * width);
+    for (int i = 0;i < width;i++) {
+        //*(p + i) = bgPalette[0].getHex();
+        *(p + i) = BGLine[i];
+    }
+   
+
+    //for (uint8_t i = 0;i < 20;i++) {
+    //    uint8_t index = 2 * i;
+    //    uint8_t lsb = BGLine[index];
+    //    uint8_t msb = BGLine[index + 1];
+    //    uint8_t j = i * 8;
+    //    for (int k = 0;k < 8;k++) {
+    //        uint8_t colorPaletteDataIndex = (((msb >> (7 - k)) & 0x1) << 1) | ((lsb >> (7 - k)) & 0x1);
+    //        uint8_t  colorIndex = palette[colorPaletteDataIndex];
+    //        //if(colorIndex==0)
+    //            //*BGcolos |= 0x1 << (7 - (((i+k) + (offset - pixelIndex)) % 8));
+    //        //printf("color id:%d\n",colorIndex);
+    //        Scalar color = colors[colorIndex];
+    //        int x = 4*(j + k);
+    //        //*(uint32_t*)(window.data + offset) = *(uint32_t*)color.val;
+    //       uint32_t* p = (uint32_t*) window.data + offset + (j + k);;
+    //       //*p = 0xE0F8D0;
+    //        *p = bgPalette[colorIndex].getHex();
+    //        //*(window.data + offset+x) = color.val[0];//Blue
+    //        //*(window.data + offset+x+1) = color.val[1];//Green
+    //        //*(window.data + offset+x+2) = color.val[2];//Red
+    //        //bus->display->setPixel(j + k, y, bus->display->colors[colorIndex]);
+    //        //bus->display->setPixel(x + (offset - pixelIndex), y, bus->display->bgPalette[colorIndex]);
+    //    }
+    //}
+
+    
+
 }
 void DISPLAY::setPixel(int x, int y, Color color) {
     //int index = y * width * 4 + x * 4;

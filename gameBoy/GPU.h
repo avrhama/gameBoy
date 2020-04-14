@@ -24,14 +24,15 @@ public:
 	void connectToBus(BUS* bus);
 	bool checkLCDStatus();
 	void tick();
-	void drawSprites(uint8_t* currBGLine);
+	bool drawSprites(uint32_t* BGLine);
 	bool TestBit(BYTE n, int b);
 	int BitGetVal(BYTE n, int b) const;
 	ColorName GetColour(BYTE colourNum, WORD address) const;
 	void getPalette(uint16_t paletteAddress, map<int, int>* palette);
-	void drawBG(uint8_t* currBGLine);
+	bool drawBG(uint32_t* BGLine);
+	uint8_t drawBGLine(uint8_t y,uint8_t* BGLine, uint8_t* currBGLine);
 	void draw();
-	uint8_t setPixel(int x, int y, uint8_t lsb, uint8_t msb,uint8_t pixelIndex, map<int, int> palette);
+	uint8_t setPixel(int x, int y, uint8_t lsb, uint8_t msb,uint8_t pixelIndex, map<int, int> palette,bool BGTile = false, uint8_t* BGcolos = NULL);
 	void drawTest();
 };
 

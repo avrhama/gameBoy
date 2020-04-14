@@ -118,8 +118,8 @@ uint8_t MMU::read(uint16_t address)
 	if (0<=address &&address <= 0x7fff) {//bios ROM0 and ROM1 (unbanked) (16k)
 		if (biosLoaded) {
 			if (address < 0x100)
-				//return bios[address];
-				return bus->cartridge->read(address);
+				return bios[address];
+				//return bus->cartridge->read(address);
 			else if (bus->cpu->PC == 0x100)
 				biosLoaded = false;
 		}
@@ -159,41 +159,10 @@ uint8_t MMU::read(uint16_t address)
 	else if (address == 0xffff) {
 		return bus->interrupt->InterruptEnabledRegister;
 	}
+
 	return NULL;
 }
-//uint8_t* MMU::getMemCell(uint16_t address)
-//{
-//	if (0 <= address && address <= 0x7fff) {//bios ROM0 and ROM1 (unbanked) (16k)
-//		if (biosLoaded) {
-//			if (address < 0x0100)
-//				return bios+address;
-//			else if (bus->cpu->PC == 0x100)
-//				biosLoaded = false;
-//		}
-//		return bus->cartridge->getMemCell(address);
-//		//return rom+address;
-//	}
-//	else if (0x8000 <= address && address <= 0x9fff) {// Graphics: VRAM (8k)
-//		return bus->gpu->vRam+(address & 0x1FFF); // GPU._vram[addr & 0x1FFF];
-//	}
-//	else if (0xa000 <= address && address <= 0xbfff) {// External RAM (8k)
-//		//return externalRam+(address & 0x1FFF);
-//		return bus->cartridge->getMemCell(address);
-//	}
-//	else if (0xc000 <= address && address <= 0xfdff) {// Working RAM (8k)
-//		return workingRam+(address & 0x1FFF);
-//	}
-//	else if (0xfe00 <= address && address <= 0xfe9f) {
-//		return bus->gpu->oam+(address & 0xFF);
-//	}
-//	else if (0xff00 <= address && address <= 0xff7f) {//I/O
-//		return bus->interrupt->getMemCell(address & 0xFF);
-//	}
-//	else if (0xff80 <= address && address <= 0xffff) {//Zero-page RAM
-//		return zeroRam+(address & 0xFF);
-//	}
-//	return NULL;
-//}
+
 
 
 

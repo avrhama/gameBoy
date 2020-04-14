@@ -7,17 +7,17 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 	{
 	case 0x46:
 		if(print)
-		printf("opcode:0x46 // DMA value:%04x\n", value);
+		printf("write opcode:0x46 // DMA value:%04x\n", value);
 		break;
 	case 0x41:
 		if (value > 0)
 			if (print)
-			printf("opcode:0x41 // LCD STATUS value:%04x\n", value);
+			printf("write opcode:0x41 // LCD STATUS value:%04x\n", value);
 		break;
 	case 0x4D:
 		if (value > 0)
 			if (print)
-			printf("opcode:0x4D // Speed Mode value:%04x\n", value);
+			printf("write opcode:0x4D // Speed Mode value:%04x\n", value);
 		break;
 	}
 	if (address < 0x80)
@@ -49,16 +49,16 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 			bus->dma->transfer(value);
 			break;
 		case 0x4f:
-			if(bus->cartridge->colorGB){
+		//	if(bus->cartridge->colorGB){
 				bus->gpu->vRamBank = value & 0x01;
 				io[address] = 0xfe|value;
 				if (print)
-				printf("opcode:0x4f // VRAM Bank value:%04x value(io):%04x\n", value, io[address]);
+				printf("write opcode:0x4f // VRAM Bank value:%04x value(io):%04x\n", value, io[address]);
 				break;
-			}
+		//	}
 		case 0x55:
 			if (print)
-			printf("opcode:0x55 // Start DMA Transfer value:%04x value(io):%04x\n", value, io[address]);
+			printf("write opcode:0x55 // Start DMA Transfer value:%04x value(io):%04x\n", value, io[address]);
 		case 0x70:
 			
 			bus->mmu->workingRamBank = value & 0x07;
@@ -66,7 +66,7 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 				bus->mmu->workingRamBank = 1;
 			io[address] = value;
 			if (print)
-			printf("opcode:0x70 // WRAM Bank value:%04x\n", value);
+			printf("write opcode:0x70 // WRAM Bank value:%04x\n", value);
 			break;
 		case 0x76://read 0nly
 		case 0x77://read only
@@ -80,10 +80,10 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 
 uint8_t INTERRUPT::read(uint16_t address)
 {
-	bool print = false;
+	bool print = true;
 	if (address == 0x55)
 		if (print)
-		printf("dma?\n");
+		printf("read dma?\n");
 	if (address < 0x80)
 		return io[address];
 	else {
@@ -131,9 +131,9 @@ uint8_t INTERRUPT::InterruptsHandler()
 				bus->cpu->IME = false;
 				resetInterruptRequest(i);
 				InterruptHandler(i);
-				return 5;
+				return 4;
 			}
-			/*if (bus->cpu->halt) {
+		/*	if (bus->cpu->halt) {
 				bus->cpu->halt = false;
 				
 			}*/
@@ -151,6 +151,7 @@ uint8_t INTERRUPT::InterruptsHandler()
 void INTERRUPT::InterruptHandler(uint8_t interrupt)
 {
 	uint8_t interruptHandlerAdd = 0;
+	bool print = true;
 	switch (interrupt) {
 	case 0:
 		interruptHandlerAdd = 0x40;
@@ -168,6 +169,25 @@ void INTERRUPT::InterruptHandler(uint8_t interrupt)
 		interruptHandlerAdd = 0x60;
 		break;
 	}
+
+	switch (interrupt) {
+	case 0:
+		printf("vBlacking interrupt\n");
+		break;
+	case 1:
+		printf("lcd stat interrupt\n");
+		break;
+	case 2:
+		printf("timer interrupt\n");
+		break;
+	case 3:
+		printf("serial interrupt\n");
+		break;
+	case 4:
+		printf("joypad interrupt\n");
+		break;
+	}
+
 	/*if (bus->cpu->halt)
 		bus->cpu->PC++;*/
 	bus->cpu->PUSH_nn(((uint8_t*)&bus->cpu->PC), NULL);
@@ -184,13 +204,13 @@ void INTERRUPT::connectToBus(BUS* bus)
 
 void INTERRUPT::reset()
 {
-	int stage = 1;
+	int stage = 2;
 	switch (stage) {
 	case 0:
 		for (uint8_t i = 0;i < 0x80;i++)
 			io[i] = 1;
 
-		io[0] = 255;
+		io[0] = 0xff;
 		io[0x05] = 0x00;// TIMA
 		io[0x06] = 0x00;// TMA
 		io[0x07] = 0x00;// TAC
@@ -226,6 +246,11 @@ void INTERRUPT::reset()
 
 		//io[0x40] = 0;// LCDC
 
+		
+		break;
+	case 1:
+		for (uint8_t i = 0;i < 0x80;i++)
+			io[i] = 1;
 		io[0x04] = 0x1E;
 		io[0x05] = 0x00;
 		io[0x06] = 0x00;
@@ -259,21 +284,22 @@ void INTERRUPT::reset()
 		io[0x49] = 0xFF;
 		io[0x4A] = 0x00;
 		io[0x4B] = 0x00;
-		io[0xFF] = 0x00;
-		io[0x4d] = 0x7e;
+		//io[0x4d] = 0x7e;
 
-		if (bus->cartridge->colorGB) {
+		//if (bus->cartridge->colorGB) {
 			io[0x04] = 0x1E;
 			bus->cpu->cyclesPerIncrementDIVIDER = 255 - 0xA0;
-			bus->cpu->cyclesPerIncrementDIVIDER =0xA0;
-		}
-		else {
+			bus->cpu->cyclesPerIncrementDIVIDER = 0xA0;
+	//	}
+		/*else {
 			io[0x04] = 0x26;
 			bus->cpu->cyclesPerIncrementDIVIDER = 255 - 0x7c;
 			bus->cpu->cyclesPerIncrementDIVIDER = 0x7c;
-		}
+		}*/
 		break;
-	case 1:
+	case 2:
+		for (uint8_t i = 0;i < 0x80;i++)
+			io[i] = 0xff;
 		io[0x05] = 0x00;//TIMA
 		io[0x06] = 0x00;//TMA
 		io[0x07] = 0x00;//TAC
@@ -312,20 +338,20 @@ void INTERRUPT::reset()
 		io[0x75] = 0x8F;// - Undocumented(8Fh) - Bit 4 - 6 (Read / Write)
 		io[0x76] = 0x00;// - Undocumented(00h) - Always 00h(Read Only)
 		io[0x77] = 0x00;// - Undocumented(00h) - Always 00h(Read Only)
-		if (bus->cartridge->colorGB) {
+		//if (bus->cartridge->colorGB) {
 			io[0x04] = 0x1E;
 			bus->cpu->cyclesPerIncrementDIVIDER = 255 - 0xA0;
 			bus->cpu->cyclesPerIncrementDIVIDER = 0xA0;
 			io[0x6C] = 0xFE;// Undocumented(FEh) - Bit 0 (Read / Write) - CGB Mode Only
 			io[0x74] = 0x00;// - Undocumented(00h) - Bit 0 - 7 (Read / Write) - CGB Mode Only
-		}
-		else {
-			io[0x04] = 0x26;
-			bus->cpu->cyclesPerIncrementDIVIDER = 255 - 0x7c;
-			bus->cpu->cyclesPerIncrementDIVIDER = 0x7c;
-			io[0x6C] = 0xFF;// Undocumented(FEh) - Bit 0 (Read / Write) - CGB Mode Only
-			io[0x74] = 0xFF;// - Undocumented(00h) - Bit 0 - 7 (Read / Write) - CGB Mode Only
-		}
+		//}
+		//else {
+		//	io[0x04] = 0x26;
+		//	bus->cpu->cyclesPerIncrementDIVIDER = 255 - 0x7c;
+		//	bus->cpu->cyclesPerIncrementDIVIDER = 0x7c;
+		//	io[0x6C] = 0xFF;// Undocumented(FEh) - Bit 0 (Read / Write) - CGB Mode Only
+		//	io[0x74] = 0xFF;// - Undocumented(00h) - Bit 0 - 7 (Read / Write) - CGB Mode Only
+		//}
 
 		break;
 	}
