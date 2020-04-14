@@ -2,7 +2,7 @@
 
 void INTERRUPT::write(uint16_t address, uint8_t value)
 {
-	bool print = false;
+	bool print = true;
 	switch (address)
 	{
 	case 0x46:
@@ -80,14 +80,14 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 
 uint8_t INTERRUPT::read(uint16_t address)
 {
-	bool print = false;
+	bool print = true;
 	if (address == 0x55)
 		if (print)
 		printf("read dma?\n");
 	if (address < 0x80)
 		return io[address];
 	else {
-		printf("CARTRIDGE::read illeal address!");
+		printf("INTERRUPT::read illeal address!");
 		return NULL;
 	}
 
@@ -133,10 +133,7 @@ uint8_t INTERRUPT::InterruptsHandler()
 				InterruptHandler(i);
 				return 4;
 			}
-		/*	if (bus->cpu->halt) {
-				bus->cpu->halt = false;
-				
-			}*/
+		
 		}
 		
 		
@@ -151,7 +148,7 @@ uint8_t INTERRUPT::InterruptsHandler()
 void INTERRUPT::InterruptHandler(uint8_t interrupt)
 {
 	uint8_t interruptHandlerAdd = 0;
-	bool print = true;
+	
 	switch (interrupt) {
 	case 0:
 		interruptHandlerAdd = 0x40;
@@ -169,7 +166,8 @@ void INTERRUPT::InterruptHandler(uint8_t interrupt)
 		interruptHandlerAdd = 0x60;
 		break;
 	}
-
+	bool print = false;
+	if(print)
 	switch (interrupt) {
 	case 0:
 		printf("vBlacking interrupt\n");
@@ -188,8 +186,8 @@ void INTERRUPT::InterruptHandler(uint8_t interrupt)
 		break;
 	}
 
-	/*if (bus->cpu->halt)
-		bus->cpu->PC++;*/
+	if (bus->cpu->halt)
+		bus->cpu->PC++;
 	bus->cpu->PUSH_nn(((uint8_t*)&bus->cpu->PC), NULL);
 	bus->cpu->PC = interruptHandlerAdd;
 	//bus->cpu->lastOpcodeCycles += 5;

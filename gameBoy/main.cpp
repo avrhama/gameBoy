@@ -21,7 +21,7 @@
 using namespace std;
 
 void pipeRecive(BUS* bus, uint16_t opcode,uint16_t lastOpcode, int steps,string funcName) {
-	if (steps == 5) {
+	if (steps == 16964) {
 		int h = 0;
 	}
 	if (bus->pipeEnable) {
@@ -45,7 +45,8 @@ void pipeRecive(BUS* bus, uint16_t opcode,uint16_t lastOpcode, int steps,string 
 			errorCode = 1;
 		}
 		 if (otherAF != bus->cpu->AF) {
-			errorCode = 2;
+			//errorCode = 2;
+			 int y = 0;
 		}
 		 if (otherBC != bus->cpu->BC) {
 			errorCode = 3;
@@ -108,13 +109,14 @@ int main(void) {
 	 "roms\\megaman.gb",
 	"roms\\pokemon.gb", 
 	"roms\\tetris.gb",
-	"test\\instr_timing\\instr_timing.gb",
-	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\div_write.gb",//faild
+	"test\\instr_timing\\instr_timing.gb",//failed
+	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\div_write.gb",
 	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\tima_reload.gb",
 	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\tima_write_reloading.gb",
 	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\tma_write_reloading.gb",
-	"roms\\mooneye-gb_hwtests\\misc\\boot_regs-cgb.gb" };
-	uint8_t romIndex = 18;
+	"roms\\mooneye-gb_hwtests\\misc\\boot_regs-cgb.gb",
+	"roms\\mooneye-gb_hwtests\\acceptance\\ld_hl_sp_e_timing.gb"};
+	uint8_t romIndex = 7;
 	//char * romPath = roms[5];
 	
 	//BC = 0x12FE;
@@ -215,7 +217,7 @@ int main(void) {
 			if (!cpu->halt) {
 				cpu->ExecuteOpcode(opcode);
 				steps++;
-				pipeRecive(bus, opcode, lastopcode, steps, "Execute");
+				//pipeRecive(bus, opcode, lastopcode, steps, "Execute");
 				//cpu->Execute(opcode);
 			}
 			else {
