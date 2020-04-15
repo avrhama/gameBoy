@@ -116,7 +116,7 @@ int main(void) {
 	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\tma_write_reloading.gb",
 	"roms\\mooneye-gb_hwtests\\misc\\boot_regs-cgb.gb",
 	"roms\\mooneye-gb_hwtests\\acceptance\\ld_hl_sp_e_timing.gb"};
-	uint8_t romIndex = 0;
+	uint8_t romIndex = 17;
 	//char * romPath = roms[5];
 	
 	//BC = 0x12FE;
