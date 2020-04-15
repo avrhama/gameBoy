@@ -44,6 +44,8 @@ private:
 	int cyclesPerIncrementTIMA = 1024;//each cyclesPerSecond cycles of cpu increment tima register by 1.
 	
 public:
+	ConsoleModel consoleModel = ConsoleModel::GBC;
+	int speed = 0;
 	int steps = 0;
 	TIME time;
 	uint8_t cycelsCounter = 0;

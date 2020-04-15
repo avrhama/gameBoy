@@ -80,7 +80,7 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 
 uint8_t INTERRUPT::read(uint16_t address)
 {
-	bool print = false;
+	bool print = true;
 	if (address == 0x55)
 		if (print)
 		printf("read dma?\n");

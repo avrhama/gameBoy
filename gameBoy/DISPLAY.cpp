@@ -74,11 +74,14 @@ void DISPLAY::setPixel(int posX, int posY, Scalar color)
    
    
 }
+uint32_t* DISPLAY::getLine(uint8_t y) {
+   return (uint32_t*)(window.data + 4 * (int)y * width);
+}
 void DISPLAY::drawBGLine(uint8_t y, uint32_t* BGLine)
 {
    
     
-    uint32_t* p = (uint32_t*)(window.data  + 4*y * width);
+    uint32_t* p = (uint32_t*)(window.data  + 4*(int)y * width);
     for (int i = 0;i < width;i++) {
         //*(p + i) = bgPalette[0].getHex();
         *(p + i) = BGLine[i];

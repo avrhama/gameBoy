@@ -48,6 +48,7 @@ public:
 	DISPLAY(int posX , int posY,int width,int height,int pixelSize,int displayNum=0);
 	void render();
 	void setPixel(int posX, int posY, Scalar color);
+	uint32_t* getLine(uint8_t y);
 	void setPixel(int x, int y, Color color);
 	void drawBGLine(uint8_t y, uint32_t* BGLine);
 	void setPixel(int posX, int posY, uint8_t red, uint8_t blue, uint8_t green);

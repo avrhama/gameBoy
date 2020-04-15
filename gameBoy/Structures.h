@@ -228,6 +228,10 @@ enum ColorName
 {
 	WHITE, LIGHT_GRAY, DARK_GRAY, BLACK
 };
+enum class ConsoleModel
+{
+	DMG,GBC
+};
 struct Color {
 private:
 	uint8_t R;

@@ -13,6 +13,8 @@ bool JOYPAD::scanKeys(int start) {
             if (!keys[i].isPressed) {
                // string p = keys[i].name + " pressed\n";
                 printf(keys[i].name);
+                if (keys[i].name == "START")
+                    bus->cpu->speed = -1;
             }
          
             if (!keys[i].isPressed)

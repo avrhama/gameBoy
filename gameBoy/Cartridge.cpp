@@ -236,7 +236,7 @@ void CARTRIDGE::write(uint16_t address, uint8_t value)
 			if (maxMemMode == MaximumMemoryMode::_4_32_mode)
 				//selecting the ram bank [0-3].
 				ramBankIndex = value & 0x3;
-			else
+			
 			setRomBankIndex((value & 0x60) | (romBankIndex & 0x1f));
 				//selecting the upper 2 bits of rom bank.
 				//setRomBankIndex(value & 0x60 | (romBankIndex & 0x1f));
