@@ -2,7 +2,7 @@
 
 void INTERRUPT::write(uint16_t address, uint8_t value)
 {
-	bool print = true;
+	bool print = false;
 	switch (address)
 	{
 	case 0x46:
@@ -25,7 +25,7 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 		{
 		case 0x04:
 			io[0x04] = 0;
-			bus->cpu->cyclesPerIncrementDIVIDER = 256;
+			bus->cpu->cyclesPerIncrementDIVIDER = 0;
 			bus->cpu->updateCycelPerIncrementTIMA(io[0x07] & 0x03);
 			break;
 		case 0x07:
@@ -80,7 +80,7 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 
 uint8_t INTERRUPT::read(uint16_t address)
 {
-	bool print = true;
+	bool print = false;
 	if (address == 0x55)
 		if (print)
 		printf("read dma?\n");
@@ -202,7 +202,7 @@ void INTERRUPT::connectToBus(BUS* bus)
 
 void INTERRUPT::reset()
 {
-	int stage = 2;
+	int stage = 1;
 	switch (stage) {
 	case 0:
 		for (uint8_t i = 0;i < 0x80;i++)
@@ -248,7 +248,7 @@ void INTERRUPT::reset()
 		break;
 	case 1:
 		for (uint8_t i = 0;i < 0x80;i++)
-			io[i] = 1;
+			io[i] = 255;
 		io[0x04] = 0x1E;
 		io[0x05] = 0x00;
 		io[0x06] = 0x00;
@@ -276,6 +276,7 @@ void INTERRUPT::reset()
 		io[0x41] = 0x85;
 		io[0x42] = 0x00;
 		io[0x43] = 0x00;
+		io[0x44] = 0x00;
 		io[0x45] = 0x00;
 		io[0x47] = 0xFC;
 		io[0x48] = 0xFF;

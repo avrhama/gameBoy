@@ -14,7 +14,7 @@ void GPU::connectToBus(BUS* bus)
 }
 bool GPU::checkLCDStatus()
 {
-
+	
 	if (!((bus->interrupt->io[0x40] >> 7) & 0x1)) {//LCD Display Disable
 		//bus->interrupt->io[0x41] &= 252;//web
 		//bus->interrupt->io[0x41] &= 253;//me

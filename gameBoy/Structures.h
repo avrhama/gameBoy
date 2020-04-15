@@ -220,6 +220,7 @@ enum class KEYS {
 struct KEY {
 	KEYS key;
 	bool isPressed;
+	const char * name;
 };
 enum ColorChannel:uint8_t { Blue, Green, Red, Alpha };
 

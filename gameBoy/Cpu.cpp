@@ -144,7 +144,7 @@ CPU::CPU()
 #pragma endregion
 #pragma region LD nn,SP
 	//LD nn,SP
-	opcodes[0x08] = { "LD_$NN_SP",&CPU::LD_$NN_SP,&CPU::get$NN,&CPU::getNULL,20 };
+	opcodes[0x08] = { "LD_$NN_SP",&CPU::LD_$NN_SP,&CPU::getNN,&CPU::getNULL,20 };
 #pragma endregion
 #pragma region PUSH nn
 	//PUSH nn
@@ -897,8 +897,8 @@ uint8_t* CPU::get$NN()
 	//n=(msb|lsb) write(c,*(uint16*)n)-> memory[c]=lsb memory[c+1]=msb.
 	uint8_t lsb = bus->mmu->read(PC++);
 	uint8_t msb = bus->mmu->read(PC++);
-	immidiateN = bus->mmu->read(msb << 8 | lsb);
-	return &immidiateN;
+	immidiateNN = bus->mmu->read(msb << 8 | lsb);
+	return (uint8_t*)&immidiateNN;
 }
 
 
@@ -1821,7 +1821,7 @@ void CPU::NOP(uint8_t* none, uint8_t* none2) {
 }
 void CPU::HALT(uint8_t* none, uint8_t* none2) {
 	halt = true;
-	printf("halt\n");
+	//printf("halt\n");
 }
 void CPU::STOP(uint8_t* none, uint8_t* none2) {
 	halt = true;
@@ -1832,7 +1832,7 @@ void CPU::STOP(uint8_t* none, uint8_t* none2) {
 			speedMode = 1 - speedMode; // 1 + (bus->interrupt->io[0x4d] >> 7) & 0x01;
 			bus->interrupt->io[0x4d] = (speedMode << 7) | 0xfe;
 			halt = false;
-			lastOpcodeCycles += 32749;
+			//lastOpcodeCycles += 32749;
 			printf("spedd chaned");
 		}
 	//}
@@ -2417,7 +2417,7 @@ void CPU::RST_n(uint8_t* n, uint8_t* none) {
 	uint16_t d = *(uint16_t*)n;
 	PC = *n;*/
 	PUSH_nn((uint8_t*)&PC, NULL);
-	PC = *(uint16_t*)n;
+	PC = *n;
 }
 void CPU::RET(uint8_t* none, uint8_t* none2) {
 	/*uint8_t lsb = bus->mmu->read(++SP);
@@ -2663,12 +2663,12 @@ void CPU::Execute(uint16_t opcode)
 	lastOpcodeCycles = op.cycles;//need to be before execution. look at jp condition
 	lastOpcodeCycles /= 4;
 	if ((opcode & 0xFF00) == 0xCB00) {
-		lastOpcodeCycles += 1;
+		//lastOpcodeCycles += 1;
 	}
 
 	(this->*op.operate)(param1, param2);
 	AF &= 0xfff0;
-	printf("%s\n",op.name);
+	//printf("%s\n",op.name);
 }
 void CPU::ExecuteOpcode(uint16_t opcode) {
 
@@ -4087,6 +4087,9 @@ void CPU::ExecuteOpcode(uint16_t opcode) {
 		RST_n(param1, param2);
 		break;
 	case 0xe0:
+		if (steps == 6207) {
+			int y = 0;
+		}
 		lastOpcodeCycles = 3;
 		immidiateN = bus->mmu->read(PC++);
 		param1 = &immidiateN;
@@ -4160,6 +4163,9 @@ void CPU::ExecuteOpcode(uint16_t opcode) {
 		RST_n(param1, param2);
 		break;
 	case 0xf0:
+		if (steps == 121735) {
+			int h = 0;
+		}
 		lastOpcodeCycles = 3;
 		immidiateN = bus->mmu->read(PC++);
 		param1 = (uint8_t*)&AF + 1;
@@ -6051,6 +6057,9 @@ void CPU::reset()
 		HL = 0x007C;
 		SP = 0xFFFE;
 		PC = 0x100;
+
+		DE = 0xFF56;
+		HL = 0x000D;
 		if (bus->cartridge->colorGB) {
 			DE = 0xFF56;
 			HL = 0x000D;
@@ -6155,24 +6164,28 @@ void CPU::updateCycelPerIncrementTIMA(uint8_t freqIndex)
 //
 //	uint8_t timcont = bus->mmu->read(0xff07);//timer controler reister
 //	if ((timcont >> 2) & 0x1) {//counting
-//		if (timaOverflow) {
-//			bus->mmu->write(0xff05, bus->mmu->read(0xff06));//load tma to tima
-//			bus->interrupt->setInterruptRequest(2);
-//			timaOverflow = false;
-//		}
+//		//if (timaOverflow) {
+//		//	bus->mmu->write(0xff05, bus->mmu->read(0xff06));//load tma to tima
+//		//	bus->interrupt->setInterruptRequest(2);
+//		//	timaOverflow = false;
+//		//}
 //		cyclesPerIncrementTIMACounter += lastOpcodeCycles;
 //		int freq = getCycelPerIncrementTIMA(timcont & 0x3);
-//		while (cyclesPerIncrementTIMACounter >= freq) {
-//			if (timaOverflow) {
+//		if (cyclesPerIncrementTIMACounter >= freq) {
+//			//if (timaOverflow) {
+//			//	bus->mmu->write(0xff05, bus->mmu->read(0xff06));//load tma to tima
+//			//	bus->interrupt->setInterruptRequest(2);
+//			//	timaOverflow = false;
+//			//}
+//			
+//
+//			if (bus->mmu->read(0xff05) == 0xff) {//tima overflow
+//				
 //				bus->mmu->write(0xff05, bus->mmu->read(0xff06));//load tma to tima
 //				bus->interrupt->setInterruptRequest(2);
-//				timaOverflow = false;
 //			}
-//			bus->mmu->write(0xff05, bus->mmu->read(0xff05) + 1);//tima increment
-//
-//			if (bus->mmu->read(0xff05) == 0) {//tima overflow
-//				timaOverflow = true;
-//
+//			else {
+//				bus->mmu->write(0xff05, bus->mmu->read(0xff05) + 1);//tima increment
 //			}
 //
 //

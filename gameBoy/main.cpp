@@ -21,7 +21,7 @@
 using namespace std;
 
 void pipeRecive(BUS* bus, uint16_t opcode,uint16_t lastOpcode, int steps,string funcName) {
-	if (steps == 16964) {
+	if (steps == 123176) {
 		int h = 0;
 	}
 	if (bus->pipeEnable) {
@@ -116,7 +116,7 @@ int main(void) {
 	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\tma_write_reloading.gb",
 	"roms\\mooneye-gb_hwtests\\misc\\boot_regs-cgb.gb",
 	"roms\\mooneye-gb_hwtests\\acceptance\\ld_hl_sp_e_timing.gb"};
-	uint8_t romIndex = 7;
+	uint8_t romIndex = 0;
 	//char * romPath = roms[5];
 	
 	//BC = 0x12FE;
@@ -202,7 +202,7 @@ int main(void) {
 	int framesForSeconds = 60;
 	int cyclesInFrame = cpu->cpuFreq/framesForSeconds;
 	uint16_t lastopcode = 0;
-	int steps = 0;
+	
 	
 	
 	while (true) {
@@ -215,9 +215,10 @@ int main(void) {
 			//cpu->Execute(opcode);
 			//pipeRecive(bus, opcode, lastopcode, steps,"Execute");
 			if (!cpu->halt) {
-				cpu->ExecuteOpcode(opcode);
-				steps++;
-				//pipeRecive(bus, opcode, lastopcode, steps, "Execute");
+				cpu->Execute(opcode);
+				//cpu->ExecuteOpcode(opcode);
+				cpu->steps++;
+				pipeRecive(bus, opcode, lastopcode, cpu->steps, "Execute");
 				//cpu->Execute(opcode);
 			}
 			else {
@@ -229,7 +230,7 @@ int main(void) {
 			cpu->lastOpcodeCycles *=(4 * (cpu->speedMode + 1));
 		
 			
-			//cpu->lastOpcodeCycles *=4;
+			
 			gpu->tick();
 			cpu->updateTimers();
 			
@@ -391,109 +392,3 @@ void tests(BUS  bus) {
 }
 
 
-void runTest(uint8_t romIndex) {
-	string romsPaths[16] =
-	{
-	"test\\cpu_instrs\\cpu_instrs.gb",
-	"test\\cpu_instrs\\individual\\01-special.gb",//good
-	"test\\cpu_instrs\\individual\\02-interrupts.gb" ,//no answer
-		"test\\cpu_instrs\\individual\\03-op sp,hl.gb",//no answer
-	"test\\cpu_instrs\\individual\\04-op r,imm.gb",//good
-	"test\\cpu_instrs\\individual\\05-op rp.gb",//good
-	"test\\cpu_instrs\\individual\\06-ld r,r.gb",//good
-	"test\\cpu_instrs\\individual\\07-jr,jp,call,ret,rst.gb",//no answer-> crashed
-	"test\\cpu_instrs\\individual\\08-misc instrs.gb",//no answer
-	"test\\cpu_instrs\\individual\\09-op r,r.gb",//faild
-	"test\\cpu_instrs\\individual\\10-bit ops.gb",//good
-	"test\\cpu_instrs\\individual\\11-op a,(hl).gb",
-	"test2\\daa.gb",
-	"alleyway.gb",
-	 "megaman.gb",
-	"pokemon.gb", };//faild
-
-	BUS* bus = new BUS();
-	CPU* cpu = new CPU();
-	GPU* gpu = new GPU();
-	gpu->reset();
-	CARTRIDGE* cartridge = new CARTRIDGE();
-	INTERRUPT* interrupt = new INTERRUPT();
-	JOYPAD* joypad = new JOYPAD();
-	interrupt->reset();
-	MMU* mmu = new MMU();
-	DISPLAY* display = new DISPLAY(0, 0, 160, 144, 1, romIndex);
-	bus->connectCPU(cpu);
-	bus->connectMMU(mmu);
-	bus->connectInterrupt(interrupt);
-	bus->connectGPU(gpu);
-	bus->connectDisplay(display);
-	bus->connectCartridge(cartridge);
-	bus->connectJoypad(joypad);
-	cartridge->loadRom(romsPaths[romIndex]);
-	cartridge->load();
-	cpu->reset();
-	printf("title:%s\n", cartridge->title);
-	printf("rom banks count:%d\n", cartridge->romSize);
-	printf("romBank size:%d\n", cartridge->romBankSize);
-	printf("ram banks count:%d\n", cartridge->ramSize);
-	printf("romBank size:%d\n", cartridge->ramBankSize);
-
-
-
-
-
-	//gpu.drawTest();
-
-	//return 0;
-	uint16_t opcode;
-	int counter = 270274;
-	bus->pipeEnable = true;
-	pipeChannel p;
-	bus->p = &p;
-
-	int renderTimer = 69905;
-	int renderCounter = 0;
-	bool writeToFile = false;
-	uint8_t last_key = 1;
-	int x = 0;
-	int y = 0;
-	Scalar white = Scalar(255, 255, 255, 0);
-	Scalar black = Scalar(0, 0, 0, 0);
-	std::thread displayThread(displayThreadFunc, display);
-
-	do {
-		opcode = cpu->getOpcode();
-		opcode = (opcode == 0xCB) ? 0XCB00 | cpu->getOpcode() : opcode;
-		cpu->Execute(opcode);
-		if (last_key != interrupt->io[0]) {
-			printf("keys:%04x\n", interrupt->io[0]);
-			last_key = interrupt->io[0];
-		}
-		cpu->updateTimers();
-		gpu->tick();
-		joypad->updateKeys();
-		interrupt->InterruptsHandler();
-
-	} while (true); //(cpu.PC != 0x100 && counter > 0);//||mmu.biosLoaded);//cpu.PC!=0x100
-		/*std::thread displayThread1(runTest, 1);
-	std::thread displayThread2(runTest, 2);
-	std::thread displayThread3(runTest, 3);
-	std::thread displayThread4(runTest, 4);
-	std::thread displayThread5(runTest, 5);
-	std::thread displayThread6(runTest, 6);
-	std::thread displayThread7(runTest, 7);
-	std::thread displayThread8(runTest, 8);
-	std::thread displayThread9(runTest, 9);
-	std::thread displayThread10(runTest, 10);
-	std::thread displayThread11(runTest, 11);
-	displayThread1.join();
-	displayThread2.join();
-	displayThread3.join();
-	displayThread4.join();
-	displayThread5.join();
-	displayThread6.join();
-	displayThread7.join();
-	displayThread8.join();
-	displayThread9.join();
-	displayThread10.join();
-	displayThread11.join();*/
-}
