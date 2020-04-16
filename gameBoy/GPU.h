@@ -47,6 +47,7 @@ public:
 	int BitGetVal(BYTE n, int b) const;
 	ColorName GetColour(BYTE colourNum, WORD address) const;
 	void getPalette(uint16_t paletteAddress, map<int, int>* palette);
+	void getPalette2(uint16_t paletteAddress, int* palette);
 	bool drawBG(uint32_t* BGLine);
 	uint8_t drawBGLine(uint8_t y,uint8_t* BGLine, uint8_t* currBGLine);
 	void draw();

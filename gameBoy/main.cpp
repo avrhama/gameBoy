@@ -132,7 +132,7 @@ int main(void) {
 	"roms\\mooneye-gb_hwtests\\acceptance\\ld_hl_sp_e_timing.gb",
 	"roms\\mooneye-gb_hwtests\\acceptance\\oam_dma_start.gb",
 	"test\\halt_bug.gb"};
-	uint8_t romIndex = 14;
+	uint8_t romIndex = 13;
 	//char * romPath = roms[5];
 	
 	//BC = 0x12FE;
