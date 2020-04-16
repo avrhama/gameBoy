@@ -29,7 +29,7 @@ DISPLAY::DISPLAY(int posX, int posY, int width, int height, int pixelSize,int di
    renderer = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
   
     texture = SDL_CreateTexture(renderer,SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, 160, 144);
-    
+   
     //SDL_Texture* bitmapTex = NULL;
     //SDL_Surface* bitmapSurface = NULL;
 
@@ -38,7 +38,7 @@ DISPLAY::DISPLAY(int posX, int posY, int width, int height, int pixelSize,int di
     pixels = new Uint32[width * height * pixelSize]; 
     memset(pixels, 255, width * height * pixelSize* sizeof(Uint32));
     
-
+  
     //SDL_RenderClear(renderer);
    
 
@@ -119,7 +119,7 @@ void DISPLAY::drawBGLineCV(uint8_t y, uint32_t* BGLine)
 void DISPLAY::drawBGLineSDL(uint8_t y, uint32_t* BGLine) {
     
     int index = y * width;
-    uint32_t* p = (uint32_t*)(window.data + 4 * (int)y * width);
+    uint32_t* p = (uint32_t*)(window.data + 4 *index);
     for (int i = 0;i < width;i++) {
         pixels[y+i]= BGLine[i];
        
@@ -139,9 +139,11 @@ void DISPLAY::render() {
     //SDL_RenderCopy(renderer, texture, NULL, NULL);
     //SDL_RenderPresent(renderer);
    // SDL_RenderClear(renderer);
+   
     SDL_RenderCopy(renderer, texture, NULL, NULL);
     SDL_RenderPresent(renderer);
     SDL_UpdateTexture(texture, NULL, pixels, width * sizeof(Uint32));
+   
 }
 void DISPLAY::setPixel(int posX, int posY, uint8_t red, uint8_t blue, uint8_t green)
 {

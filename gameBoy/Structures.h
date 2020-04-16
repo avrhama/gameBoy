@@ -237,14 +237,17 @@ private:
 	uint8_t R;
 	uint8_t B;
 	uint8_t G;
-	//uint8_t A;
 	uint32_t hex;
+	//uint8_t A;
+	
 public:
+	uint32_t val;
 	 Color(uint32_t h) {
 		hex = h;
 		R = (h >> 16)&0xff;
 		G = (h >> 8) & 0xff;
 		B = (h) & 0xff;
+		val = hex;
 	}
 	 Color(uint8_t r, uint8_t g, uint8_t b) {
 		 setRGB(r, g, b);
@@ -275,6 +278,7 @@ public:
 		G = g;
 		B = b;
 		hex = r << 16 | g << 8 | b;
+		val = hex;
 	}
 };
 struct TIME {

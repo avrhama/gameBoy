@@ -7,6 +7,7 @@ void DMA::connectToBus(BUS* bus)
 
 void DMA::transfer(uint8_t sourceAddressPrefix)
 {
+	
 	transfering = true;
 	//bus->interrupt->io[0x55]=
 	uint16_t sourceAddress = sourceAddressPrefix << 8;

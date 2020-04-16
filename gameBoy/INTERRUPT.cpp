@@ -80,12 +80,23 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 
 uint8_t INTERRUPT::read(uint16_t address)
 {
+	
 	bool print = true;
 	if (address == 0x55)
 		if (print)
 		printf("read dma?\n");
-	if (address < 0x80)
-		return io[address];
+	if (address < 0x80) {
+		switch (address)
+		{
+		/*case 0x00:
+			return io[0x00] = 0xFF;
+			break;*/
+		default:
+			return io[address];
+			break;
+		}
+	}
+		
 	else {
 		printf("INTERRUPT::read illeal address!");
 		return NULL;

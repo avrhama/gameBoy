@@ -6010,8 +6010,8 @@ void CPU::reset()
 		SP = 0XFFFE;
 		PC = 0X0100;
 		//if (bus->cartridge->colorGB) {
-			DE = 0xFF56;
-			HL = 0X000D;
+		DE = 0xFF56;
+		HL = 0X000D;
 		//}
 		break;
 	case 1:
@@ -6040,17 +6040,17 @@ void CPU::reset()
 	case 3:
 		PC = 0x100;
 		AF = 0x01B0;
-		BC=0x0000;
-		DE=0xFF56;
-		HL=0x000D;
-		SP=0xFFFE;
+		BC = 0x0000;
+		DE = 0xFF56;
+		HL = 0x000D;
+		SP = 0xFFFE;
 		AF = 0X1180;
 		/*if (bus->cartridge->colorGB) {
 			AF = 0x1180;
 		}*/
 		break;
 	case 4:
-		
+
 		AF = 0x1180;
 		BC = 0x0000;
 		DE = 0x0008;
@@ -6066,7 +6066,7 @@ void CPU::reset()
 		}
 		break;
 	}
-	//SP = 0XFFFE;
+	
 }
 int CPU::getCycelPerIncrementTIMA(uint8_t freqIndex) {
 	switch (freqIndex) {//read tac selected freq
@@ -6247,8 +6247,8 @@ void CPU::updateTimers()
 uint8_t CPU::getOpcode()
 {
 
-	if (halt)
-		return 0x76;
+	/*if (halt)
+		return 0x76;*/
 	uint8_t opcode = *getN();
 	/*steps++;
 	if (bus->pipeEnable) {

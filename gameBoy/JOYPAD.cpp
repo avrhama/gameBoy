@@ -37,12 +37,26 @@ bool JOYPAD::scanKeys(int start) {
     }
     return trigerInterrupt;
 }
+//bool JOYPAD::scanKeys(int start) {
+//    bool trigerInterrupt = false;
+//    uint8_t bit = 0x01;
+//    for (uint8_t i = start;i < start + 4;i++) {
+//        if (keys[i].isPressed) {
+//            trigerInterrupt = true;
+//            bus->interrupt->io[0x00] &= (0xff ^ (0x01 << (i % 4)));
+//        }
+//    }
+//    return trigerInterrupt;
+//}
 void JOYPAD::updateKeys()
 {
+    
     uint8_t joypadRegister = bus->interrupt->io[0x00];
     bool trigerInterrupt = false;
+    //bus->interrupt->io[0x00] |= 0xFF;
     bus->interrupt->io[0x00] |= 0xCF;
-   
+   // bus->interrupt->io[0x00] |= 0xC0;
+    
     if (!((joypadRegister >> 5) & 0x01)) {//checks buttons keys
         if (scanKeys(0)) {
             trigerInterrupt = true;

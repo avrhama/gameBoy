@@ -1,10 +1,11 @@
 #pragma once
 #include "BUS.h"
 #include "INTERRUPT.h"
-
+#include <SDL.h>
 class JOYPAD
 {
 private:
+	SDL_Event windowEvent;
 	BUS* bus;
 	char const   keysCount = 8;
 	KEY keys[8] = {

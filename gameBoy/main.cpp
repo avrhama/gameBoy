@@ -19,9 +19,9 @@
 #include <SDL.h>
 #undef main
 using namespace std;
-void displayThreadFunc(DISPLAY* display)
+void displayThreadFunc(DISPLAY* display,bool * running)
 {
-	while (true) {
+	while (*running) {
 		if (!display->displayLock) {
 			display->render();
 			//display->update();
@@ -31,6 +31,7 @@ void displayThreadFunc(DISPLAY* display)
 		else
 			Sleep(5);
 	}
+	printf("goodbye thread!\n");
 	// do stuff...
 }
 void pipeRecive(BUS* bus, uint16_t opcode,uint16_t lastOpcode, int steps,string funcName) {
@@ -128,8 +129,10 @@ int main(void) {
 	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\tima_write_reloading.gb",
 	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\tma_write_reloading.gb",
 	"roms\\mooneye-gb_hwtests\\misc\\boot_regs-cgb.gb",
-	"roms\\mooneye-gb_hwtests\\acceptance\\ld_hl_sp_e_timing.gb"};
-	uint8_t romIndex = 13;
+	"roms\\mooneye-gb_hwtests\\acceptance\\ld_hl_sp_e_timing.gb",
+	"roms\\mooneye-gb_hwtests\\acceptance\\oam_dma_start.gb",
+	"test\\halt_bug.gb"};
+	uint8_t romIndex = 14;
 	//char * romPath = roms[5];
 	
 	//BC = 0x12FE;
@@ -174,8 +177,8 @@ int main(void) {
 	printf("romBank size:%d\n", cartridge->ramBankSize);
 	
 	
-	ofstream myfile;
-	myfile.open("C:\\Users\\Brain\\go\\src\\goboy\\goboy-0.4.2\\cmd\\goboy\\instructions_me.txt");
+	//ofstream myfile;
+	//myfile.open("C:\\Users\\Brain\\go\\src\\goboy\\goboy-0.4.2\\cmd\\goboy\\instructions_me.txt");
 	
 	
 	//gpu.drawTest();
@@ -210,34 +213,41 @@ int main(void) {
 	int y = 0;
 	Scalar white = Scalar(255, 255, 255, 0);
 	Scalar black = Scalar(0, 0, 0, 0);
-	std::thread displayThread(displayThreadFunc, display);
+	bool running = true;
+	
+	//std::thread displayThread(displayThreadFunc, display,&running);
+
 	int cyclesInFrameCounter = 0;
 	int framesForSeconds = 60;
 	int cyclesInFrame = cpu->cpuFreq/framesForSeconds;
 	uint16_t lastopcode = 0;
 	
-	
+
 	
 	while (true) {
 		if (SDL_PollEvent(&display->windowEvent))
-					if (SDL_QUIT == display->windowEvent.type) 
-						break;
+			if (SDL_QUIT == display->windowEvent.type)
+			{
+				running = false;
+				break;
+			}
 		do {
-			opcode = cpu->getOpcode();
-			opcode = (opcode == 0xCB) ? 0XCB00 | cpu->getOpcode() : opcode;			
+			
 			//cpu->Execute(opcode);
 			//pipeRecive(bus, opcode, lastopcode, steps,"Execute");
 			if (!cpu->halt) {
+				opcode = cpu->getOpcode();
+				opcode = (opcode == 0xCB) ? 0XCB00 | cpu->getOpcode() : opcode;
 				//cpu->Execute(opcode);
 				cpu->ExecuteOpcode(opcode);
-				cpu->steps++;
+				//cpu->steps++;
 				//pipeRecive(bus, opcode, lastopcode, cpu->steps, "Execute");
 				//cpu->Execute(opcode);
 			}
 			else {
 				cpu->lastOpcodeCycles = 1;
 			}
-
+			
 			
 			
 			cpu->lastOpcodeCycles *=(4 * (cpu->speedMode + 1));
@@ -264,15 +274,25 @@ int main(void) {
 			
 			
 			//cpu->cycelsCounter += cpu->lastOpcodeCycles;
+			cpu->time.addMCycles(cpu->lastOpcodeCycles/4);
+			cpu->time.print(2);
+			//if (cpu->time.timeChanged[1]) {
+			//	cpu->time.timeChanged[1] = false;
+			//	Sleep(1);
+			//	//printf("sleep\n");
+			//}
 		} while (cyclesInFrameCounter< cyclesInFrame); //(cpu.PC != 0x100 && counter > 0);//||mmu.biosLoaded);//cpu.PC!=0x100
 		cyclesInFrameCounter = 0;
-		Sleep(1);
-		//display->render();
+		//Sleep(1);
+	 display->render();
 		//display->update();
 		//printf("render\n");
 	}
-
-	myfile.close();
+	 display->close();
+	 //displayThread.join();
+	 return 0;
+	
+	//myfile.close();
 	
 
 	while (true) {

@@ -62,7 +62,7 @@ private:
 	MaximumMemoryMode maxMemMode = MaximumMemoryMode::_16_8_mode;
 	BUS* bus=NULL;
 	
-	uint8_t ramBankIndex = 1;
+	uint8_t ramBankIndex = 0;
 	void setRomBankIndex(uint8_t v);
 };
 
