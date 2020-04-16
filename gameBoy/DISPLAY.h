@@ -19,7 +19,7 @@ private:
 	int displayNum;
 	Scalar white = Scalar(255, 255, 255,0);
 	//Scalar black= Scalar(0, 0, 0,0);
-	bool displayLock = false;
+	
 	char const   keysCount = 8;
 	KEY keys[8] = {
 		KEY{KEYS::A,false},
@@ -34,6 +34,7 @@ private:
 
 	
 public:
+	bool displayLock = false;
 	SDL_Window* win;
 	SDL_Renderer* renderer;
 	SDL_Texture* texture;
@@ -48,9 +49,11 @@ public:
 	DISPLAY(int posX , int posY,int width,int height,int pixelSize,int displayNum=0);
 	void render();
 	void setPixel(int posX, int posY, Scalar color);
-	uint32_t* getLine(uint8_t y);
+	uint32_t* getLineCV(uint8_t y);
 	void setPixel(int x, int y, Color color);
-	void drawBGLine(uint8_t y, uint32_t* BGLine);
+	void drawBGLineCV(uint8_t y, uint32_t* BGLine);
+	void drawBGLineSDL(uint8_t y, uint32_t* BGLine);
+	uint32_t* getLineSDL(uint8_t y);
 	void setPixel(int posX, int posY, uint8_t red, uint8_t blue, uint8_t green);
 	void setPixelChannel(int posX, int posY, ColorChannel ch, uint8_t value);
 	void update();

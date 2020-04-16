@@ -15,12 +15,11 @@ void GPU::connectToBus(BUS* bus)
 }
 bool GPU::checkLCDStatus()
 {
-	
+	return true;
 	if (!((bus->interrupt->io[0x40] >> 7) & 0x1)) {//LCD Display Disable
 		//bus->interrupt->io[0x41] &= 252;//web
 		//bus->interrupt->io[0x41] &= 253;//me
-		bus->interrupt->io[0x41] &= 0xFC;
-		bus->interrupt->io[0x41] |= 0x01;
+		bus->interrupt->io[0x41] &= 0xFD;
 		bus->interrupt->io[0x44] = 0;
 		cyclesPerScanline = 456;
 		bus->mmu->vRamLock = false;
@@ -34,7 +33,7 @@ bool GPU::checkLCDStatus()
 	uint8_t mode=0;
 	if (currScanLine >= 144) {//V-Blank 
 		mode = 1;
-		bus->interrupt->io[0x41] &= 0xFC;
+		bus->interrupt->io[0x41] &= 0xFD;
 		bus->mmu->OAMLock = false;
 		bus->mmu->vRamLock = false;
 	}
@@ -44,13 +43,13 @@ bool GPU::checkLCDStatus()
 	//mode 0:H-Blank  204 [204->0)
 	else if (cyclesPerScanline>=376) {
 		mode = 2;
-		bus->interrupt->io[0x41] &= 0xFC;
+		bus->interrupt->io[0x41] &= 0xFE;
 		bus->mmu->OAMLock = true;
 		bus->mmu->vRamLock = false;
 	}
 	else if (cyclesPerScanline >= 204) {
 		mode = 3;
-		bus->interrupt->io[0x41] &= 0xFC;
+		bus->interrupt->io[0x41] &= 0xFF;
 		bus->mmu->OAMLock = true;
 		bus->mmu->vRamLock = true;
 	}
@@ -60,7 +59,7 @@ bool GPU::checkLCDStatus()
 		bus->mmu->OAMLock = false;
 		bus->mmu->vRamLock = false;
 	}
-	bus->interrupt->io[0x41] |= mode;
+	//bus->interrupt->io[0x41] |= mode;
 	if(mode!=oldLCDmode)
 	if ((mode!=3) && ((bus->interrupt->io[0x41] >> (mode + 3)) & 0x01)) {//checks mode interrupt requested and enabled
 		bus->interrupt->setInterruptRequest(1);
@@ -165,7 +164,27 @@ bool GPU::drawBG(uint32_t* BGLine) {
 		map<int, int> palette;
 		getPalette(0xff47, &palette);
 		//uint8_t BGLineTile[40] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
-		bool windowDisplay = (bus->interrupt->io[0x40] >> 5) & 0x1;
+		uint8_t tileY = bus->interrupt->io[0x44];
+		uint8_t scrollY = bus->mmu->read(0xFF42);
+		uint8_t scrollX = bus->mmu->read(0xFF43);
+		uint8_t windowY = bus->mmu->read(0xFF4A);
+		uint8_t windowX = bus->mmu->read(0xFF4B) - 7;
+		bool windowDisplay = ((bus->interrupt->io[0x40] >> 5) & 0x1)&&(tileY>=windowY);
+		if (windowDisplay) {
+			/*int p= tileY - windowY;
+			
+			p = p % 144;
+			p = p > 0 ? p : p + 1*/44;
+			//tileY = p;
+			tileY -= windowY;
+
+		}
+		else {
+			tileY += scrollY;
+
+		}
+		/*if (tileY < 0)
+			return false;*/
 		if ((windowDisplay && ((bus->interrupt->io[0x40] >> 6) & 0x1)) ||//window display set and and Window Tile Map is 1 OR window not display and BG Tile Map is 1
 			(!windowDisplay && ((bus->interrupt->io[0x40] >> 3) & 0x01))) {//BG & Window Tile Data Select 9c00-9fff
 			bgTileMap = 0x9C00;
@@ -175,19 +194,8 @@ bool GPU::drawBG(uint32_t* BGLine) {
 			tileDataTable = 0x8000;//unsigned indexing
 		}
 		
-
-		uint8_t tileY = bus->interrupt->io[0x44];
-		uint8_t scrollY = bus->mmu->read(0xFF42);
-		uint8_t scrollX = bus->mmu->read(0xFF43);
-		uint8_t windowY = bus->mmu->read(0xFF4A);
-		uint8_t windowX = bus->mmu->read(0xFF4B) - 7;
-		if (windowDisplay)
-			tileY -= windowY;
-		else
-			tileY += scrollY;
-
-		uint16_t  tileRow = ((uint8_t)(tileY / 8)) * 32;//number of tiles from 0 to currline. //num of tiles includes cols.
-
+		//uint16_t  tileRow = ((uint8_t)(tileY / 8)) * 32;//number of tiles from 0 to currline. //num of tiles includes cols.
+		uint16_t  tileRow = ((tileY / 8)) * 32;//number of tiles from 0 to currline. //num of tiles includes cols.
 		for (int x = 0;x < 160;) {
 			uint8_t bgX = scrollX + x;
 			if (windowDisplay&& (x >= windowX))
@@ -366,7 +374,8 @@ void GPU::draw() {
 	//uint8_t currBGLine[20] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
 	//uint32_t* BGLine[160];
 	uint8_t y = bus->interrupt->io[0x44];//currLine
-	uint32_t * BGLine= bus->display->getLine(y);
+	//uint32_t * BGLine= bus->display->getLineCV(y);
+	uint32_t* BGLine = bus->display->getLineSDL(y);
 	//uint8_t currBGLine[20] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
 	bool render = false;
 	render=drawBG(BGLine);

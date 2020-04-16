@@ -49,13 +49,13 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 			bus->dma->transfer(value);
 			break;
 		case 0x4f:
-		//	if(bus->cartridge->colorGB){
+			if(bus->cartridge->colorGB){
 				bus->gpu->vRamBank = value & 0x01;
 				io[address] = 0xfe|value;
 				if (print)
 				printf("write opcode:0x4f // VRAM Bank value:%04x value(io):%04x\n", value, io[address]);
 				break;
-		//	}
+			}
 		case 0x55:
 			if (print)
 			printf("write opcode:0x55 // Start DMA Transfer value:%04x value(io):%04x\n", value, io[address]);

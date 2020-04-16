@@ -19,7 +19,20 @@
 #include <SDL.h>
 #undef main
 using namespace std;
-
+void displayThreadFunc(DISPLAY* display)
+{
+	while (true) {
+		if (!display->displayLock) {
+			display->render();
+			//display->update();
+			//Sleep(16.6);
+			Sleep(16);
+		}
+		else
+			Sleep(5);
+	}
+	// do stuff...
+}
 void pipeRecive(BUS* bus, uint16_t opcode,uint16_t lastOpcode, int steps,string funcName) {
 	if (steps == 123176) {
 		int h = 0;
@@ -116,7 +129,7 @@ int main(void) {
 	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\tma_write_reloading.gb",
 	"roms\\mooneye-gb_hwtests\\misc\\boot_regs-cgb.gb",
 	"roms\\mooneye-gb_hwtests\\acceptance\\ld_hl_sp_e_timing.gb"};
-	uint8_t romIndex = 17;
+	uint8_t romIndex = 13;
 	//char * romPath = roms[5];
 	
 	//BC = 0x12FE;
@@ -197,7 +210,7 @@ int main(void) {
 	int y = 0;
 	Scalar white = Scalar(255, 255, 255, 0);
 	Scalar black = Scalar(0, 0, 0, 0);
-	//std::thread displayThread(displayThreadFunc, display);
+	std::thread displayThread(displayThreadFunc, display);
 	int cyclesInFrameCounter = 0;
 	int framesForSeconds = 60;
 	int cyclesInFrame = cpu->cpuFreq/framesForSeconds;
@@ -206,19 +219,19 @@ int main(void) {
 	
 	
 	while (true) {
-		/*if (SDL_PollEvent(&display->windowEvent))
+		if (SDL_PollEvent(&display->windowEvent))
 					if (SDL_QUIT == display->windowEvent.type) 
-						break;*/
+						break;
 		do {
 			opcode = cpu->getOpcode();
 			opcode = (opcode == 0xCB) ? 0XCB00 | cpu->getOpcode() : opcode;			
 			//cpu->Execute(opcode);
 			//pipeRecive(bus, opcode, lastopcode, steps,"Execute");
 			if (!cpu->halt) {
-				cpu->Execute(opcode);
-				//cpu->ExecuteOpcode(opcode);
+				//cpu->Execute(opcode);
+				cpu->ExecuteOpcode(opcode);
 				cpu->steps++;
-				pipeRecive(bus, opcode, lastopcode, cpu->steps, "Execute");
+				//pipeRecive(bus, opcode, lastopcode, cpu->steps, "Execute");
 				//cpu->Execute(opcode);
 			}
 			else {
@@ -253,9 +266,9 @@ int main(void) {
 			//cpu->cycelsCounter += cpu->lastOpcodeCycles;
 		} while (cyclesInFrameCounter< cyclesInFrame); //(cpu.PC != 0x100 && counter > 0);//||mmu.biosLoaded);//cpu.PC!=0x100
 		cyclesInFrameCounter = 0;
-		//Sleep(1);
+		Sleep(1);
 		//display->render();
-		display->update();
+		//display->update();
 		//printf("render\n");
 	}
 
@@ -376,15 +389,7 @@ int testPipe() {
 	return 0;
 
 }
-void displayThreadFunc(DISPLAY* display)
-{
-	while (true) {
-		display->update();
-		//Sleep(16.6);
-		Sleep(500);
-	}
-	// do stuff...
-}
+
 
 void tests(BUS  bus) {
 

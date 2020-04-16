@@ -15,7 +15,7 @@ DISPLAY::DISPLAY(int posX, int posY, int width, int height, int pixelSize,int di
     for(int i=0;i<keysCount;i++)
     keysMapper[keys[i].key] = keys+i;
    
-    return;
+    
     if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
         std::cout << "error with sdl " << SDL_GetError() << std::endl;
     }
@@ -74,10 +74,10 @@ void DISPLAY::setPixel(int posX, int posY, Scalar color)
    
    
 }
-uint32_t* DISPLAY::getLine(uint8_t y) {
+uint32_t* DISPLAY::getLineCV(uint8_t y) {
    return (uint32_t*)(window.data + 4 * (int)y * width);
 }
-void DISPLAY::drawBGLine(uint8_t y, uint32_t* BGLine)
+void DISPLAY::drawBGLineCV(uint8_t y, uint32_t* BGLine)
 {
    
     
@@ -115,6 +115,18 @@ void DISPLAY::drawBGLine(uint8_t y, uint32_t* BGLine)
 
     
 
+}
+void DISPLAY::drawBGLineSDL(uint8_t y, uint32_t* BGLine) {
+    
+    int index = y * width;
+    uint32_t* p = (uint32_t*)(window.data + 4 * (int)y * width);
+    for (int i = 0;i < width;i++) {
+        pixels[y+i]= BGLine[i];
+       
+    }
+}
+uint32_t* DISPLAY::getLineSDL(uint8_t y) {
+    return (uint32_t*)pixels + y*width;
 }
 void DISPLAY::setPixel(int x, int y, Color color) {
     //int index = y * width * 4 + x * 4;
