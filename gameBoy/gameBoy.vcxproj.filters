@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\CARTRIDGE">
+      <UniqueIdentifier>{00fd790d-53ae-424d-96fd-86c01066ca2f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\CARTRIDGE">
+      <UniqueIdentifier>{7f19c1c8-464d-4915-a906-1366c1a29348}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -65,9 +71,6 @@
     <ClInclude Include="MMU.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CARTRIDGE.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GPU.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -85,6 +88,21 @@
     </ClInclude>
     <ClInclude Include="JOYPAD.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CARTRIDGE.h">
+      <Filter>Header Files\CARTRIDGE</Filter>
+    </ClInclude>
+    <ClInclude Include="MBC1.h">
+      <Filter>Header Files\CARTRIDGE</Filter>
+    </ClInclude>
+    <ClInclude Include="CartridgeFactory.h">
+      <Filter>Header Files\CARTRIDGE</Filter>
+    </ClInclude>
+    <ClInclude Include="MBC3.h">
+      <Filter>Header Files\CARTRIDGE</Filter>
+    </ClInclude>
+    <ClInclude Include="MBC2.h">
+      <Filter>Header Files\CARTRIDGE</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

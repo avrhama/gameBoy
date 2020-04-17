@@ -236,7 +236,7 @@ bool GPU::drawBG(uint32_t* BGLine) {
 			uint16_t vRamBank = 0;
 			
 			uint8_t attributes = vRam[tileIndexAddress -0x6000];
-			if (bus->cartridge->colorGB) {
+			if (bus->cartridge->header.colorGB) {
 			
 				if((attributes>>3)&0x01)
 					vRamBank = 0x2000;

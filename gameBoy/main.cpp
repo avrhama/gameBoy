@@ -15,6 +15,7 @@
 #include <thread>
 #include "Structures.h"
 #include "pipeChannel.h"
+#include "CartridgeFactory.h"
 #include <conio.h>
 #include <SDL.h>
 #undef main
@@ -131,8 +132,10 @@ int main(void) {
 	"roms\\mooneye-gb_hwtests\\misc\\boot_regs-cgb.gb",
 	"roms\\mooneye-gb_hwtests\\acceptance\\ld_hl_sp_e_timing.gb",
 	"roms\\mooneye-gb_hwtests\\acceptance\\oam_dma_start.gb",
-	"test\\halt_bug.gb"};
-	uint8_t romIndex = 13;
+	"test\\halt_bug.gb",
+	"roms\\Pokemon3.gb",
+	"roms\\mario.gb"};
+	uint8_t romIndex = 14;
 	//char * romPath = roms[5];
 	
 	//BC = 0x12FE;
@@ -149,7 +152,9 @@ int main(void) {
 	CPU * cpu=new CPU();
 	GPU * gpu=new GPU();
 	DMA* dma = new DMA();
-	CARTRIDGE* cartridge = new CARTRIDGE();
+	CARTRIDGE* cartridge = createCartrige(romsPaths[romIndex]);
+	if (cartridge == NULL)
+		return 1;
 	INTERRUPT* interrupt = new INTERRUPT();
 	MMU* mmu = new MMU();
 	DISPLAY* display = new DISPLAY(0, 0, 160, 144, 1);
@@ -164,17 +169,17 @@ int main(void) {
 	bus->connectDisplay(display);
 	bus->connectCartridge(cartridge);
 	bus->connectJoypad(joypad);
-	cartridge->loadRom(romsPaths[romIndex]);
-	cartridge->load();
+	/*cartridge->loadRom(romsPaths[romIndex]);
+	cartridge->load();*/
 	cpu->reset();
 	mmu->reset();
 	gpu->reset();
 	interrupt->reset();
-	printf("title:%s\n", cartridge->title);
-	printf("rom banks count:%d\n", cartridge->romSize);
-	printf("romBank size:%d\n", cartridge->romBankSize);
-	printf("ram banks count:%d\n", cartridge->ramSize);
-	printf("romBank size:%d\n", cartridge->ramBankSize);
+	printf("title:%s\n", cartridge->header.title);
+	printf("rom banks count:%d\n", cartridge->header.romSize);
+	printf("romBank size:%d\n", cartridge->header.romBankSize);
+	printf("ram banks count:%d\n", cartridge->header.ramSize);
+	printf("romBank size:%d\n", cartridge->header.ramBankSize);
 	
 	
 	//ofstream myfile;
@@ -283,8 +288,9 @@ int main(void) {
 			//}
 		} while (cyclesInFrameCounter< cyclesInFrame); //(cpu.PC != 0x100 && counter > 0);//||mmu.biosLoaded);//cpu.PC!=0x100
 		cyclesInFrameCounter = 0;
-		//Sleep(1);
+		
 	 display->render();
+	 Sleep(10);
 		//display->update();
 		//printf("render\n");
 	}
@@ -330,43 +336,43 @@ int main(void) {
 
 	}
 
-void testRomSwitching(CARTRIDGE cartridge) {
-	cartridge.write(0x2000, 0);
-	printf("romBank:%d\n", cartridge.romBankIndex);
-	cartridge.write(0x2000, 20);
-	cartridge.write(0x5fff, 0);
-	printf("romBank:%d\n", cartridge.romBankIndex);
-	cartridge.write(0x2000, 40);
-	cartridge.write(0x5fff, 1);
-	printf("romBank:%d\n", cartridge.romBankIndex);
-	cartridge.write(0x2000, 60);
-	cartridge.write(0x5fff, 1);
-	printf("romBank:%d\n", cartridge.romBankIndex);
-	cartridge.write(0x2000, 1);
-	cartridge.write(0x5fff, 0);
-	printf("romBank:%d\n", cartridge.romBankIndex);
-	cartridge.write(0x2000, 21);
-	cartridge.write(0x5fff, 0);
-	printf("romBank:%d\n", cartridge.romBankIndex);
-	cartridge.write(0x2000, 41);
-	cartridge.write(0x5fff, 41);
-	printf("romBank:%d\n", cartridge.romBankIndex);
-	cartridge.write(0x2000, 61);
-	cartridge.write(0x5fff, 1);
-	printf("romBank:%d\n", cartridge.romBankIndex);
-	cartridge.write(0x2000, 2);
-	cartridge.write(0x5fff, 0);
-	printf("romBank:%d\n", cartridge.romBankIndex);
-	cartridge.write(0x2000, 22);
-	cartridge.write(0x5fff, 0);
-	printf("romBank:%d\n", cartridge.romBankIndex);
-	cartridge.write(0x2000, 42);
-	cartridge.write(0x5fff, 1);
-	printf("romBank:%d\n", cartridge.romBankIndex);
-	cartridge.write(0x2000, 62);
-	cartridge.write(0x5fff, 1);
-	printf("romBank:%d\n", cartridge.romBankIndex);
-}
+//void testRomSwitching(MBC1 cartridge) {
+//	cartridge.write(0x2000, 0);
+//	printf("romBank:%d\n", cartridge.romBankIndex);
+//	cartridge.write(0x2000, 20);	 
+//	cartridge.write(0x5fff, 0);		 
+//	printf("romBank:%d\n", cartridge.romBankIndex);
+//	cartridge.write(0x2000, 40);	 
+//	cartridge.write(0x5fff, 1);		 
+//	printf("romBank:%d\n", cartridge.romBankIndex);
+//	cartridge.write(0x2000, 60);	 
+//	cartridge.write(0x5fff, 1);		 
+//	printf("romBank:%d\n", cartridge.romBankIndex);
+//	cartridge.write(0x2000, 1);		 
+//	cartridge.write(0x5fff, 0);		 
+//	printf("romBank:%d\n", cartridge.romBankIndex);
+//	cartridge.write(0x2000, 21);	 
+//	cartridge.write(0x5fff, 0);		 
+//	printf("romBank:%d\n", cartridge.romBankIndex);
+//	cartridge.write(0x2000, 41);	 
+//	cartridge.write(0x5fff, 41);	 
+//	printf("romBank:%d\n", cartridge.romBankIndex);
+//	cartridge.write(0x2000, 61);	 
+//	cartridge.write(0x5fff, 1);		 
+//	printf("romBank:%d\n", cartridge.romBankIndex);
+//	cartridge.write(0x2000, 2);		 
+//	cartridge.write(0x5fff, 0);		 
+//	printf("romBank:%d\n", cartridge.romBankIndex);
+//	cartridge.write(0x2000, 22);	 
+//	cartridge.write(0x5fff, 0);		 
+//	printf("romBank:%d\n", cartridge.header.romBankIndex);
+//	cartridge.write(0x2000, 42);	 
+//	cartridge.write(0x5fff, 1);		 
+//	printf("romBank:%d\n", cartridge.header.romBankIndex);
+//	cartridge.write(0x2000, 62);	 
+//	cartridge.write(0x5fff, 1);		 
+//	printf("romBank:%d\n", cartridge.header.romBankIndex);
+//}
 int testPipe() {
 
 

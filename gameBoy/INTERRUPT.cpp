@@ -49,7 +49,7 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 			bus->dma->transfer(value);
 			break;
 		case 0x4f:
-			if(bus->cartridge->colorGB){
+			if(bus->cartridge->header.colorGB){
 				bus->gpu->vRamBank = value & 0x01;
 				io[address] = 0xfe|value;
 				if (print)
@@ -296,7 +296,7 @@ void INTERRUPT::reset()
 		io[0x4B] = 0x00;
 		io[0x4d] = 0x7e;
 
-		if (bus->cartridge->colorGB) {
+		if (bus->cartridge->header.colorGB) {
 			io[0x04] = 0x1E;
 			bus->cpu->cyclesPerIncrementDIVIDER = 256 - 0xA0;
 			bus->cpu->cyclesPerIncrementDIVIDER = 0xA0;

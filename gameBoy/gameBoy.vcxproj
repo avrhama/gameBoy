@@ -163,6 +163,7 @@
   <ItemGroup>
     <ClInclude Include="BUS.h" />
     <ClInclude Include="CARTRIDGE.h" />
+    <ClInclude Include="CartridgeFactory.h" />
     <ClInclude Include="CPU.h" />
     <ClInclude Include="DISPLAY.h" />
     <ClInclude Include="DMA.h" />
@@ -170,6 +171,9 @@
     <ClInclude Include="INTERRUPT.h" />
     <ClInclude Include="JOYPAD.h" />
     <ClInclude Include="main.h" />
+    <ClInclude Include="MBC1.h" />
+    <ClInclude Include="MBC2.h" />
+    <ClInclude Include="MBC3.h" />
     <ClInclude Include="MMU.h" />
     <ClInclude Include="pipeChannel.h" />
     <ClInclude Include="SHA1.h" />

@@ -1825,14 +1825,16 @@ void CPU::HALT(uint8_t* none, uint8_t* none2) {
 }
 void CPU::STOP(uint8_t* none, uint8_t* none2) {
 	halt = true;
-	printf("stop\n");
+	
+	/*if (lastOpcode != 0x10)
+	printf("stop\n");*/
 	//if (bus->cartridge->colorGB) {
 		uint8_t prepareSpeedSwitch = bus->interrupt->io[0x4d];
 		if (prepareSpeedSwitch & 0x01) {
 			speedMode = 1 - speedMode; // 1 + (bus->interrupt->io[0x4d] >> 7) & 0x01;
 			bus->interrupt->io[0x4d] = (speedMode << 7) | 0xfe;
 			halt = false;
-			//lastOpcodeCycles += 32749;
+			lastOpcodeCycles += 32749;
 			printf("spedd chaned");
 		}
 	//}
@@ -6033,7 +6035,7 @@ void CPU::reset()
 		DE = 0xFF56;
 		HL = 0x000D;
 		SP = 0xFFFE;
-		if (bus->cartridge->colorGB) {
+		if (bus->cartridge->header.colorGB) {
 			AF = 0x1180;
 		}
 
@@ -6060,7 +6062,7 @@ void CPU::reset()
 
 		DE = 0xFF56;
 		HL = 0x000D;
-		if (bus->cartridge->colorGB) {
+		if (bus->cartridge->header.colorGB) {
 			DE = 0xFF56;
 			HL = 0x000D;
 		}
