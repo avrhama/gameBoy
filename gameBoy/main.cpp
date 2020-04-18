@@ -133,9 +133,10 @@ int main(void) {
 	"roms\\mooneye-gb_hwtests\\acceptance\\ld_hl_sp_e_timing.gb",
 	"roms\\mooneye-gb_hwtests\\acceptance\\oam_dma_start.gb",
 	"test\\halt_bug.gb",
-	"roms\\Pokemon3.gb",
+	"roms\\Pokemon4.gbc",
 	"roms\\mario.gb"};
-	uint8_t romIndex = 14;
+	//BGpalette
+	uint8_t romIndex = 26;
 	//char * romPath = roms[5];
 	
 	//BC = 0x12FE;
@@ -290,7 +291,7 @@ int main(void) {
 		cyclesInFrameCounter = 0;
 		
 	 display->render();
-	 Sleep(10);
+	  Sleep(10);
 		//display->update();
 		//printf("render\n");
 	}

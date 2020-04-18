@@ -104,5 +104,8 @@
     <ClInclude Include="MBC2.h">
       <Filter>Header Files\CARTRIDGE</Filter>
     </ClInclude>
+    <ClInclude Include="MBC5.h">
+      <Filter>Header Files\CARTRIDGE</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

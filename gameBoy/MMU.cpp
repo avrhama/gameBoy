@@ -11,6 +11,8 @@ void MMU::reset()
 	for (int i = 0;i < 0x80;i++)
 		zeroRam[i] = 0;
 
+	
+	
 
 	
 }

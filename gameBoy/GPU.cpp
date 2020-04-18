@@ -170,7 +170,33 @@ void GPU::getPalette2(uint16_t paletteAddress, int * palette) {
 
 	
 }
-bool GPU::drawBG(uint32_t* BGLine) {
+uint8_t GPU::drawBGLine(uint8_t y, uint8_t* BGLine, uint8_t* BGcolos)
+{
+	map<int, int> palette;
+	getPalette(0xff47, &palette);
+	uint8_t offset = 0;
+
+	for (uint8_t i = 0;i < 20;i++) {
+		uint8_t index = 2 * i;
+		uint8_t lsb = BGLine[index];
+		uint8_t msb = BGLine[index + 1];
+		uint8_t j = i * 8;
+		for (int k = 0;k < 8;k++) {
+			uint8_t colorPaletteDataIndex = (((msb >> (7 - k)) & 0x1) << 1) | ((lsb >> (7 - k)) & 0x1);
+			uint8_t colorIndex = (bus->interrupt->io[0x47] >> (2 * colorPaletteDataIndex)) & 0x03;
+			colorIndex = palette[colorPaletteDataIndex];
+			//if(colorIndex==0)
+				//*BGcolos |= 0x1 << (7 - (((i+k) + (offset - pixelIndex)) % 8));
+			//printf("color id:%d\n",colorIndex);
+			bus->display->setPixel(j + k, y, bus->display->colors[colorIndex]);
+			//bus->display->setPixel(x + (offset - pixelIndex), y, bus->display->bgPalette[colorIndex]);
+		}
+	}
+
+	return offset;
+
+}
+bool GPU::drawBG(uint32_t* BGLine, uint8_t* BGpriorities, uint32_t* BGTransparents) {
 	
 	
 	if (bus->interrupt->io[0x40] & 0x1) {//BG Display Enable
@@ -178,12 +204,13 @@ bool GPU::drawBG(uint32_t* BGLine) {
 		//map<int, int> palette;
 		int palette[4];
 		getPalette2(0xff47, palette);
-		//uint8_t BGLineTile[40] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
+		
 		uint8_t tileY = bus->interrupt->io[0x44];
 		uint8_t scrollY = bus->interrupt->io[0x42];
 		uint8_t scrollX = bus->interrupt->io[0x43];
 		uint8_t windowY = bus->interrupt->io[0x4A];
 		uint8_t windowX = bus->interrupt->io[0x4B] - 7;
+		Color* BGpalette= bus->display->bgPalette;
 		bool windowDisplay = ((bus->interrupt->io[0x40] >> 5) & 0x1)&&(tileY>=windowY);
 		bool windowAdjusment;
 		// windowDisplay = ((bus->interrupt->io[0x40] >> 5) & 0x1);
@@ -235,7 +262,8 @@ bool GPU::drawBG(uint32_t* BGLine) {
 			uint8_t tileLine = (tileY % 8) * 2;
 			uint16_t vRamBank = 0;
 			
-			uint8_t attributes = vRam[tileIndexAddress -0x6000];
+			uint8_t attributes = vRam[tileIndexAddress -0x6000];//tile attributes in vRam bank 1
+			bool priority;
 			if (bus->cartridge->header.colorGB) {
 			
 				if((attributes>>3)&0x01)
@@ -246,6 +274,15 @@ bool GPU::drawBG(uint32_t* BGLine) {
 					tileLine = ((7-tileY) % 8) * 2;
 				else
 					tileLine=(tileY % 8) * 2;
+				
+				BGpalette = bus->display->BGPlatettes[attributes&0x07];
+				//priority = (attributes >> 7)&0x01 ? true : false;
+				if ((attributes >> 7) & 0x01) {
+						BGpriorities[x / 8] |= 0xff>>(x%8);
+					if(x % 8 != 0&&(x / 8) + 1<20)
+						BGpriorities[(x / 8)+1] |= (0xff << (7-(x % 8)));
+				}
+				BGTransparents[x / 8] = BGpalette[0].val;
 			}
 			
 			/*uint8_t lsbData = bus->mmu->read(tileAddress+ tileLine);
@@ -269,20 +306,23 @@ bool GPU::drawBG(uint32_t* BGLine) {
 			continue;*/
 			int k = pixelIndex;
 			uint8_t shiftBit;
-			for (k = pixelIndex;k < 8;k++) {
+			
+			for (k = pixelIndex;k < 8&&x<160;k++) {
 				shiftBit = 7 - k;
 				uint8_t colorPaletteDataIndex = (((msbData >> shiftBit) & 0x1) << 1) | ((lsbData >> shiftBit) & 0x1);
 				
 				uint8_t  colorIndex = palette[colorPaletteDataIndex];
 				//uint8_t  colorIndex = palette[0];
 				//x++;
+			
+				BGLine[x] = BGpalette[colorIndex].val;
 				
-				BGLine[x] = bus->display->bgPalette[colorIndex].val;
 				x++;
 				if (windowDisplay && x >= windowX) {
 					if(!windowAdjusment)
 					break;
 				}
+				
 			}
 			//x += (k-pixelIndex);
 
@@ -312,38 +352,15 @@ bool GPU::drawBG(uint32_t* BGLine) {
 	}
 	return false;
 }
-uint8_t GPU::drawBGLine(uint8_t y,uint8_t* BGLine, uint8_t* BGcolos)
-{
-	map<int, int> palette;
-	getPalette(0xff47, &palette);
-	uint8_t offset = 0;
-	
-	for (uint8_t i = 0;i < 20;i++) {
-		uint8_t index = 2 * i;
-		uint8_t lsb = BGLine[index];
-		uint8_t msb = BGLine[index +1];
-		uint8_t j = i * 8;
-		for (int k = 0;k < 8 ;k++) {
-			uint8_t colorPaletteDataIndex = (((msb >> (7 - k)) & 0x1) << 1) | ((lsb >> (7 - k)) & 0x1);
-			uint8_t colorIndex = (bus->interrupt->io[0x47] >> (2 * colorPaletteDataIndex)) & 0x03;
-			colorIndex = palette[colorPaletteDataIndex];
-			//if(colorIndex==0)
-				//*BGcolos |= 0x1 << (7 - (((i+k) + (offset - pixelIndex)) % 8));
-			//printf("color id:%d\n",colorIndex);
-			bus->display->setPixel(j + k, y, bus->display->colors[colorIndex]);
-			//bus->display->setPixel(x + (offset - pixelIndex), y, bus->display->bgPalette[colorIndex]);
-		}
-	}
-	
-	return offset;
-
-}
-
-bool GPU::drawSprites(uint32_t* BGLine) {
+bool GPU::drawSprites(uint32_t* BGLine, uint8_t* BGpriorities, uint32_t* BGTransparents) {
 	if ((bus->interrupt->io[0x40] >> 1) & 0x1) {//OBJ (Sprite) Display Enable
 		uint8_t spriteSize = ((bus->interrupt->io[0x40] >> 2) & 0x01) ? 16 : 8;
 		uint currentScanLine = bus->interrupt->io[0x44];
 		uint32_t transparent = bus->display->bgPalette[0].val;
+		Color* OBpalette= bus->display->bgPalette;
+		uint16_t vRamBankOffset = 0;
+		uint8_t bgPriority = 0x0;
+		int palette[4] = {0x0,0x1,0x2,0x3};
 		for (uint8_t i = 0;i < 160;i += 4) {//loop 4 byte(sprite) in OAM
 			uint8_t posY = oam[i] - 16;//if there are any bugs with drawing consider to change uint8_t to int16.
 			//if(posY <= currentScanLine && posY + spriteSize >= currentScanLine) {//check if the sprite is crossing the current scanline
@@ -366,13 +383,26 @@ bool GPU::drawSprites(uint32_t* BGLine) {
 					spriteDataLine = currentScanLine - posY;
 				else
 					spriteDataLine = spriteSize - 1 - (currentScanLine - posY);
-				uint16_t paletteAddress = ((attributes >> 4) & 0x01)?0xff49:0xff48;
-				//uint16_t paletteAddress = ((attributes >> 4) & 0x01) ? 0xff48 : 0xff49;
+				if (bus->cartridge->header.colorGB) {
+					vRamBankOffset = (attributes >> 3)&0x01 ? 0x2000 : 0;
+					OBpalette = bus->display->OBPlatettes[attributes&0x07];
+					//transparent = OBpalette[0].val;
+					transparent = BGTransparents[posX / 8];
+					if (posX < 160 && posX >= 0) {
+						bgPriority = BGpriorities[posX / 8] >> (posX % 8);
+						if (posX % 8 != 0)
+							bgPriority |= BGpriorities[(posX / 8) + 1] << (7 - (posX % 8));
+					}
+				//OBpalette=bus
+				}
+				else {
+					uint16_t paletteAddress = ((attributes >> 4) & 0x01) ? 0xff49 : 0xff48;
+					getPalette2(paletteAddress, palette);
+				}
 
-				//map<int, int> palette;
-				int palette[4];
-				getPalette2(paletteAddress, palette);
-				uint16_t tileAddress =  16 * (patternNum)+2 * spriteDataLine;
+				
+
+				uint16_t tileAddress =  16 * (patternNum)+2 * spriteDataLine+vRamBankOffset;
 				uint8_t lsbData =vRam[tileAddress];
 				uint8_t msbData = vRam[tileAddress + 1];
 				
@@ -392,14 +422,14 @@ bool GPU::drawSprites(uint32_t* BGLine) {
 					}
 					//uint8_t isBgWinWhitePixel = (currBGLine[(posX + x) / 8] >> (7 - (posX + x) % 8)) & 0x01;
 					
-					if (!priority || BGLine[posX +x] == transparent) {
+					if ((!priority&&!((bgPriority >> (7 - x)) & 0x01))|| BGLine[posX + x] == transparent) {//|| (!priority )&& 
 						uint8_t colorPaletteDataIndex = (((msbData >> (7 - x)) & 0x1) << 1) | ((lsbData >> (7 - x)) & 0x1);
 						uint8_t  colorIndex = palette[colorPaletteDataIndex];
 						//BGLine[x + k] = bus->display->bgPalette[colorIndex].getHex();
 						
 						
 						if (colorPaletteDataIndex != 0)
-							BGLine[posX + x] = bus->display->bgPalette[colorIndex].val;
+							BGLine[posX + x] = OBpalette[colorIndex].val;
 						//BGLine[posX + x]= bus->display->spritesPalette[colorIndex].getHex();
 					}
 						//setPixel(posX + x, currentScanLine, lsbData, msbData, x, palette);
@@ -417,13 +447,15 @@ void GPU::draw() {
 	bus->display->setLock(true);
 	//uint8_t currBGLine[20] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
 	//uint32_t* BGLine[160];
+	uint8_t BGpriority[20] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	uint32_t BGTransparents[20]={ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
 	uint8_t y = bus->interrupt->io[0x44];//currLine
 	//uint32_t * BGLine= bus->display->getLineCV(y);
 	uint32_t* BGLine = bus->display->getLineSDL(y);
 	//uint8_t currBGLine[20] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
 	bool render = false;
-	render=drawBG(BGLine);
-	render=drawSprites(BGLine)||render;
+	render=drawBG(BGLine,BGpriority, BGTransparents);
+	render=drawSprites(BGLine,BGpriority, BGTransparents)||render;
 	bus->display->setLock(false);
 	
 	if (bus->cpu->speed == -1) {

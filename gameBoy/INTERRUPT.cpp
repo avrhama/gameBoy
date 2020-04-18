@@ -59,6 +59,21 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 		case 0x55:
 			if (print)
 			printf("write opcode:0x55 // Start DMA Transfer value:%04x value(io):%04x\n", value, io[address]);
+		case 0x69:
+			if (bus->cartridge->header.colorGB) {
+				//bus->display->BGPaletteData[io[0x68]&0x3f] = value;
+				bus->display->setPaletteColor(io[0x68] & 0x3f, value, true);
+				if (io[0x68] >> 7)
+					io[0x68] = (io[0x68]&0x80)|((io[0x68] + 1) & 0x3f);
+				break;
+			}
+		case 0x6b:
+			if (bus->cartridge->header.colorGB) {
+				bus->display->setPaletteColor(io[0x6a] & 0x3f, value, false);
+				if (io[0x6a] >> 7)
+					io[0x6a] = (io[0x6a] & 0x80) | ((io[0x6a] + 1) & 0x3f);
+				break;
+			}
 		case 0x70:
 			
 			bus->mmu->workingRamBank = value & 0x07;
@@ -91,6 +106,12 @@ uint8_t INTERRUPT::read(uint16_t address)
 		/*case 0x00:
 			return io[0x00] = 0xFF;
 			break;*/
+		case 0x69:
+			if (bus->cartridge->header.colorGB)
+				return  bus->display->BGPaletteData[io[0x68] & 0x3f];
+		case 0x6b:
+			if (bus->cartridge->header.colorGB)
+				return  bus->display->OBPaletteData[io[0x6a] & 0x3f];
 		default:
 			return io[address];
 			break;
@@ -252,7 +273,7 @@ void INTERRUPT::reset()
 		io[0x4B] = 0x00;// WX
 		//io[0x44] = 0x88;
 		io[0x44] = 0x00;
-
+		io[0x68] = 0x0;
 		//io[0x40] = 0;// LCDC
 
 		

@@ -37,8 +37,15 @@ DISPLAY::DISPLAY(int posX, int posY, int width, int height, int pixelSize,int di
    
     pixels = new Uint32[width * height * pixelSize]; 
     memset(pixels, 255, width * height * pixelSize* sizeof(Uint32));
-    
-  
+    memset(BGPaletteData, 0xff, 0x40);
+    memset(OBPaletteData, 0xff, 0x40);
+
+    for (uint8_t paletteIndex = 0;paletteIndex < 8;paletteIndex++) {
+        BGPlatettes[paletteIndex][0].setRGB(0xff,0xff,0xff);
+        BGPlatettes[paletteIndex][1].setRGB(0xff, 0xff, 0xff);
+        BGPlatettes[paletteIndex][2].setRGB(0xff, 0xff, 0xff);
+        BGPlatettes[paletteIndex][3].setRGB(0xff, 0xff, 0xff);
+    }
     //SDL_RenderClear(renderer);
    
 
@@ -202,6 +209,82 @@ int DISPLAY::updateKeys()
             keys[i].isPressed = false;
     }
     return keyIndex;
+}
+
+void DISPLAY::setPaletteColor(uint8_t paletteByteIndex, uint8_t value, bool isBGP)
+{
+   
+    uint8_t* palatteData;
+    Color * palette;
+    uint8_t colorIndex = paletteByteIndex - paletteByteIndex % 2;
+   // colorIndex = (paletteByteIndex / 2) % 4;
+    if (isBGP) {
+        palatteData = BGPaletteData;
+       // palette = BGPlatettes[colorIndex/8]+colorIndex%8;
+        if (paletteByteIndex > 15)
+            int i = 0;
+        int h = 10/2;
+        h = h % 4;
+        palette = BGPlatettes[paletteByteIndex / 8] + (paletteByteIndex / 2) % 4;
+
+       /* if (paletteByteIndex < 8) {
+            palette = BGPlatettes[0];
+        }else if (paletteByteIndex < 16) {
+            palette = BGPlatettes[1];
+        }
+        else if (paletteByteIndex < 24) {
+            palette = BGPlatettes[2];
+        }
+        else if (paletteByteIndex < 32) {
+            palette = BGPlatettes[3];
+        }
+        else if (paletteByteIndex < 40) {
+            palette = BGPlatettes[4];
+        }
+        else if (paletteByteIndex < 48) {
+            palette = BGPlatettes[5];
+        }
+        else if (paletteByteIndex < 56) {
+            palette = BGPlatettes[6];
+        }
+        else {
+            palette = BGPlatettes[7];
+        }
+        palette+=(paletteByteIndex / 2) % 4;*/
+    }
+    else {
+        palatteData = OBPaletteData;
+        palette = OBPlatettes[paletteByteIndex / 8] + (paletteByteIndex / 2) % 4;
+    }
+    palatteData[paletteByteIndex] = value;
+   
+    uint8_t red = palatteData[colorIndex] & 0x1f;
+   // red = (red * 0xff) / 0x1f;//5 bit rgb to 8 bit rgb
+    uint8_t green = (palatteData[colorIndex + 1] & 0x03)<<3 | (palatteData[colorIndex] >> 5) & 0x07;
+    //green = (green * 0xff) / 0x1f;//5 bit rgb to 8 bit rgb
+    uint8_t blue = (palatteData[colorIndex +1] >> 2) & 0x1f;
+    //blue = (blue * 0xff) / 0x1f;//5 bit rgb to 8 bit rgb
+    
+
+    red = rgb5BitToRbg8Bit[red];
+    green = rgb5BitToRbg8Bit[green];
+    blue = rgb5BitToRbg8Bit[blue];
+    
+    palette->setRGB(red,green,blue);
+
+    return;
+    uint8_t v = 0xbd;
+    if (value==151){
+        int y = 0;
+    }
+    for (uint8_t paletteIndex = 0;paletteIndex < 8;paletteIndex++) {
+        if (BGPlatettes[paletteIndex][0].getR() == v || BGPlatettes[paletteIndex][1].getR() == v ||
+            BGPlatettes[paletteIndex][2].getR() == v ||BGPlatettes[paletteIndex][3].getR() == v) {
+            int u = 0;
+        }
+      
+    }
+ 
 }
 
 void DISPLAY::close()

@@ -42,13 +42,13 @@ public:
 	void connectToBus(BUS* bus);
 	bool checkLCDStatus();
 	void tick();
-	bool drawSprites(uint32_t* BGLine);
+	bool drawSprites(uint32_t* BGLine, uint8_t* BGpriority, uint32_t* BGTransparents);
 	bool TestBit(BYTE n, int b);
 	int BitGetVal(BYTE n, int b) const;
 	ColorName GetColour(BYTE colourNum, WORD address) const;
 	void getPalette(uint16_t paletteAddress, map<int, int>* palette);
 	void getPalette2(uint16_t paletteAddress, int* palette);
-	bool drawBG(uint32_t* BGLine);
+	bool drawBG(uint32_t* BGLine, uint8_t* BGpriority, uint32_t* BGTransparents);
 	uint8_t drawBGLine(uint8_t y,uint8_t* BGLine, uint8_t* currBGLine);
 	void draw();
 	uint8_t setPixel(int x, int y, uint8_t lsb, uint8_t msb,uint8_t pixelIndex, map<int, int> palette,bool BGTile = false, uint8_t* BGcolos = NULL);
