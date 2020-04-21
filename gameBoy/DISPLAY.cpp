@@ -40,12 +40,18 @@ DISPLAY::DISPLAY(int posX, int posY, int width, int height, int pixelSize,int di
     memset(BGPaletteData, 0xff, 0x40);
     memset(OBPaletteData, 0xff, 0x40);
 
-    for (uint8_t paletteIndex = 0;paletteIndex < 8;paletteIndex++) {
+    /*for (uint8_t paletteIndex = 0;paletteIndex < 8;paletteIndex++) {
         BGPlatettes[paletteIndex][0].setRGB(0xff,0xff,0xff);
         BGPlatettes[paletteIndex][1].setRGB(0xff, 0xff, 0xff);
         BGPlatettes[paletteIndex][2].setRGB(0xff, 0xff, 0xff);
         BGPlatettes[paletteIndex][3].setRGB(0xff, 0xff, 0xff);
     }
+    for (uint8_t paletteIndex = 0;paletteIndex < 8;paletteIndex++) {
+        OBPlatettes[paletteIndex][0].setRGB(0xff, 0xff, 0xff);
+        OBPlatettes[paletteIndex][1].setRGB(0xff, 0xff, 0xff);
+        OBPlatettes[paletteIndex][2].setRGB(0xff, 0xff, 0xff);
+        OBPlatettes[paletteIndex][3].setRGB(0xff, 0xff, 0xff);
+    }*/
     //SDL_RenderClear(renderer);
    
 
@@ -261,9 +267,9 @@ void DISPLAY::setPaletteColor(uint8_t paletteByteIndex, uint8_t value, bool isBG
     uint8_t red = palatteData[colorIndex] & 0x1f;
    // red = (red * 0xff) / 0x1f;//5 bit rgb to 8 bit rgb
     uint8_t green = (palatteData[colorIndex + 1] & 0x03)<<3 | (palatteData[colorIndex] >> 5) & 0x07;
-    //green = (green * 0xff) / 0x1f;//5 bit rgb to 8 bit rgb
+   //green = (green * 0xff) / 0x1f;//5 bit rgb to 8 bit rgb
     uint8_t blue = (palatteData[colorIndex +1] >> 2) & 0x1f;
-    //blue = (blue * 0xff) / 0x1f;//5 bit rgb to 8 bit rgb
+   //blue = (blue * 0xff) / 0x1f;//5 bit rgb to 8 bit rgb
     
 
     red = rgb5BitToRbg8Bit[red];

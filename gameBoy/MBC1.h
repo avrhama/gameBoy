@@ -6,6 +6,7 @@ class MBC1 :public CARTRIDGE {
 private:
 	uint8_t ramBankIndex = 0;
 	uint8_t romBankIndex = 1;
+	bool ramEnable = false;
 public:
 	MBC1() {
 	}
@@ -15,7 +16,7 @@ public:
 		CARTRIDGE::header = header;
 		CARTRIDGE::header.romBankSize = 0x4000;
 		CARTRIDGE::header.ramBankSize = 0x2000;
-		int size_ = (int)header.ramSize * header.ramBankSize;
+		int size_ = (int)header.ramBanksCount * header.ramBankSize;
 		CARTRIDGE::ram = (uint8_t*)calloc(size_, 1);
 	}
 	static CARTRIDGE* create(uint8_t* rom, CartridgeHeader header) {
@@ -26,15 +27,12 @@ public:
 	
 	uint8_t read(uint16_t address)
 	{
-		/*if (cartridgeType == CartridgeType::ROM_ONLY)
-			return rom[address];*/
+		
 		if (address <= 0x3fff) {//Rom 0
 			return rom[address];
 		}
 		else if (0x4000 <= address && address <= 0x7fff) {//Rom n
-			/*uint8_t r = romBankIndex;
-			if (maxMemMode == MaximumMemoryMode::_4_32_mode)
-				r &= 0x1f;*/
+	
 			return rom[address + (romBankIndex - 1) * header.romBankSize];
 		}
 		else if (0xa000 <= address && address <= 0xbfff) {//Ram m

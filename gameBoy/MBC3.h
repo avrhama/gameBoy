@@ -37,22 +37,11 @@ public:
 		CARTRIDGE::header = header;
 		CARTRIDGE::header.romBankSize = 0x4000;
 		CARTRIDGE::header.ramBankSize = 0x2000;
-		int size_ = (int)header.ramSize * header.ramBankSize;
+		int size_ = (int)header.ramBanksCount * header.ramBankSize;
 		CARTRIDGE::ram = (uint8_t*)calloc(size_, 1);
 		startTimer = steady_clock::now();
 
-	/*	auto start = std::chrono::steady_clock::now();
-		std::cout << "f(42) = " << fibonacci(20) << '\n';
-		sleep(20);
-		sleep(20);
-		sleep(20);
-		auto end = std::chrono::steady_clock::now();
-		std::chrono::duration<double> elapsed_seconds = end - start;
-		int secondsCounter = elapsed_seconds.count();
-		int days = secondsCounter / 60 / 60 / 24;
-		int hours = (secondsCounter / 60 / 60) % 24;
-		int minutes = (secondsCounter / 60) % 60;
-		int seconds = secondsCounter % 60;*/
+	
 	}
 	static CARTRIDGE* create(uint8_t* rom, CartridgeHeader header) {
 		//return new MBC1();
@@ -62,8 +51,7 @@ public:
 
 	uint8_t read(uint16_t address)
 	{
-		/*if (cartridgeType == CartridgeType::ROM_ONLY)
-			return rom[address];*/
+		
 		if (address <= 0x3fff) {//Rom 0
 			return rom[address];
 		}
@@ -130,7 +118,7 @@ public:
 	void write(uint16_t address, uint8_t value)
 	{
 		if (address <= 0x1fff) {//ROM 0
-			ramAndTimerEnable =ramEnable = ((value & 0xf) == 0xA&&header.ramSizeType!=RamSizeType::None) ? true : false;
+			ramAndTimerEnable = ((value & 0xf) == 0xA&&header.ramSizeType!=RamSizeType::None) ? true : false;
 		}
 		else if (0x2000 <= address && address <= 0x3fff) {
 			romBankIndex = value & 0x7f;

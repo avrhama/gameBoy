@@ -6068,7 +6068,7 @@ void CPU::reset()
 		}
 		break;
 	}
-	PC = 0;
+	
 }
 int CPU::getCycelPerIncrementTIMA(uint8_t freqIndex) {
 	switch (freqIndex) {//read tac selected freq

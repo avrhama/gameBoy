@@ -22,7 +22,7 @@ enum class RomSizeType :uint8_t {
 };
 enum class RamSizeType :uint8_t {
 	None, _1_bank_2kB, _1_bank_8kB, _4_banks_32kB, _16_banks_128kB, _8_banks_64kB
-	//None,_1_bank_2kB,_1_bank_8kB,_4_banks_32kB,_16_banks_128kB
+	
 };
 enum class MaximumMemoryMode :uint8_t {
 	_16_8_mode, _4_32_mode
@@ -37,12 +37,12 @@ public:
 	char title[9] = {};
 	bool colorGB = false;
 	char GB_SGBIndicator = 0;
-	uint8_t romSize = 0;//How many rom banks( in mbc1 each rom bank is 16KB size[0x4000 B])
-	uint8_t ramSize = 0;//How many ram banks( in mbc1 each ram bank is 8KB size[0x2000 B])
+	uint8_t romBanksCount = 0;//How many rom banks( in mbc1 each rom bank is 16KB size[0x4000 B])
+	uint8_t ramBanksCount = 0;//How many ram banks( in mbc1 each ram bank is 8KB size[0x2000 B])
 	//int romBankSize = 0x4000;//MBC1
 	//int ramBankSize = 0x2000;//MBC1
-	int romBankSize;
-		int ramBankSize;
+	int romBankSize= 0x4000;
+	int ramBankSize;
 };
 class CARTRIDGE
 {
@@ -55,7 +55,7 @@ public:
 	CARTRIDGE(uint8_t* rom, CartridgeHeader header) {
 		this->rom = rom;
 		this->header = header;
-		int size_ = (int)header.ramSize * header.ramBankSize;
+		int size_ = (int)header.ramBanksCount * header.ramBankSize;
 		if(size_>0)
 		this->ram = (uint8_t*)calloc(size_, 1);
 	}
@@ -73,7 +73,7 @@ public:
 			return rom[address];
 	}
 	
-	static uint8_t getRomSize(RomSizeType romSizeType)
+	static uint8_t getRomBanksCount(RomSizeType romSizeType)
 	{
 		switch (romSizeType)
 		{
@@ -100,7 +100,7 @@ public:
 		}
 		return 0;
 	}
-	static uint8_t getRamSize(RamSizeType ramSizeType)
+	static uint8_t getRamBanksCount(RamSizeType ramSizeType)
 	{
 		switch (ramSizeType)
 		{
@@ -116,6 +116,25 @@ public:
 			return 16;
 		case  RamSizeType::_8_banks_64kB:
 			return  8;
+		}
+		return 0;
+	}
+	static int getRamSize(RamSizeType ramSizeType)
+	{
+		switch (ramSizeType)
+		{
+		case RamSizeType::None:
+			return 0;
+		case  RamSizeType::_1_bank_2kB:// 1/4 of ram bank
+			return 0x800;
+		case  RamSizeType::_1_bank_8kB:
+			return 0x2000;
+		case  RamSizeType::_4_banks_32kB:
+			return 0x8000;
+		case  RamSizeType::_16_banks_128kB:
+			return 0x20000;
+		case  RamSizeType::_8_banks_64kB:
+			return  0x10000;
 		}
 		return 0;
 	}
@@ -215,19 +234,8 @@ protected:
 	BUS* bus = NULL;
 	uint8_t* rom = NULL;
 	uint8_t* ram = NULL;
+private:
 	bool ramEnable = false;
-	//MaximumMemoryMode maxMemMode = MaximumMemoryMode::_16_8_mode;
-	//BUS* bus=NULL;
-	//uint8_t* rom = NULL;
-	//CartridgeType cartridgeType = CartridgeType::Bandai_TAMA5;
-	//RomSizeType romSizeType = RomSizeType::_128_banks;
-	//RamSizeType ramSizeType = RamSizeType::None;
-	//char title[9] = {};
-	//bool colorGB = false;
-	//char GB_SGBIndicator = 0;
-	//uint8_t romSize = 0;//How many rom banks( in mbc1 each rom bank is 16KB size[0x4000 B])
-	//uint8_t ramSize = 0;//How many ram banks( in mbc1 each ram bank is 8KB size[0x2000 B])
-	//int romBankSize = 0x4000;//MBC1
-	//int ramBankSize = 0x2000;//MBC1
+	
 };
 

@@ -6,6 +6,7 @@
 #include "DMA.h"
 #include "INTERRUPT.h"
 #include "JOYPAD.h"
+#include "APU.h"
 void BUS::connectCPU(CPU* cpu)
 {
 	this->cpu = cpu;
@@ -47,6 +48,11 @@ void BUS::connectJoypad(JOYPAD* joypad)
 	this->joypad = joypad;
 	joypad->connectToBus(this);
 
+}
+void BUS::connectAPU(APU* apu)
+{
+	this->apu = apu;
+	apu->connectToBus(this);
 }
 
 void BUS::connectCartridge(CARTRIDGE* cartridge)

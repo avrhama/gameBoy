@@ -39,6 +39,23 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 			io[0x0f] = value | 0xE0;
 			//printf("opcode:0x0f // IE value:%04x\n", value);
 			break;
+		case 0x10:
+			bus->apu->feedSweepRegister(0, value);
+		case 0x11:
+			bus->apu->feedLenAndDutyRegister(0, value);
+		case 0x12:
+			bus->apu->feedVolumeEnvelopeRegister(0, value);
+		case 0x13:
+			bus->apu->feedFrequencyLoRegister(0, value);
+		case 0x14:
+			bus->apu->feedFrequencyHiCtlRegister(0, value);
+		case 0x24:
+			bus->apu->feedChannelCtrlRegister(value);
+		case 0x25:
+			bus->apu->setSoundOutputTerminal(value);
+		case 0x26:
+			bus->apu->soundState=(bus->apu->soundState&0x7f)|(value&0x80);
+			break;
 		case 0x41:
 			io[0x41] = value|0x80;
 			break;
@@ -103,9 +120,9 @@ uint8_t INTERRUPT::read(uint16_t address)
 	if (address < 0x80) {
 		switch (address)
 		{
-		/*case 0x00:
-			return io[0x00] = 0xFF;
-			break;*/
+		
+		case 0x26:
+			return bus->apu->soundState;
 		case 0x69:
 			if (bus->cartridge->header.colorGB)
 				return  bus->display->BGPaletteData[io[0x68] & 0x3f];

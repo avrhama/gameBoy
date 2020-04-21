@@ -149,6 +149,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="APU.cpp" />
     <ClCompile Include="BUS.cpp" />
     <ClCompile Include="CARTRIDGE.cpp" />
     <ClCompile Include="CPU.cpp" />
@@ -159,8 +160,10 @@
     <ClCompile Include="JOYPAD.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MMU.cpp" />
+    <ClCompile Include="SoundDevice.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="APU.h" />
     <ClInclude Include="BUS.h" />
     <ClInclude Include="CARTRIDGE.h" />
     <ClInclude Include="CartridgeFactory.h" />
@@ -178,6 +181,8 @@
     <ClInclude Include="MMU.h" />
     <ClInclude Include="pipeChannel.h" />
     <ClInclude Include="SHA1.h" />
+    <ClInclude Include="SoundDevice.h" />
+    <ClInclude Include="Speaker.h" />
     <ClInclude Include="Structures.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

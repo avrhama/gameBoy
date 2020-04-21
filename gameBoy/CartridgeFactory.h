@@ -1,7 +1,9 @@
 #pragma once
 #include "CARTRIDGE.h"
 #include "MBC1.h"
+#include "MBC2.h"
 #include "MBC3.h"
+#include "MBC5.h"
 static CARTRIDGE* createCartrige(string path) {
 
 	uint8_t* rom;
@@ -29,15 +31,15 @@ static CARTRIDGE* createCartrige(string path) {
 	header.cartridgeType = (CartridgeType)rom[0x0147];
 	header.romSizeType = (RomSizeType)(rom[0x0148]);
 	header.ramSizeType = (RamSizeType)(rom[0x0149]);
-	header.romSize = CARTRIDGE::getRomSize(header.romSizeType);
-	header.ramSize = CARTRIDGE::getRamSize(header.ramSizeType);
-		
+	header.romBanksCount = CARTRIDGE::getRomBanksCount(header.romSizeType);
+	header.ramBanksCount = CARTRIDGE::getRamBanksCount(header.ramSizeType);
+	header.ramBankSize= CARTRIDGE::getRamSize(header.ramSizeType);
 	printf("colorGB?:%d\n", header.colorGB);
 	CARTRIDGE::printCartridgeType(header.cartridgeType);
 	}
 	rf.close();
 	//CARTRIDGE s;
-
+	
 	//CARTRIDGE* gg=new MBC1(rom, header);
 	switch (header.cartridgeType) {
 	case CartridgeType::ROM_ONLY:
@@ -46,20 +48,28 @@ static CARTRIDGE* createCartrige(string path) {
 		//return new CARTRIDGE(rom, header);
 		return MBC1::create(rom, header);
 		//return new CARTRIDGE();
-		break;
+	
 
 	case CartridgeType::ROM_MBC1:
 	case CartridgeType::ROM_MBC1_RAM:
-	//case CartridgeType::ROM_MBC1_RAM_BATT:
+	case CartridgeType::ROM_MBC1_RAM_BATT:
 		return MBC1::create(rom, header);
-		break;
+	case CartridgeType::ROM_MBC2:
+	case CartridgeType::ROM_MBC2_BATTERY:
+		return MBC2::create(rom, header);
 	case CartridgeType::ROM_MBC3:
 	case CartridgeType::ROM_MBC3_RAM:
 	case CartridgeType::ROM_MBC3_RAM_BATT:
 	case CartridgeType::ROM_MBC3_TIMER_BATT:
 	case CartridgeType::ROM_MBC3_TIMER_RAM_BATT:
 		return MBC3::create(rom, header);
-		break;
+	case CartridgeType::ROM_MBC5:
+	case CartridgeType::ROM_MBC5_RAM:
+	case CartridgeType::ROM_MBC5_RAM_BATT:
+	case CartridgeType::ROM_MBC5_RUMBLE:
+	case CartridgeType::ROM_MBC5_RUMBLE_SRAM:
+	case CartridgeType::ROM_MBC5_RUMBLE_SRAM_BATT:
+		return MBC5::create(rom, header);
 	default:
 		printf("Unkown cartridge type!\n");
 	}

@@ -9,6 +9,7 @@ class DISPLAY;
 class INTERRUPT;
 class pipeChannel;
 class JOYPAD;
+class APU;
 class BUS
 {
 public:
@@ -22,6 +23,7 @@ public:
 	DISPLAY* display;
 	INTERRUPT* interrupt;
 	JOYPAD* joypad;
+	APU* apu;
 	void connectCPU(CPU* cpu);
 	void connectMMU(MMU* mmu);
 	void connectGPU(GPU* gpu);
@@ -29,6 +31,7 @@ public:
 	void connectDisplay(DISPLAY* display);
 	void connectInterrupt(INTERRUPT* interrupt);
 	void connectJoypad(JOYPAD* joypad);
+	void connectAPU(APU* apu);
 	void connectCartridge(CARTRIDGE* cartridge);
 };
 

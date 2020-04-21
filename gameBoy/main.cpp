@@ -12,15 +12,269 @@
 #include "MMU.h"
 #include "INTERRUPT.h"
 #include "JOYPAD.h"
+#include "APU.h"
 #include <thread>
 #include "Structures.h"
 #include "pipeChannel.h"
 #include "CartridgeFactory.h"
 #include <conio.h>
 #include <SDL.h>
+#include "Speaker.h"
 #undef main
 using namespace std;
-void displayThreadFunc(DISPLAY* display,bool * running)
+/* dummy callback */
+#include <stdio.h>
+#include <math.h>
+#define FREQ 200 /* the frequency we want */
+
+unsigned int audio_position; /* which sample we are up to */
+int audio_len; /* how many samples left to play, stops when <= 0 */
+float audio_frequency; /* audio frequency in cycles per sample */
+float audio_volume; /* audio volume, 0 - ~32000 */
+void MyAudioCallback2(void* data, Uint8* stream, int len) {
+	len /= 2; /* 16 bit */
+	int i;
+	Sint16* buf = (Sint16*)stream;
+	float duty = 0.5;
+	float p =  duty*2.0f* M_PI;
+	float a = 0;
+	float b = 0;
+	int H = 88;
+	float y1, y2, y3;
+	float P = 0.5;
+	for (i = 0; i < len; i++) {
+		y1 = 0;
+		y2 = 0;
+		for (int n = 1;n <= H;n++) {
+			y1 += sin(audio_position * audio_frequency * 2 * M_PI * n) / n;
+			y2+= sin( (audio_position * audio_frequency-P) * 2 * M_PI * n) / n;
+		}
+		y3 = y1 - y2;
+		/*float c= (2 * M_PI * audio_position * audio_frequency);
+		a = audio_volume * sin(c);
+		b = audio_volume * sin(p - c);*/
+	
+		buf[i] = audio_volume*y3;
+		//buf[i] = audio_volume * sin(2 * M_PI * audio_position * audio_frequency);
+		audio_position++;
+	}
+	audio_len -= len;
+	audio_len = 0;
+	//printf("playback!\n");
+	return;
+}
+Sint16* generateSoundData() {
+	int i;
+	//Sint16* buf = (Sint16*)stream;
+	int len = 34;
+	Sint16* buf = (Sint16*)calloc(len,sizeof(Sint16));
+	float duty = 0.5;
+	float p = duty * 2.0f * M_PI;
+	float a = 0;
+	float b = 0;
+	int H = 88;
+	float y1, y2, y3;
+	float P = 0.5;
+	for (i = 0; i < len; i++) {
+		y1 = 0;
+		y2 = 0;
+		for (int n = 1;n <= H;n++) {
+			y1 += sin(audio_position * audio_frequency * 2 * M_PI * n) / n;
+			y2 += sin((audio_position * audio_frequency - P) * 2 * M_PI * n) / n;
+		}
+		y3 = y1 - y2;
+		/*float c= (2 * M_PI * audio_position * audio_frequency);
+		a = audio_volume * sin(c);
+		b = audio_volume * sin(p - c);*/
+
+		buf[i] = audio_volume * y3;
+		//buf[i] = audio_volume * sin(2 * M_PI * audio_position * audio_frequency);
+		audio_position++;
+	}
+	//audio_len -= len;
+	//printf("playback!\n");
+	return buf;
+}
+int sound() {
+	if (SDL_Init(SDL_INIT_AUDIO)) {
+		printf("[SDL] Failed to initialize: %s\n", SDL_GetError());
+		return 1;
+	}
+	//SDL_AudioSpec wave, got;
+	//wave.size = 34;
+	//if (!SDL_OpenAudio(&wave, &got)) {
+	//	printf("[SDL] Failed to initialize: %s\n", SDL_GetError());
+	//	return 0;
+	//}
+
+	//printf("queue have:%d\n", got.size);
+	//audio_position = 0;
+	//audio_frequency = 1.0 * FREQ / 2048; /* 1.0 to make it a float */
+	////audio_frequency = 0.15;
+	//audio_volume = 6000; /* ~1/5 max volume */
+	//Sint16* data = generateSoundData();
+	//SDL_QueueAudio(1, data, 34*sizeof(Sint16));
+	//
+	//SDL_PauseAudio(0);
+
+	//SDL_Delay(2000);
+	//return 0;
+	/* pass it 0 for playback */
+	int numAudioDevices = SDL_GetNumAudioDevices(0);
+
+	/* print the audio devices that we can see */
+	printf("[SDL] %d audio devices:", numAudioDevices);
+	for (int i = 0; i < numAudioDevices; i++)
+		printf(" \'%s\'", SDL_GetAudioDeviceName(i, 0)); /* again, 0 for playback */
+	printf("\n");
+
+	SDL_AudioSpec want, have;
+	SDL_zero(want);
+
+	//want.freq = 44100;
+	want.freq = 2048;
+	want.format = AUDIO_S16;
+	want.channels = 1;
+	want.samples = 4096;
+	want.callback = MyAudioCallback2;
+	//want.callback = MyAudioCallback;
+
+
+	SDL_AudioDeviceID dev = SDL_OpenAudioDevice(NULL, 0, &want, &have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE | SDL_AUDIO_ALLOW_SAMPLES_CHANGE);
+	//SDL_AudioDeviceID dev = SDL_OpenAudioDevice(NULL, 0, &want, &have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE | SDL_AUDIO_ALLOW_SAMPLES_CHANGE);
+	//SDL_AudioDeviceID dev = SDL_OpenAudioDevice(NULL, 0, &want, &have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
+	if (!dev) {
+		printf("[SDL] Failed to open audio device: %s\n", SDL_GetError());
+		SDL_Quit();
+		return 1;
+	}
+
+	printf("[SDL] Obtained - frequency: %d format: f %d s %d be %d sz %d channels: %d samples: %d\n", have.freq, SDL_AUDIO_ISFLOAT(have.format), SDL_AUDIO_ISSIGNED(have.format), SDL_AUDIO_ISBIGENDIAN(have.format), SDL_AUDIO_BITSIZE(have.format), have.channels, have.samples);
+
+	audio_len = have.freq * 5; /* 5 seconds */
+	audio_position = 0;
+	audio_frequency = 1.0 * FREQ / have.freq; /* 1.0 to make it a float */
+	//audio_frequency = 0.15;
+	audio_volume = 6000; /* ~1/5 max volume */
+
+
+
+	int p = 0;
+	SDL_PauseAudioDevice(dev, p); /* play! */
+
+	/*while (audio_len > 0) {
+		SDL_Delay(500);
+	}*/
+	while (true) {
+		char ch = getchar();
+		char c;
+		cin >> c;
+		if (c == 'a')
+			audio_volume -= 1000;
+		else if(c=='s')
+			audio_volume += 1000;
+		else if (c == 'z')
+			have.freq -= 256;
+		else if (c == 'x') {
+			have.freq += 256;
+			printf("%d\n", have.freq);
+			SDL_ClearQueuedAudio(dev);
+		}
+		else if (c == 'p') {
+			p = 1 - p;
+			SDL_PauseAudioDevice(dev, p);
+			
+		}else if (c == 'q')
+			audio_frequency -= 128;
+		else if (c == 'w')
+			audio_frequency += 128;
+	
+		printf("%c\n", c);
+	}
+
+	SDL_CloseAudioDevice(dev);
+	SDL_Quit();
+
+	return 0;
+}
+int sound2() {
+
+
+
+	//	AudioGen::Speaker speaker;
+	// //speaker.pushBeep(440, 1000);
+	// speaker.pushBeep2(440.0f, 500);
+	// //speaker.pushBeep2(550.0f, 1000);
+	//// SDL_Delay(5000);
+	// //speaker.pushBeep2(240.0f, 1000);
+	// SDL_Delay(500);
+	//return 0;
+	if (SDL_Init(SDL_INIT_AUDIO)) {
+		printf("[SDL] Failed to initialize: %s\n", SDL_GetError());
+		return 1;
+	}
+	SDL_AudioSpec wave, got;
+	//want.freq = 44100;
+	wave.freq = 44100;
+	wave.format = AUDIO_S16;
+	wave.channels = 1;
+	wave.samples = 4096;
+	//wave.callback = MyAudioCallback;
+	//wave.callback = MyAudioCallback;
+	
+	//wave.size = 34;
+	SDL_AudioDeviceID dev = SDL_OpenAudioDevice(NULL, 0, &wave, &got, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
+
+	//SDL_OpenAudio(&wave, &got);
+	
+	//SDL_zero(wave);
+	//SDL_AudioDeviceID dev = SDL_OpenAudioDevice(NULL, 0, &wave, &got, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
+	/*if (!dev) {
+		printf("[SDL] Failed to initialize: %s\n", SDL_GetError());
+		return 0;
+	}*/
+	audio_position = 0;
+	audio_frequency = 1.0 * FREQ / 2048; /* 1.0 to make it a float */
+	//audio_frequency = 0.15;
+	audio_volume = 6000; /* ~1/5 max volume */
+	//printf("queue have:%d\n", got.size);
+	Sint16* data = generateSoundData();
+	//SDL_zero(data,68);
+	SDL_QueueAudio(dev, data, 34);
+		
+	//Sint16* data;
+
+	//SDL_QueueAudio(1,, 34 * sizeof(Sint16));
+	SDL_PauseAudio(0);
+
+	SDL_Delay(2000);
+
+	return 0;
+	
+	/*Sint16* data = generateSoundData();
+	SDL_QueueAudio(1, data, 34*sizeof(Sint16));*/
+	
+	SDL_PauseAudio(0);
+
+	SDL_Delay(2000);
+	
+	return 0;
+	
+
+	while (audio_len > 0) {
+		SDL_Delay(500);
+	}
+
+
+	
+	SDL_Quit();
+
+	return 0;
+}
+
+
+
+void displayThreadFunc(DISPLAY* display, bool* running)
 {
 	while (*running) {
 		if (!display->displayLock) {
@@ -35,7 +289,7 @@ void displayThreadFunc(DISPLAY* display,bool * running)
 	printf("goodbye thread!\n");
 	// do stuff...
 }
-void pipeRecive(BUS* bus, uint16_t opcode,uint16_t lastOpcode, int steps,string funcName) {
+void pipeRecive(BUS* bus, uint16_t opcode, uint16_t lastOpcode, int steps, string funcName) {
 	if (steps == 123176) {
 		int h = 0;
 	}
@@ -56,22 +310,22 @@ void pipeRecive(BUS* bus, uint16_t opcode,uint16_t lastOpcode, int steps,string 
 		if (otherOp != opcode) {
 			errorCode = 0;
 		}
-		 if (otherPC != bus->cpu->PC) {
+		if (otherPC != bus->cpu->PC) {
 			errorCode = 1;
 		}
-		 if (otherAF != bus->cpu->AF) {
+		if (otherAF != bus->cpu->AF) {
 			//errorCode = 2;
-			 int y = 0;
+			int y = 0;
 		}
-		 if (otherBC != bus->cpu->BC) {
+		if (otherBC != bus->cpu->BC) {
 			errorCode = 3;
 		}
-		 if (otherDE != bus->cpu->DE) {
+		if (otherDE != bus->cpu->DE) {
 			errorCode = 4;
 		} if (otherHL != bus->cpu->HL) {
 			errorCode = 5;
 		}
-		 if (otherSP != bus->cpu->SP) {
+		if (otherSP != bus->cpu->SP) {
 			errorCode = 6;
 		}
 		/*for (int i = 0;i < 0xffff;i++) {
@@ -81,7 +335,7 @@ void pipeRecive(BUS* bus, uint16_t opcode,uint16_t lastOpcode, int steps,string 
 			}
 		}*/
 		bus->p->wBuffer[0] = 0;
-		if (errorCode!=-1) {//lastOpcode!=0xf0
+		if (errorCode != -1) {//lastOpcode!=0xf0
 
 			bus->p->wBuffer[0] = 1;
 		}
@@ -93,11 +347,12 @@ void pipeRecive(BUS* bus, uint16_t opcode,uint16_t lastOpcode, int steps,string 
 
 	}
 }
+
 int main(void) {
 
-	
+	//sound();
 
-	
+	//return 0;
 	//SDL_DestroyTexture(texture);
 	//SDL_DestroyRenderer(renderer);
 	//SDL_DestroyWindow(window);
@@ -106,7 +361,7 @@ int main(void) {
 	//testRun();
 	//return 0;
 	string romsPaths[30] =
-	{ 
+	{
 	"test\\cpu_instrs\\cpu_instrs.gb",
 	"test\\cpu_instrs\\individual\\01-special.gb",//good//blargg
 	"test\\cpu_instrs\\individual\\02-interrupts.gb" ,//good
@@ -122,7 +377,7 @@ int main(void) {
 	"test2\\daa.gb",
 	"roms\\alleyway.gb",
 	 "roms\\megaman.gb",
-	"roms\\pokemon.gb", 
+	"roms\\pokemon.gb",
 	"roms\\tetris.gb",
 	"test\\instr_timing\\instr_timing.gb",//failed
 	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\div_write.gb",
@@ -133,25 +388,15 @@ int main(void) {
 	"roms\\mooneye-gb_hwtests\\acceptance\\ld_hl_sp_e_timing.gb",
 	"roms\\mooneye-gb_hwtests\\acceptance\\oam_dma_start.gb",
 	"test\\halt_bug.gb",
-	"roms\\Pokemon4.gbc",
-	"roms\\mario.gb"};
-	//BGpalette
-	uint8_t romIndex = 26;
-	//char * romPath = roms[5];
-	
-	//BC = 0x12FE;
-	//*getA() = *getC();
-	//printf("%02x\n", *getF());
-	//printf("%02x\n", *getA());
-	//return 0;
-	//const char* romPath = "alleyway.gb";
-	//const char* romPath = "megaman.gb";
-	//const char* romPath = "test\\cpu_instrs\\individual\\03-op sp,hl.gb";
-	//const char* romPath = "pokemon.gb";
+	"roms\\Pokemon8.gb",
+	"roms\\mario.gb",//27
+	"roms\\zelda.gbc" };
+	uint8_t romIndex = 27;
+
 	//
-	BUS * bus=new BUS();
-	CPU * cpu=new CPU();
-	GPU * gpu=new GPU();
+	BUS* bus = new BUS();
+	CPU* cpu = new CPU();
+	GPU* gpu = new GPU();
 	DMA* dma = new DMA();
 	CARTRIDGE* cartridge = createCartrige(romsPaths[romIndex]);
 	if (cartridge == NULL)
@@ -160,7 +405,7 @@ int main(void) {
 	MMU* mmu = new MMU();
 	DISPLAY* display = new DISPLAY(0, 0, 160, 144, 1);
 	JOYPAD* joypad = new JOYPAD();
-	
+	APU* apu =new APU();
 
 	bus->connectCPU(cpu);
 	bus->connectMMU(mmu);
@@ -170,6 +415,7 @@ int main(void) {
 	bus->connectDisplay(display);
 	bus->connectCartridge(cartridge);
 	bus->connectJoypad(joypad);
+	bus->connectAPU(apu);
 	/*cartridge->loadRom(romsPaths[romIndex]);
 	cartridge->load();*/
 	cpu->reset();
@@ -177,16 +423,16 @@ int main(void) {
 	gpu->reset();
 	interrupt->reset();
 	printf("title:%s\n", cartridge->header.title);
-	printf("rom banks count:%d\n", cartridge->header.romSize);
+	printf("rom banks count:%d\n", cartridge->header.romBanksCount);
 	printf("romBank size:%d\n", cartridge->header.romBankSize);
-	printf("ram banks count:%d\n", cartridge->header.ramSize);
-	printf("romBank size:%d\n", cartridge->header.ramBankSize);
-	
-	
+	printf("ram banks count:%d\n", cartridge->header.ramBanksCount);
+	printf("ramBank size:%d\n", cartridge->header.ramBankSize);
+
+
 	//ofstream myfile;
 	//myfile.open("C:\\Users\\Brain\\go\\src\\goboy\\goboy-0.4.2\\cmd\\goboy\\instructions_me.txt");
-	
-	
+
+
 	//gpu.drawTest();
 
 	//return 0;
@@ -220,16 +466,16 @@ int main(void) {
 	Scalar white = Scalar(255, 255, 255, 0);
 	Scalar black = Scalar(0, 0, 0, 0);
 	bool running = true;
-	
+
 	//std::thread displayThread(displayThreadFunc, display,&running);
 
 	int cyclesInFrameCounter = 0;
 	int framesForSeconds = 60;
-	int cyclesInFrame = cpu->cpuFreq/framesForSeconds;
+	int cyclesInFrame = cpu->cpuFreq / framesForSeconds;
 	uint16_t lastopcode = 0;
-	
 
-	
+
+
 	while (true) {
 		if (SDL_PollEvent(&display->windowEvent))
 			if (SDL_QUIT == display->windowEvent.type)
@@ -238,7 +484,7 @@ int main(void) {
 				break;
 			}
 		do {
-			
+
 			//cpu->Execute(opcode);
 			//pipeRecive(bus, opcode, lastopcode, steps,"Execute");
 			if (!cpu->halt) {
@@ -253,89 +499,92 @@ int main(void) {
 			else {
 				cpu->lastOpcodeCycles = 1;
 			}
-			
-			
-			
-			cpu->lastOpcodeCycles *=(4 * (cpu->speedMode + 1));
-		
-			
-			
+
+	
+
+			cpu->lastOpcodeCycles *= (4 * (cpu->speedMode + 1));
+
+
+			apu->produceSound();
 			gpu->tick();
 			cpu->updateTimers();
-			
-		
+
+
 			joypad->updateKeys();
-			cpu->lastOpcodeCycles += interrupt->InterruptsHandler()* (4 * (cpu->speedMode + 1));;
-			
+			cpu->lastOpcodeCycles += interrupt->InterruptsHandler() * (4 * (cpu->speedMode + 1));;
+
 			//pipeRecive(bus, opcode, lastopcode, steps, "InterruptsHandler");
-			
+
 			cyclesInFrameCounter += cpu->lastOpcodeCycles;
 			//printf("speed:%d\n", interrupt->io[0x4D]>>7);
-			
+
 			/*if (renderCounter == renderTimer)
 				gpu->drawTest();*/
 
-			/*if (cpu->cycelsCounter > 4)
-				cpu->cycelsCounter = cpu->cycelsCounter%4;*/
-			
-			
-			//cpu->cycelsCounter += cpu->lastOpcodeCycles;
-			cpu->time.addMCycles(cpu->lastOpcodeCycles/4);
+				/*if (cpu->cycelsCounter > 4)
+					cpu->cycelsCounter = cpu->cycelsCounter%4;*/
+
+
+					//cpu->cycelsCounter += cpu->lastOpcodeCycles;
+			cpu->time.addMCycles(cpu->lastOpcodeCycles / 4);
 			cpu->time.print(2);
 			//if (cpu->time.timeChanged[1]) {
 			//	cpu->time.timeChanged[1] = false;
 			//	Sleep(1);
 			//	//printf("sleep\n");
 			//}
-		} while (cyclesInFrameCounter< cyclesInFrame); //(cpu.PC != 0x100 && counter > 0);//||mmu.biosLoaded);//cpu.PC!=0x100
-		cyclesInFrameCounter = 0;
 		
-	 display->render();
-	  Sleep(10);
+		} while (cyclesInFrameCounter < cyclesInFrame); //(cpu.PC != 0x100 && counter > 0);//||mmu.biosLoaded);//cpu.PC!=0x100
+		cyclesInFrameCounter = 0;
+
+		display->render();
+		Sleep(10);
 		//display->update();
 		//printf("render\n");
 	}
-	 display->close();
-	 //displayThread.join();
-	 return 0;
-	
+	display->close();
+	//displayThread.join();
+	return 0;
+
 	//myfile.close();
-	
+
 
 	while (true) {
-		
-		
-		KEYS key=display->waitForKey();
-		display->setPixel(x, y,black);
+
+
+		KEYS key = display->waitForKey();
+		display->setPixel(x, y, black);
 		if (display->keysMapper[KEYS::Up]->isPressed) {
 			cout << "Up";
 			y = (y - 1) % 144;
 			y = y < 0 ? 144 + y : y;
-			
-		}else if (display->keysMapper[KEYS::Down]->isPressed) {
+
+		}
+		else if (display->keysMapper[KEYS::Down]->isPressed) {
 			cout << "Down";
-			y = (y+ 1) % 144;
-		}else if(display->keysMapper[KEYS::Left]->isPressed){
+			y = (y + 1) % 144;
+		}
+		else if (display->keysMapper[KEYS::Left]->isPressed) {
 			cout << "Left";
 			x = (x - 1) % 160;
-			x = x < 0 ? 160 + x :x;
+			x = x < 0 ? 160 + x : x;
 		}
 		else if (display->keysMapper[KEYS::Right]->isPressed) {
-			
+
 			cout << "Right: ";
-			x= (x + 1) % 160;
-			
+			x = (x + 1) % 160;
+
 		}
 		display->setPixel(x, y, white);
 		Sleep(250);
 
-		
-	}
-	
-	
-	return 0;
 
 	}
+
+
+	return 0;
+
+}
 
 //void testRomSwitching(MBC1 cartridge) {
 //	cartridge.write(0x2000, 0);

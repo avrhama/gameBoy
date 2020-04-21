@@ -4,6 +4,7 @@
 #include "CPU.h"
 #include "MMU.h"
 #include "DMA.h"
+#include "APU.h"
 #include<iostream>
 class INTERRUPT
 {
