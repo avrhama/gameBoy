@@ -34,6 +34,8 @@ private:
 
 	
 public:
+	int cyclesInGpuFrame = 69905;
+	int cyclesInGpuFrameCounter = 0;
 	bool displayLock = false;
 	SDL_Window* win;
 	SDL_Renderer* renderer;
@@ -94,6 +96,7 @@ public:
 
 	void drawPixel(uint8_t x, uint8_t y, uint8_t sprite);
 	void setPaletteColor(uint8_t paletteByteIndex, uint8_t value, bool isBGP);
+	void tick(int cycles);
 	void close();
 
 };

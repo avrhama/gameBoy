@@ -44,65 +44,262 @@ void MyAudioCallback(void* user_data, Uint8* stream, int len) {
 	apu->adc.audioLen -= len;
 	
 }
-void APU::createAudioDeviceControl(bool closeOld)
-{
-	if (!bus->pipeEnable)
-		return;
-	
+void soundTick(void* user_data, Uint8* stream, int len) {
+	//len /= 2; /* 16 bit */
+	//printf("len:%d\n",len);
 
-			bus->p->read(20);
-			if (bus->p->rBuffer[0] == 1) {
-				if (closeOld) {
-					SDL_CloseAudioDevice(adc.dev);
-				}
-				uint32_t freq = bus->p->rBuffer[1] << 24 | bus->p->rBuffer[2] << 16 | bus->p->rBuffer[3] << 8 | bus->p->rBuffer[4];
-				uint32_t samples = bus->p->rBuffer[5] << 24 | bus->p->rBuffer[6] << 16 | bus->p->rBuffer[7] << 8 | bus->p->rBuffer[8];
-				uint32_t harmonices = bus->p->rBuffer[9] << 24 | bus->p->rBuffer[10] << 16 | bus->p->rBuffer[11] << 8 | bus->p->rBuffer[12];
-				uint32_t timeFactor = bus->p->rBuffer[13] << 24 | bus->p->rBuffer[14] << 16 | bus->p->rBuffer[15] << 8 | bus->p->rBuffer[16];
-				bool samplesUint = bus->p->rBuffer[17];
-				bool flatWave = bus->p->rBuffer[18];
-				bool skipRest = bus->p->rBuffer[19];
-				printf("freq:%d samples:%d harmonices:%d timeFactor:%d samplesUint:%d flatWave:%d skipRest:d\n", freq,samples,harmonices,timeFactor,samplesUint, flatWave, skipRest);
-				
+	Sint8* buf = (Sint8*)stream;
+	APU* apu = (APU*)user_data;
 
-				adc.audioPosition = 0;
-				adc.audioFrequency = 1.0 * adc.FREQ / 2048; /* 1.0 to make it a float */
-				adc.audioVolume = 6000; /* ~1/5 max volume */
-
-				SDL_zero(adc.want);
+	steady_clock::time_point end = steady_clock::now();
+	duration<double> elapsed_seconds = end - apu->startTimer;
+	apu->startTimer = end;
+	double elapse = elapsed_seconds.count();
+	apu->tickElapse = elapse;
+	apu->time += elapse;
 
 
-				adc.want.freq = freq;
-				adc.want.format = AUDIO_S8;
-				adc.want.channels = 1;
-				adc.want.samples = samples;
-				adc.H = harmonices;
-				adc.samplesUint = samplesUint;
-				adc.flatWave = flatWave;
-				adc.skipRest = skipRest;
-				adc.want.callback = MyAudioCallback;
-				adc.want.userdata = this;
-				
-				//adc.dev = SDL_OpenAudioDevice(NULL, 0, &adc.want, &adc.have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE | SDL_AUDIO_ALLOW_SAMPLES_CHANGE);
-				adc.dev = SDL_OpenAudioDevice(NULL, 0, &adc.want, &adc.have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
+	BUS* bus = apu->bus;
+		
+		uint16_t opcode;
+		uint8_t sampleCounter = 32;
+		uint16_t squencerCounter = 256;
+		float y1, y2, y3;
+		
+		apu->cyclesInSoundFrameCounter = 0;
+		apu->cyclesInSoundFrame= 4194304 * elapse;
+		do {
 
-				if (!adc.dev) {
-					printf("[SDL] Failed to open audio device: %s\n", SDL_GetError());
-					SDL_Quit();
-					return;
-				}
-				//SDL_PauseAudioDevice(dev, p); /* play! */
-				SDL_PauseAudioDevice(adc.dev, 0);
-
-
+			//cpu->Execute(opcode);
+			//pipeRecive(bus, opcode, lastopcode, steps,"Execute");
+			if (!bus->cpu->halt) {
+				opcode = bus->cpu->getOpcode();
+				opcode = (opcode == 0xCB) ? 0XCB00 | bus->cpu->getOpcode() : opcode;
+				//cpu->Execute(opcode);
+				bus->cpu->ExecuteOpcode(opcode);
+				//cpu->steps++;
+				//pipeRecive(bus, opcode, lastopcode, cpu->steps, "Execute");
+				//cpu->Execute(opcode);
+			}
+			else {
+				bus->cpu->lastOpcodeCycles = 1;
 			}
 
 
-			bus->p->write(1);
+
+			bus->cpu->lastOpcodeCycles *= (4 * (bus->cpu->speedMode + 1));
+			
+
+			//apu->tick();
+			bus->gpu->tick();
+			bus->cpu->updateTimers();
+			bus->joypad->updateKeys();
+		
+			bus->cpu->lastOpcodeCycles += bus->interrupt->InterruptsHandler() * (4 * (bus->cpu->speedMode + 1));;
+
+			bus->cpu->time.addMCycles(bus->cpu->lastOpcodeCycles / 4);
+			bus->cpu->time.print(2);
+			//bus->cpu->time.print(1);
+			apu->cyclesInSoundFrameCounter += bus->cpu->lastOpcodeCycles;
+			bus->display->tick(bus->cpu->lastOpcodeCycles);
+			bus->cpu->steps += bus->cpu->lastOpcodeCycles;
+			sampleCounter-= bus->cpu->lastOpcodeCycles;
+			/*if (sampleCounter <= 0) {
+				sampleCounter+= 32;
+				
+				
+				squencerCounter--;
+				 if (squencerCounter == 0) {
+					
+					squencerCounter == 256;
+					
+					
+					
+					
+				}
+				 y3 = apu->getChannelSample(0);
+				 buf[apu->adc.audioPosition] = apu->adc.audioVolume * y3;
+				 apu->adc.audioPosition++;
+				 apu->adc.audioPosition = apu->adc.audioPosition % apu->adc.have.samples;
+				 apu->channels[0].sampleRatePos++;
+				 apu->channels[0].sampleRatePos = apu->channels[0].sampleRatePos % apu->adc.have.freq;
+				 apu->channels[0].samplePosition++;
+				 apu->channels[0].samplePosition = apu->channels[0].samplePosition % apu->adc.have.samples;
+			}*/
+
+		} while (apu->cyclesInSoundFrameCounter < apu->cyclesInSoundFrame);
+		
+		apu->cyclesInSoundFrameCounter = apu->cyclesInSoundFrameCounter%apu->cyclesInSoundFrame;
+		bus->cpu->steps = bus->cpu->steps%4194304;
+		//bus->display->tick(1);
+		//len /= 2;
+		for (int i = 0; i < len; i++) {//each iteration is 1/samples of second
+			y3 = apu->getChannelSample(0);
+			buf[apu->adc.audioPosition] = apu->adc.audioVolume * y3;
+			//buf[i] = apu->adc.audioVolume * y3;
+			apu->adc.audioPosition++;
+			apu->adc.audioPosition = apu->adc.audioPosition % apu->adc.have.samples;
+			apu->channels[0].sampleRatePos++;
+			apu->channels[0].sampleRatePos = apu->channels[0].sampleRatePos % apu->adc.have.freq;
+			apu->channels[0].samplePosition++;
+			apu->channels[0].samplePosition = apu->channels[0].samplePosition % apu->adc.have.samples;
+	 	}
+		
+	
+
+
+
+
+	return;
+	
+	/*if (apu->adc.paused)
+		return;*/
+		/*
+		double =0.00762939453125;//ms each period sound
+		double f=0.003814697265625;//ms each sample calculate
+		*/
+	
+	float duty = apu->channels[0].duty;
+	float p = duty * 2.0f * M_PI;
+	float a = 0;
+	float b = 0;
+	int H = 88;
+	
+	float P = apu->channels[0].duty;
+	for (int i = 0; i < len; i++) {//each iteration is 1/samples of second
+		//y1 = 0;
+		//y2 = 0;
+
+		//for (int n = 1;n <= H;n++) {
+		//	y1 += apu->channels[0].envelopeVolume * sin(((float)( apu->adc.audioPosition))  * (1/(float)apu->channels[0].freq) * 2 * M_PI * n) / n;
+		//	y2 += apu->channels[0].envelopeVolume * sin(((float)( apu->adc.audioPosition)  * (float)(1/(float)apu->channels[0].freq) - apu->channels[0].duty) * 2 * M_PI * n) / n;
+		//	//y1 += sin(((float)(apu.channels[0].envelopeVolume * apu.adc.audioPosition)) * apu.channels[0].freq * 2 * M_PI * n) / n;
+		//	//y2 += sin(((float)(apu.channels[0].envelopeVolume * apu.adc.audioPosition) * apu.channels[0].freq - apu.channels[0].duty) * 2 * M_PI * n) / n;
+		//}
+		//y3 = y1 - y2;
+		y3 = apu->getChannelSample(0);
+		//y3 = getSquareWave(0.5, i, 0.5);
+		buf[i] = apu->adc.audioVolume * y3;
+		//buf[i] = y3;
+		apu->adc.audioPosition = (apu->adc.audioPosition + 1) % apu->adc.have.samples;
+		apu->channels[0].sampleRatePos++;
+		apu->channels[0].sampleRatePos = apu->channels[0].sampleRatePos % apu->adc.have.freq;
+		//if (channels[0].counterEnable) {
+		//-0.5
+		//}
+	}
+	apu->adc.audioLen -= len;
+
+}
+void APU::createAudioDeviceControl(bool closeOld)
+{
+	if (bus->pipeEnable) {
+
+
+
+		bus->p->read(20);
+		if (bus->p->rBuffer[0] == 1) {
+			if (closeOld) {
+				SDL_CloseAudioDevice(adc.dev);
+			}
+			uint32_t freq = bus->p->rBuffer[1] << 24 | bus->p->rBuffer[2] << 16 | bus->p->rBuffer[3] << 8 | bus->p->rBuffer[4];
+			uint32_t samples = bus->p->rBuffer[5] << 24 | bus->p->rBuffer[6] << 16 | bus->p->rBuffer[7] << 8 | bus->p->rBuffer[8];
+			uint32_t harmonices = bus->p->rBuffer[9] << 24 | bus->p->rBuffer[10] << 16 | bus->p->rBuffer[11] << 8 | bus->p->rBuffer[12];
+			uint32_t timeFactor = bus->p->rBuffer[13] << 24 | bus->p->rBuffer[14] << 16 | bus->p->rBuffer[15] << 8 | bus->p->rBuffer[16];
+			bool samplesUint = bus->p->rBuffer[17];
+			bool flatWave = bus->p->rBuffer[18];
+			bool skipRest = bus->p->rBuffer[19];
+			printf("freq:%d samples:%d harmonices:%d timeFactor:%d samplesUint:%d flatWave:%d skipRest:d\n", freq, samples, harmonices, timeFactor, samplesUint, flatWave, skipRest);
+
+
+			adc.audioPosition = 0;
+			adc.audioFrequency = 1.0 * adc.FREQ / 2048; /* 1.0 to make it a float */
+			adc.audioVolume = 6000; /* ~1/5 max volume */
+
+			SDL_zero(adc.want);
+
+
+			adc.want.freq = freq;
+			adc.want.format = AUDIO_S8;
+			adc.want.channels = 1;
+			adc.want.samples = samples;
+			adc.H = harmonices;
+			adc.samplesUint = samplesUint;
+			adc.flatWave = flatWave;
+			adc.skipRest = skipRest;
+			adc.want.callback = MyAudioCallback;
+			adc.want.userdata = this;
+
+			//adc.dev = SDL_OpenAudioDevice(NULL, 0, &adc.want, &adc.have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE | SDL_AUDIO_ALLOW_SAMPLES_CHANGE);
+			adc.dev = SDL_OpenAudioDevice(NULL, 0, &adc.want, &adc.have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
+
+			if (!adc.dev) {
+				printf("[SDL] Failed to open audio device: %s\n", SDL_GetError());
+				SDL_Quit();
+				return;
+			}
+			//SDL_PauseAudioDevice(dev, p); /* play! */
+			SDL_PauseAudioDevice(adc.dev, 0);
+
+
+		}
+
+
+		bus->p->write(1);
+	}
+	else {
+		if (!bus->modified)
+			return;
+		bus->modified = false;
+		int nums[18] = { 1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536,131072 };
+		adc.devOld = adc.dev;
+		adc.wantOld = adc.want;
+		adc.haveOld = adc.have;
+		SDL_AudioDeviceID old = adc.dev;
+		adc.audioPosition = 0;
+		adc.audioFrequency = 1.0 * adc.FREQ / 2048; /* 1.0 to make it a float */
+		adc.audioVolume = 6000; /* ~1/5 max volume */
+
+		SDL_zero(adc.want);
+
+
+		adc.want.freq = nums[bus->f];
+		adc.want.format = AUDIO_S8;
+		adc.want.channels = 1;
+		adc.want.samples = nums[bus->s];
+		adc.want.callback = soundTick;
+		adc.want.userdata = this;
+
+		//adc.dev = SDL_OpenAudioDevice(NULL, 0, &adc.want, &adc.have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE | SDL_AUDIO_ALLOW_SAMPLES_CHANGE);
+		/*adc.dev = SDL_OpenAudioDevice(NULL, 0, &adc.want, &adc.have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
+		SDL_PauseAudioDevice(adc.dev, 0);
+		if (!adc.dev) {
+			printf("[SDL] Failed to open audio device: %s\n", SDL_GetError());
+			SDL_Quit();
+			return;
+		}*/
+		
+		restart = true;
+		//SDL_PauseAudioDevice(dev, p); /* play! */
+		/*if (closeOld) {
+			SDL_CloseAudioDevice(old);
+				adc.devOld = adc.dev;
+		adc.wantOld = adc.want;
+		adc.haveOld = adc.have;
+		}*/
+	//	std::thread displayThread(closeDevice, old);
+		
+		
+	}
 
 	
 }
+
 APU::APU() {
+
+	
+}
+void APU::start() {
 	if (SDL_Init(SDL_INIT_AUDIO)) {
 		printf("[SDL] Failed to initialize: %s\n", SDL_GetError());
 		return;
@@ -126,49 +323,63 @@ APU::APU() {
 	channels[0].samplePosition = 0;
 	return ;*/
 	//callback device
-	
+
 
 	//adc.want.freq = 224000;
-	adc.want.freq = 131072;
+   // adc.want.freq = 131072;
 	//adc.want.freq = 88200;
-	//adc.want.freq = 44100;// 44100&8192
+    //adc.want.freq = 44100;// 44100&8192
 	// adc.want.freq = 22050;
 	//adc.want.freq = 32768;
+	
 	//adc.want.freq = 16384;
-    //adc.want.freq = 8192;
-	//adc.want.freq = 4096;
-	//adc.want.freq = 2048;
+	
+	//adc.want.freq = 8192;
+	adc.want.freq = 4096;
+   // adc.want.freq = 2048;
 	//adc.want.freq = 1024;
 	//adc.want.freq = 512;
 	//adc.want.freq = 256;
 	//adc.want.freq = 128;
 	adc.want.format = AUDIO_S8;
 	adc.want.channels = 1;
-	adc.want.samples = 32768;
+	//adc.want.samples = 32768;
 	//adc.want.samples = 16384;
-	
-   // adc.want.samples = 8192;
+
+	//adc.want.samples = 8192;
 	//adc.want.samples = 4096;
-	//adc.want.samples = 2048;
-  // adc.want.samples = 1024;
-     adc.want.samples = 512;
-   // adc.want.samples = 256;
-	//adc.want.samples = 128;
-	adc.want.callback = MyAudioCallback;
+   // adc.want.samples = 2048;
+    //adc.want.samples = 1024;
+	//adc.want.samples = 512;
+	//adc.want.samples = 256;
+	adc.want.samples = 128;
+    //adc.want.samples = 64;
+	//adc.want.samples = 32;
+	adc.want.samples = 1;
+	adc.want.callback = soundTick;
 	adc.want.userdata = this;
 	adc.H = 20;
+	//2048:32 ,8192:256 
 	//adc.dev = SDL_OpenAudioDevice(NULL, 0, &adc.want, &adc.have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE | SDL_AUDIO_ALLOW_SAMPLES_CHANGE);
+	
+	int nums[18] = { 1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536,131072 };
+	//adc.want.freq = 131072;
+	//adc.want.samples = 32;
 	adc.dev = SDL_OpenAudioDevice(NULL, 0, &adc.want, &adc.have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
 
+	cyclesInSoundFrame = adc.have.freq;
+	
+	//cyclesInSoundFrame = 4194304/adc.have.freq;
 	if (!adc.dev) {
 		printf("[SDL] Failed to open audio device: %s\n", SDL_GetError());
 		SDL_Quit();
 		return;
 	}
 	//SDL_PauseAudioDevice(dev, p); /* play! */
-	SDL_PauseAudioDevice(adc.dev, 0);
 	channels[0].channelIndex = 0;
-	
+	startTimer = steady_clock::now();
+	lastTick = startTimer;
+	SDL_PauseAudioDevice(adc.dev, 0);
 }
 void APU::connectToBus(BUS* bus)
 {
@@ -402,7 +613,7 @@ void APU::feedFrequencyHiCtlRegister(uint8_t channelIndex, uint8_t value)
 	else {
 		if (!adc.paused) {
 			//printf("sound stoped!\n");
-			//createAudioDeviceControl(true);
+			createAudioDeviceControl(true);
 			adc.paused = true;
 		}
 		
@@ -664,57 +875,45 @@ float APU::getChannelSample(uint8_t channelIndex)
 	// sampleDurationSec = 1 / (double)adc.have.freq;
 	// sampleDuration = 1000 / (double)adc.have.freq;
 	 double sampleRateDurationSec = 0.0000226757369614512471;
-
+	 sampleRateDurationSec = sampleDurationSec;
+	
 	float y1 = 0, y2 = 0, y3 = 0;
 	
 	double t = (float)(adc.audioPosition) * sampleDurationSec;//point on time line
-	t = ((double)bus->cpu->steps / 4194304) * sampleRateDurationSec;// +(channels[channelIndex].sampleRatePos) * sampleRateDurationSec;
-	t = (double)(channels[channelIndex].sampleRatePos) * sampleRateDurationSec;
-	//t = (float)(adc.audioPosition) * sampleDuration;//point on time line
-	//t = sampleDuration * ((double)bus->cpu->steps)/1000;
+		t = ((double)bus->cpu->steps / 4194304) * sampleRateDurationSec;// +(channels[channelIndex].sampleRatePos) * sampleRateDurationSec;
+		t = ((double)bus->cpu->steps / 4194304) * sampleRateDurationSec + (channels[channelIndex].sampleRatePos) * sampleRateDurationSec;
+
+		t= time+ (channels[channelIndex].sampleRatePos) * sampleRateDurationSec;
+		t = time + (channels[channelIndex].samplePosition) * sampleDurationSec;
+		
+	
 	float phase = 2.0f * M_PI * channels[channelIndex].duty;
 	//phase = channels[channelIndex].duty;
 	float c = 0;
+	adc.H = bus->h;
 	for (int n = 1;n <= adc.H;n++) {
 		//c = n * ((float)channels[channelIndex].freq) * 2.0 * M_PI * t;
 		c = n * ((float)channels[channelIndex].freq) * 2.0 * M_PI * t;
-	    y1 += approxsin(c) / n;
-		y2 += approxsin(c - phase * (double)n) / n;
+	   y1 += -approxsin(c) / n;
+		y2 += -approxsin(c - phase * (double)n) / n;
 
-		//y1 += -sin(c) / n;
-		//y2 += -sin(c - phase * (double)n) / n;
-
-
-		//y1 += approxsin(t* ((float)channels[channelIndex].freq) * 2 * M_PI * n) / n;
-		//y2 += approxsin((t * (float)((float)channels[channelIndex].freq) - phase) * 2 * M_PI * n) / n;
-
-
-		//y1 += sin(((float)(adc.audioPosition)* sampleDurationSec) * (1 / (float)channels[channelIndex].freq) * 2 * M_PI * n) / n;
-		//y2 += sin(((float)(adc.audioPosition) * sampleDurationSec * (float)(1 / (float)channels[channelIndex].freq) - channels[channelIndex].duty) * 2 * M_PI * n) / n;
-
-
-		//y1 += sin(((float)(adc.audioPosition) * sampleDurationSec) * ((float)channels[channelIndex].freq) * 2 * M_PI * n) / n;
-		//y2 += sin(((float)(adc.audioPosition) * sampleDurationSec * ((float)channels[channelIndex].freq) - channels[channelIndex].duty) * 2 * M_PI * n) / n;
-
-
-		/*y1 += approxsin(t* () * 2 * M_PI * n) / n;
-		y2 += approxsin((t * ((float)channels[channelIndex].freq) - channels[channelIndex].duty) * 2 * M_PI * n) / n;*/
-
-		/*	y1 += sin(((float)(channels[channelIndex].envelopeVolume * adc.audioPosition)) * channels[channelIndex].freq * 2 * M_PI * n) / n;
-		y2 += sin(((float)(channels[channelIndex].envelopeVolume * adc.audioPosition) * channels[channelIndex].freq - channels[channelIndex].duty) * 2 * M_PI * n) / n;*/
+		
 	}
 	y3 = (y1 - y2);
 	double amplitude = 16;
+	double r = 0;
+	r = bus->r;
 	if (adc.flatWave) {
-		if (y3 > 0) {
+		if (y3 >  r) {
 			y3 = 1;
 		}
-		else if (y3 < 0) {
+		else if (y3 < r) {
 			y3 = -1;
 		}
 	}
-	
-	y3 = (y1 - y2);//*0.56;
+	//y3 = channels[channelIndex].sequencer.output;
+	//channels[channelIndex].sequencer.tick();
+	//y3 = (y1 - y2);//*0.56;
 	
 	y3 = y3*(2.0 * amplitude / M_PI);
 	//return y3*channels[channelIndex].envelopeVolume;
@@ -724,7 +923,7 @@ float APU::getChannelSample(uint8_t channelIndex)
 	}
 	if (channels[channelIndex].counterEnable) {
 
-		channels[channelIndex].soundLen = channels[channelIndex].soundLen - sampleDuration;
+		channels[channelIndex].soundLen = channels[channelIndex].soundLen - ((tickElapse * 1000) + sampleDuration * channels[channelIndex].sampleRatePos);
 		if (channels[channelIndex].soundLen <= 0) {
 			//stop channel output
 			channels[channelIndex].enable = false;
@@ -732,7 +931,7 @@ float APU::getChannelSample(uint8_t channelIndex)
 		}
 	}
 	if (channels[channelIndex].sweepTime && channels[channelIndex].nSweep) {
-	    channels[channelIndex].frequencySweepLen -= sampleDuration;
+	    channels[channelIndex].frequencySweepLen -= ((tickElapse * 1000)+sampleDuration*channels[channelIndex].sampleRatePos);
 		//channels[channelIndex].frequencySweepLen -= sampleDurationSec;
 		if (channels[channelIndex].frequencySweepLen <= 0) {//change frequency
 			channels[channelIndex].frequencySweepLen = channels[channelIndex].sweepTime;
@@ -774,9 +973,237 @@ float APU::getChannelSample(uint8_t channelIndex)
 	y3 *= channels[channelIndex].envelopeVolume;
 	return y3;
 }
+/*
+float APU::getChannelSample(uint8_t channelIndex)
+{
+	//sould the sweepFreq timer still running?
+	if (!channels[channelIndex].enable)
+		return 0;
+	float m = adc.timeFactor;
 
+	//double sampleDuration = 0.003814697265625;//ms each sample calculate 11
+	// double sampleDuration = 0.00762939453125;//ms each sample calculate
+	//double sampleDuration = 0.244140625*m;//ms each sample calculate
+	//double sampleDuration = 0.00011920928955078125;
+	// double sampleDurationSec = 0.000244140625 * m;//sec each sample calculate 131072 hz
+
+	double sampleDurationSec = 0.001953125 * m;//4096 samples steps in terms of seconds
+	 double sampleDuration = 1.953125*m;//4096 samples steps in terms of mili seconds
+
+	 int d;
+	 if (adc.samplesUint)
+		 d = adc.have.samples;
+	 else
+		 d = adc.have.freq;
+	 //d = 1024;
+	 d = adc.have.freq;
+	 switch (d) {
+	 case 128:
+		 sampleDurationSec = 0.0078125 * m;
+		 sampleDuration = 7.8125 * m;
+		 break;
+	 case 256:
+		 sampleDurationSec = 0.00390625 * m;
+		 sampleDuration = 3.90625 * m;
+		 break;
+	 case 512:
+		 sampleDurationSec = 0.001953125 * m;
+		 sampleDuration = 1.953125 * m;
+		 break;
+	 case 1024:
+		 sampleDurationSec = 0.0009765625 * m;
+		 sampleDuration = 0.9765625 * m;
+		 break;
+	 case 2048:
+		 sampleDurationSec = 0.00048828125 * m;
+		 sampleDuration = 0.48828125 * m;
+		 break;
+	 case 4026:
+		 sampleDurationSec = 0.000244140625 * m;
+		 sampleDuration = 0.244140625 * m;
+		 break;
+	 case 8192:
+		 sampleDurationSec = 0.0001220703125 * m;
+		 sampleDuration = 0.1220703125 * m;
+		 break;
+	 case 16384:
+		 sampleDurationSec =  0.00006103515625 * m;
+		 sampleDuration = 0.06103515625 * m;
+		 break;
+	 case 32768:
+		 sampleDurationSec = 0.000030517578125 * m;
+		 sampleDuration = 0.030517578125 * m;
+		 break;
+	 case 65536:
+		 sampleDurationSec = 0.0000152587890625 * m;
+		 sampleDuration = 0.0152587890625 * m;
+		 break;
+	 case 131072:
+		 sampleDurationSec = 0.00000762939453125 * m;
+		 sampleDuration = 0.00762939453125 * m;
+		 break;
+	 }
+	// sampleDurationSec = 1 / (double)adc.have.freq;
+	// sampleDuration = 1000 / (double)adc.have.freq;
+	 double sampleRateDurationSec = 0.0000226757369614512471;
+	 sampleRateDurationSec = sampleDurationSec;
+
+	float y1 = 0, y2 = 0, y3 = 0;
+
+	double t = (float)(adc.audioPosition) * sampleDurationSec;//point on time line
+		t = ((double)bus->cpu->steps / 4194304) * sampleRateDurationSec;// +(channels[channelIndex].sampleRatePos) * sampleRateDurationSec;
+		//t = (channels[channelIndex].sampleRatePos) * sampleRateDurationSec;
+		//t = (channels[channelIndex].samplePosition) * sampleDurationSec;
+		t = ((double)bus->cpu->steps / 4194304) * sampleRateDurationSec + (channels[channelIndex].sampleRatePos) * sampleRateDurationSec;
+
+		t= time+ (channels[channelIndex].sampleRatePos) * sampleRateDurationSec;
+		t = time + (channels[channelIndex].samplePosition) * sampleDurationSec;
+
+	//	t = ((double)bus->cpu->steps / 4194304) * sampleDurationSec + (channels[channelIndex].samplePosition) * sampleDurationSec;
+	//t = ((double)bus->cpu->steps) * sampleRateDurationSec;// +(channels[channelIndex].sampleRatePos) * sampleRateDurationSec;
+	//t += (double)(channels[channelIndex].sampleRatePos) * sampleRateDurationSec;
+	//t = (float)(adc.audioPosition) * sampleDuration;//point on time line
+	//t = sampleDuration * ((double)bus->cpu->steps)/1000;
+
+
+	//t =( ((double)bus->cpu->steps / 4194304)+(channels[channelIndex].sampleRatePos) )* sampleRateDurationSec;
+		//t = ((double)bus->cpu->steps / 4194304);
+	float phase = 2.0f * M_PI * channels[channelIndex].duty;
+	//phase = channels[channelIndex].duty;
+	float c = 0;
+	adc.H = bus->h;
+	for (int n = 1;n <= adc.H;n++) {
+		//c = n * ((float)channels[channelIndex].freq) * 2.0 * M_PI * t;
+		c = n * ((float)channels[channelIndex].freq) * 2.0 * M_PI * t;
+	   y1 += -approxsin(c) / n;
+		y2 += -approxsin(c - phase * (double)n) / n;
+
+		//y1 += sin(c) / n;
+		//y2 += sin(c - phase * (double)n) / n;
+		//y1 += -sin(c) / n;
+		//y2 += -sin(c - phase * (double)n) / n;
+
+
+		//y1 += approxsin(t* ((float)channels[channelIndex].freq) * 2 * M_PI * n) / n;
+		//y2 += approxsin((t * (float)((float)channels[channelIndex].freq) - phase) * 2 * M_PI * n) / n;
+
+
+		//y1 += sin(((float)(adc.audioPosition)* sampleDurationSec) * (1 / (float)channels[channelIndex].freq) * 2 * M_PI * n) / n;
+		//y2 += sin(((float)(adc.audioPosition) * sampleDurationSec * (float)(1 / (float)channels[channelIndex].freq) - channels[channelIndex].duty) * 2 * M_PI * n) / n;
+
+
+		//y1 += sin(((float)(adc.audioPosition) * sampleDurationSec) * ((float)channels[channelIndex].freq) * 2 * M_PI * n) / n;
+		//y2 += sin(((float)(adc.audioPosition) * sampleDurationSec * ((float)channels[channelIndex].freq) - channels[channelIndex].duty) * 2 * M_PI * n) / n;
+
+
+		//y1 += approxsin(t* () * 2 * M_PI * n) / n;
+		//y2 += approxsin((t * ((float)channels[channelIndex].freq) - channels[channelIndex].duty) * 2 * M_PI * n) / n;
+
+		//	y1 += sin(((float)(channels[channelIndex].envelopeVolume * adc.audioPosition)) * channels[channelIndex].freq * 2 * M_PI * n) / n;
+		//y2 += sin(((float)(channels[channelIndex].envelopeVolume * adc.audioPosition) * channels[channelIndex].freq - channels[channelIndex].duty) * 2 * M_PI * n) / n;
+	}
+	y3 = (y1 - y2);
+	double amplitude = 16;
+	double r = 0;
+	r = bus->r;
+	if (adc.flatWave) {
+		if (y3 > r) {
+			y3 = 1;
+		}
+		else if (y3 < r) {
+			y3 = -1;
+		}
+	}
+	y3 = channels[channelIndex].sequencer.output;
+	channels[channelIndex].sequencer.tick();
+	//y3 = (y1 - y2);//*0.56;
+
+	y3 = y3 * (2.0 * amplitude / M_PI);
+	//return y3*channels[channelIndex].envelopeVolume;
+	if (adc.skipRest) {
+		y3 *= channels[channelIndex].envelopeVolume;
+		return y3;
+	}
+	if (channels[channelIndex].counterEnable) {
+
+		channels[channelIndex].soundLen = channels[channelIndex].soundLen - sampleDuration;
+		if (channels[channelIndex].soundLen <= 0) {
+			//stop channel output
+			channels[channelIndex].enable = false;
+			setSoundState(channels[channelIndex].channelIndex, false);
+		}
+	}
+	if (channels[channelIndex].sweepTime && channels[channelIndex].nSweep) {
+		channels[channelIndex].frequencySweepLen -= sampleDuration;
+		//channels[channelIndex].frequencySweepLen -= sampleDurationSec;
+		if (channels[channelIndex].frequencySweepLen <= 0) {//change frequency
+			channels[channelIndex].frequencySweepLen = channels[channelIndex].sweepTime;
+			uint16_t freqData = channels[channelIndex].loadedFreq + channels[channelIndex].sweepInc * (channels[channelIndex].loadedFreq >> channels[channelIndex].nSweep);
+
+			uint16_t newFreq = 131072 / (2048 - freqData);
+			if (newFreq > 2047) {
+				channels[channelIndex].enable = false;
+				setSoundState(channels[channelIndex].channelIndex, false);
+			}
+			else if (newFreq >= 0) {
+				channels[channelIndex].loadedFreq = freqData;
+				channels[channelIndex].freq = newFreq;
+				//Lower 8 bits of 11 bit frequency (x). Next 3 bit are in NR14 ($FF14)
+				bus->interrupt->io[0x13] = freqData & 0xff;
+				bus->interrupt->io[0x14] = (bus->interrupt->io[0x14] & 0xf8) | ((freqData >> 8) & 0x07);
+				//write freqDatato nn14 and nn13
+			}
+		}
+	}
+
+	//return y3;
+	if (channels[channelIndex].envelopeEnable) {
+
+		//channels[channelIndex].volumeEnvelopeLen -= sampleDurationSec;
+
+		if (channels[channelIndex].volumeEnvelopeLen <= 0) {
+			channels[channelIndex].volumeEnvelopeLen = channels[channelIndex].loadedVolumeEnvelopeLen;
+		}
+		if (channels[channelIndex].volumeEnvelopeLen == channels[channelIndex].loadedVolumeEnvelopeLen) {
+
+			channels[channelIndex].envelopeVolume += channels[channelIndex].envelopeDirection;
+			if (channels[channelIndex].envelopeVolume == 0x0f || channels[channelIndex].envelopeVolume == 0) {
+				channels[channelIndex].envelopeEnable = false;
+			}
+		}
+		channels[channelIndex].volumeEnvelopeLen -= sampleDuration;
+	}
+	y3 *= channels[channelIndex].envelopeVolume;
+	return y3;
+}
+*/
 void APU::close() {
 	SDL_CloseAudioDevice(adc.dev);
 	SDL_Quit();
+}
+
+void APU::play()
+{
+	restart = false;
+	adc.dev = SDL_OpenAudioDevice(NULL, 0, &adc.want, &adc.have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
+	
+	if (!adc.dev) {
+		printf("[SDL] Failed to open audio device: %s\n", SDL_GetError());
+		//SDL_Quit();
+		adc.want=adc.wantOld;
+		adc.have=adc.haveOld;
+		adc.dev = adc.devOld;
+		return;
+	}
+	SDL_CloseAudioDevice(adc.devOld);
+	SDL_PauseAudioDevice(adc.dev, 0);
+
+	/*if (closeOld) {
+			SDL_CloseAudioDevice(old);
+				adc.devOld = adc.dev;
+		adc.wantOld = adc.want;
+		adc.haveOld = adc.have;
+		}*/
+
 }
 

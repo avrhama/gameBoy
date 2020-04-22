@@ -459,6 +459,7 @@ int main(void) {
 	mmu->reset();
 	gpu->reset();
 	interrupt->reset();
+	apu->start();
 	printf("title:%s\n", cartridge->header.title);
 	printf("rom banks count:%d\n", cartridge->header.romBanksCount);
 	printf("romBank size:%d\n", cartridge->header.romBankSize);
@@ -564,8 +565,22 @@ int main(void) {
 	int cyclesInFrame = cpu->cpuFreq / framesForSeconds;
 	uint16_t lastopcode = 0;
 
-
-
+	while (cpu->running) {
+		if (SDL_PollEvent(&display->windowEvent))
+			if (SDL_QUIT == display->windowEvent.type)
+			{
+				running = false;
+				//break;
+				bus->cpu->running = false;
+			}
+		if (apu->restart)
+			apu->play();
+		Sleep(100);
+	}
+	display->close();
+	//displayThread.join();
+	
+	return 0;
 	while (true) {
 		if (SDL_PollEvent(&display->windowEvent))
 			if (SDL_QUIT == display->windowEvent.type)

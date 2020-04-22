@@ -13,6 +13,11 @@ class APU;
 class BUS
 {
 public:
+	double r = 0;
+	int h = 1;
+	int f = 17;
+	int s = 5;
+	bool modified = false;
 	bool pipeEnable;
 	pipeChannel *p;
 	CPU* cpu;

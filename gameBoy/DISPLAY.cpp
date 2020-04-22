@@ -293,6 +293,16 @@ void DISPLAY::setPaletteColor(uint8_t paletteByteIndex, uint8_t value, bool isBG
  
 }
 
+void DISPLAY::tick(int cycles)
+{
+    
+     cyclesInGpuFrameCounter -= cycles;
+     if (cyclesInGpuFrameCounter <= 0) {
+         cyclesInGpuFrameCounter += cyclesInGpuFrame;
+         render();
+     }
+}
+
 void DISPLAY::close()
 {
     SDL_DestroyTexture(texture);

@@ -2,18 +2,21 @@
 #include "BUS.h"
 #include "MMU.h"
 #include "CPU.h"
-#include "APU.h"
+#include "JOYPAD.h"
 #include "SDL.h"
 #include "SoundDevice.h"
 #include<stdlib.h>
 #include <math.h>
 #include <stdio.h>
-
+#include <chrono>
+#include <ctime>
+#include <iostream>
+using namespace std::chrono;
 class APU
 {
 private:
 	
-	BUS* bus;
+	
 	int apuReloadCounter = 4194304;
 	int apuCounter = 4194304;//32;
 	struct Sequencer {
@@ -23,14 +26,16 @@ private:
 		double len=0;
 		uint8_t output=0;
 		uint8_t tick() {
-			if (enable) {
-				counter--;
-				if (counter == 0xffff) {
-					counter = len+1;
-					sequence = ((sequence & 0x0001) << 7) | ((sequence & 0x00FE) >> 1);
+			/*if (enable) {
+				counter++;
+				if (counter == 0xffff) {*/
+					//counter = len+1;
+					counter = 0;
+					//sequence = ((sequence & 0x0001) << 7) | ((sequence & 0x00FE) >> 1);
 					output = sequence & 0x01;
-				}
-			}
+					output = 1;
+				/*}
+			}*/
 			return output;
 		}
 	};
@@ -116,14 +121,26 @@ private:
 		uint16_t sectorPosition = 0;//divid 262144 samples to secors of 128 size each.
 		SDL_AudioSpec want, have;
 		SDL_AudioDeviceID dev;
+		SDL_AudioDeviceID devOld;
+		SDL_AudioSpec wantOld, haveOld;
 		bool paused = true;
 	};
 	
 	void createAudioDeviceControl(bool closeOld);
 	
 public:
+	steady_clock::time_point startTimer;
+	steady_clock::time_point lastTick;
+	bool restart = false;
+	double time = 0;
+	double tickElapse = 0;
+	BUS* bus;
+	int cyclesInSoundFrameCounter = 0;
+	//int cyclesInSoundFrame = 4194304;
+	int cyclesInSoundFrame = 32;
 	uint8_t soundState=0x0;
 	APU();
+	void start();
 	void connectToBus(BUS* bus);
 	AudioDeviceControl adc;
 	Channel channels[4];
@@ -139,5 +156,6 @@ public:
 	void feedFrequencyHiCtlRegister(uint8_t channelIndex, uint8_t value);
 	float getChannelSample(uint8_t channelIndex);
 	void close();
+	void play();
 };
 
