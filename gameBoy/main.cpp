@@ -63,39 +63,57 @@ void MyAudioCallback2(void* data, Uint8* stream, int len) {
 	//printf("playback!\n");
 	return;
 }
-Sint16* generateSoundData() {
+float P = 0.125;
+Sint8* generateSoundData() {
 	int i;
 	//Sint16* buf = (Sint16*)stream;
-	int len = 34;
-	Sint16* buf = (Sint16*)calloc(len,sizeof(Sint16));
+	int len = 800;
+	Sint8* buf = (Sint8*)calloc(len,sizeof(Sint8));
 	float duty = 0.5;
 	float p = duty * 2.0f * M_PI;
 	float a = 0;
 	float b = 0;
-	int H = 88;
+	int H = 20;
 	float y1, y2, y3;
-	float P = 0.5;
+	
+	double sampleDuration = 0.00125;//sec
+
+	double t = (float)(audio_position) * sampleDuration;
+	float phase = 2.0f * M_PI * P;
 	for (i = 0; i < len; i++) {
 		y1 = 0;
 		y2 = 0;
+		float c = 0;
 		for (int n = 1;n <= H;n++) {
-			y1 += sin(audio_position * audio_frequency * 2 * M_PI * n) / n;
-			y2 += sin((audio_position * audio_frequency - P) * 2 * M_PI * n) / n;
+			c = n * ((float)audio_frequency) * 2.0 * M_PI * t;
+			y1 += sin(c) / n;
+			y2 += sin(c - phase * (double)n) / n;
+
+			//y1 += sin(audio_position * audio_frequency * 2 * M_PI * n) / n;
+			//y2 += sin((audio_position * audio_frequency - P) * 2 * M_PI * n) / n;
 		}
 		y3 = y1 - y2;
-		/*float c= (2 * M_PI * audio_position * audio_frequency);
-		a = audio_volume * sin(c);
-		b = audio_volume * sin(p - c);*/
+
+		y3 = (y1 - y2);//*0.996
+	/*if (y3 > 0) {
+		y3 = 1;
+	}
+	else if (y3 < 0) {
+		y3 = -1;
+	}*/
+
+
+	int amplitude = 1;
+	y3 = y3*(2.0 * amplitude / M_PI);
 
 		buf[i] = audio_volume * y3;
-		//buf[i] = audio_volume * sin(2 * M_PI * audio_position * audio_frequency);
 		audio_position++;
 	}
 	//audio_len -= len;
 	//printf("playback!\n");
 	return buf;
 }
-int sound() {
+int sound2() {
 	if (SDL_Init(SDL_INIT_AUDIO)) {
 		printf("[SDL] Failed to initialize: %s\n", SDL_GetError());
 		return 1;
@@ -197,31 +215,18 @@ int sound() {
 
 	return 0;
 }
-int sound2() {
-
-
-
-	//	AudioGen::Speaker speaker;
-	// //speaker.pushBeep(440, 1000);
-	// speaker.pushBeep2(440.0f, 500);
-	// //speaker.pushBeep2(550.0f, 1000);
-	//// SDL_Delay(5000);
-	// //speaker.pushBeep2(240.0f, 1000);
-	// SDL_Delay(500);
-	//return 0;
+int sound() {
 	if (SDL_Init(SDL_INIT_AUDIO)) {
 		printf("[SDL] Failed to initialize: %s\n", SDL_GetError());
 		return 1;
 	}
 	SDL_AudioSpec wave, got;
-	//want.freq = 44100;
 	wave.freq = 44100;
-	wave.format = AUDIO_S16;
+	wave.freq = 22400;
+	wave.format = AUDIO_S8;
 	wave.channels = 1;
-	wave.samples = 4096;
-	//wave.callback = MyAudioCallback;
-	//wave.callback = MyAudioCallback;
-	
+	wave.samples = 800;
+	wave.callback = 0;
 	//wave.size = 34;
 	SDL_AudioDeviceID dev = SDL_OpenAudioDevice(NULL, 0, &wave, &got, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
 
@@ -229,25 +234,45 @@ int sound2() {
 	
 	//SDL_zero(wave);
 	//SDL_AudioDeviceID dev = SDL_OpenAudioDevice(NULL, 0, &wave, &got, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
-	/*if (!dev) {
+	if (!dev) {
 		printf("[SDL] Failed to initialize: %s\n", SDL_GetError());
 		return 0;
-	}*/
+	}
 	audio_position = 0;
 	audio_frequency = 1.0 * FREQ / 2048; /* 1.0 to make it a float */
 	//audio_frequency = 0.15;
 	audio_volume = 6000; /* ~1/5 max volume */
 	//printf("queue have:%d\n", got.size);
-	Sint16* data = generateSoundData();
+	Sint8* data = generateSoundData();
 	//SDL_zero(data,68);
-	SDL_QueueAudio(dev, data, 34);
-		
+	//SDL_QueueAudio(dev, data, 34);
+	int bytesRemaining = SDL_GetQueuedAudioSize(dev);
 	//Sint16* data;
 
 	//SDL_QueueAudio(1,, 34 * sizeof(Sint16));
-	SDL_PauseAudio(0);
-
+	SDL_PauseAudioDevice(dev, 0);
+	printf("wating...\n");
 	SDL_Delay(2000);
+	
+	while (true) {
+		
+		//SDL_zero(data,68);
+		
+
+		SDL_Delay(1000);
+		//printf("%d\n", audio_position);
+		//if (audio_position == 2400) {
+			data = generateSoundData();
+			audio_position = 0;
+			SDL_QueueAudio(dev, data, 800);
+			audio_position = 0;
+			P += 0.125;
+			if(P==1)
+				P = 0.125;
+			printf("duty:%f\n", P);
+		
+	}
+	printf("stoped wating left:%d\n",bytesRemaining);
 
 	return 0;
 	
@@ -263,6 +288,7 @@ int sound2() {
 
 	while (audio_len > 0) {
 		SDL_Delay(500);
+
 	}
 
 
@@ -270,6 +296,15 @@ int sound2() {
 	SDL_Quit();
 
 	return 0;
+
+	//	AudioGen::Speaker speaker;
+	// //speaker.pushBeep(440, 1000);
+	// speaker.pushBeep2(440.0f, 500);
+	// //speaker.pushBeep2(550.0f, 1000);
+	//// SDL_Delay(5000);
+	// //speaker.pushBeep2(240.0f, 1000);
+	// SDL_Delay(500);
+	//return 0;
 }
 
 
@@ -350,6 +385,8 @@ void pipeRecive(BUS* bus, uint16_t opcode, uint16_t lastOpcode, int steps, strin
 
 int main(void) {
 
+	
+	//return 0;
 	//sound();
 
 	//return 0;
@@ -377,7 +414,7 @@ int main(void) {
 	"test2\\daa.gb",
 	"roms\\alleyway.gb",
 	 "roms\\megaman.gb",
-	"roms\\pokemon.gb",
+	"roms\\pokemon.gb",//15
 	"roms\\tetris.gb",
 	"test\\instr_timing\\instr_timing.gb",//failed
 	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\div_write.gb",
@@ -457,6 +494,59 @@ int main(void) {
 			return 0;
 		}
 	}
+
+
+	//return 0;
+	//string line;
+	//ifstream myfile("adcConfig.txt");
+	//ifstream myfile;
+	
+	/*while (true) {
+		bus->p->read(18);
+		if (bus->p->rBuffer[0] == 1) {
+			uint32_t freq = bus->p->rBuffer[1] << 24 | bus->p->rBuffer[2] << 16 | bus->p->rBuffer[3] << 8 | bus->p->rBuffer[4];
+			printf("new freq:%d\n", freq);
+			//myfile.open("adcConfig.txt");
+			f (myfile.is_open())
+			{
+				while (getline(myfile, line))
+				{
+
+					int n = 0;
+					int l = line.length();
+					int nums[5] = { 0,0,0,0,0 };
+					int index = 0;
+					for (int i = 0;i < l;i++) {
+
+						n *= 10;
+						n += line[i] - 48;
+						if (line[i + 1] == ' ' || (i + 1) == l) {
+							printf("%d\n", n);
+							nums[index] = n;
+							index++;
+							n = 0;
+							i++;
+						}
+
+
+					}
+					cout << line << '\n';
+				}
+				myfile.close();
+			}
+			else cout << "Unable to open file";
+		}
+
+		
+		bus->p->write(1);
+		Sleep(100);
+	}
+	*/
+	
+	
+
+
+
 	int renderTimer = 69905;
 	int renderCounter = 0;
 	bool writeToFile = false;
@@ -503,9 +593,9 @@ int main(void) {
 	
 
 			cpu->lastOpcodeCycles *= (4 * (cpu->speedMode + 1));
+			cpu->steps+= cpu->lastOpcodeCycles;
 
-
-			apu->produceSound();
+			//apu->tick();
 			gpu->tick();
 			cpu->updateTimers();
 
@@ -538,7 +628,10 @@ int main(void) {
 		cyclesInFrameCounter = 0;
 
 		display->render();
-		Sleep(10);
+		bool lastState = apu->adc.paused;
+		apu->adc.paused = true;
+		//Sleep(10);
+		apu->adc.paused = lastState;
 		//display->update();
 		//printf("render\n");
 	}
@@ -576,7 +669,7 @@ int main(void) {
 
 		}
 		display->setPixel(x, y, white);
-		Sleep(250);
+		//Sleep(250);
 
 
 	}

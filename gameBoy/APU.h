@@ -5,6 +5,7 @@
 #include "APU.h"
 #include "SDL.h"
 #include "SoundDevice.h"
+#include<stdlib.h>
 #include <math.h>
 #include <stdio.h>
 
@@ -13,7 +14,8 @@ class APU
 private:
 	
 	BUS* bus;
-	int apuCounter = 32;
+	int apuReloadCounter = 4194304;
+	int apuCounter = 4194304;//32;
 	struct Sequencer {
 		bool enable=true;
 		uint32_t sequence=0;
@@ -49,7 +51,7 @@ private:
    uint8_t waveForms[4] = { 0b00000001,0b10000001,0b10000111,0b01111110 };
 	struct Channel {
 		uint8_t channelIndex;
-		bool enable;
+		bool enable=false;
 		double sweepTime;
 		double frequencySweepLen;
 		//Lower 8 bits of 11 bit frequency in ($FF14). Next 3 bit are in NR14 ($FF14)
@@ -79,6 +81,9 @@ private:
 		uint8_t outputTerminal;//0 none 1 left 2 right 3 both(sum).
 		
 		Sequencer sequencer;
+		uint32_t samplePosition=0;
+		Sint8* samplesData;
+		int sampleRatePos = 0;
 	};
 	struct SoundControl {
 		/*
@@ -103,13 +108,18 @@ private:
 		int audioLen; /* how many samples left to play, stops when <= 0 */
 		float audioFrequency; /* audio frequency in cycles per sample */
 		float audioVolume; /* audio volume, 0 - ~32000 */
-		uint8_t H=88;//harmonies count.
+		uint32_t H=88;//harmonies count.
+		uint32_t timeFactor=1;
+		bool samplesUint = true;
+		bool flatWave = true;
+		bool skipRest = false;
 		uint16_t sectorPosition = 0;//divid 262144 samples to secors of 128 size each.
 		SDL_AudioSpec want, have;
 		SDL_AudioDeviceID dev;
 		bool paused = true;
 	};
 	
+	void createAudioDeviceControl(bool closeOld);
 	
 public:
 	uint8_t soundState=0x0;
@@ -117,7 +127,7 @@ public:
 	void connectToBus(BUS* bus);
 	AudioDeviceControl adc;
 	Channel channels[4];
-	void produceSound();
+	void tick();
 	void setSoundOutputTerminal(uint8_t value);
 	void setSoundState(uint8_t channelIndex,bool set);
 	void feedChannelCtrlRegister(uint8_t value);

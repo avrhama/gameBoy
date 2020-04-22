@@ -108,7 +108,7 @@ void GPU::tick()
 
 	}
 	
-	if (bus->pipeEnable) {
+	/*if (bus->pipeEnable) {
 		bus->p->read(8);
 		uint16_t otherPC = bus->p->rBuffer[1] << 8 | bus->p->rBuffer[0];
 		uint32_t othercyclesPerScanline = bus->p->rBuffer[5] << 24 | bus->p->rBuffer[4] << 16 | bus->p->rBuffer[3] << 8 | bus->p->rBuffer[2];
@@ -140,7 +140,7 @@ void GPU::tick()
 			bus->p->wBuffer[1] = 0;
 		}
 
-	}
+	}*/
 }
 
 bool GPU::TestBit(BYTE n, int b) {
