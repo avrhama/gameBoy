@@ -565,7 +565,7 @@ int main(void) {
 	int cyclesInFrame = cpu->cpuFreq / framesForSeconds;
 	uint16_t lastopcode = 0;
 
-	while (cpu->running) {
+	/*while (cpu->running) {
 		if (SDL_PollEvent(&display->windowEvent))
 			if (SDL_QUIT == display->windowEvent.type)
 			{
@@ -578,9 +578,8 @@ int main(void) {
 		Sleep(100);
 	}
 	display->close();
-	//displayThread.join();
 	
-	return 0;
+	return 0;*/
 	while (true) {
 		if (SDL_PollEvent(&display->windowEvent))
 			if (SDL_QUIT == display->windowEvent.type)
@@ -645,7 +644,7 @@ int main(void) {
 		display->render();
 		bool lastState = apu->adc.paused;
 		apu->adc.paused = true;
-		//Sleep(10);
+		Sleep(5);
 		apu->adc.paused = lastState;
 		//display->update();
 		//printf("render\n");
