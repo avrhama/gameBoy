@@ -22,291 +22,60 @@
 #include "Speaker.h"
 #undef main
 using namespace std;
-/* dummy callback */
+//sound
+#include "SDL.h"
 #include <stdio.h>
 #include <math.h>
 #define FREQ 200 /* the frequency we want */
 
-unsigned int audio_position; /* which sample we are up to */
+unsigned int audio_pos; /* which sample we are up to */
 int audio_len; /* how many samples left to play, stops when <= 0 */
 float audio_frequency; /* audio frequency in cycles per sample */
 float audio_volume; /* audio volume, 0 - ~32000 */
-void MyAudioCallback2(void* data, Uint8* stream, int len) {
+
+void MyAudioCallback2(void* userdata, Uint8* stream, int len) {
 	len /= 2; /* 16 bit */
 	int i;
 	Sint16* buf = (Sint16*)stream;
-	float duty = 0.5;
-	float p =  duty*2.0f* M_PI;
-	float a = 0;
-	float b = 0;
-	int H = 88;
-	float y1, y2, y3;
-	float P = 0.5;
 	for (i = 0; i < len; i++) {
-		y1 = 0;
-		y2 = 0;
-		for (int n = 1;n <= H;n++) {
-			y1 += sin(audio_position * audio_frequency * 2 * M_PI * n) / n;
-			y2+= sin( (audio_position * audio_frequency-P) * 2 * M_PI * n) / n;
-		}
-		y3 = y1 - y2;
-		/*float c= (2 * M_PI * audio_position * audio_frequency);
-		a = audio_volume * sin(c);
-		b = audio_volume * sin(p - c);*/
-	
-		buf[i] = audio_volume*y3;
-		//buf[i] = audio_volume * sin(2 * M_PI * audio_position * audio_frequency);
-		audio_position++;
+		buf[i] = audio_volume * sin(2 * M_PI * audio_pos * audio_frequency);
+		audio_pos++;
 	}
 	audio_len -= len;
-	audio_len = 0;
-	//printf("playback!\n");
 	return;
 }
-float P = 0.125;
-Sint8* generateSoundData() {
-	int i;
-	//Sint16* buf = (Sint16*)stream;
-	int len = 800;
-	Sint8* buf = (Sint8*)calloc(len,sizeof(Sint8));
-	float duty = 0.5;
-	float p = duty * 2.0f * M_PI;
-	float a = 0;
-	float b = 0;
-	int H = 20;
-	float y1, y2, y3;
+int sound() {
+	SDL_Init(SDL_INIT_AUDIO);
+
+	int numAudioDrivers = SDL_GetNumAudioDrivers();
+
 	
-	double sampleDuration = 0.00125;//sec
-
-	double t = (float)(audio_position) * sampleDuration;
-	float phase = 2.0f * M_PI * P;
-	for (i = 0; i < len; i++) {
-		y1 = 0;
-		y2 = 0;
-		float c = 0;
-		for (int n = 1;n <= H;n++) {
-			c = n * ((float)audio_frequency) * 2.0 * M_PI * t;
-			y1 += sin(c) / n;
-			y2 += sin(c - phase * (double)n) / n;
-
-			//y1 += sin(audio_position * audio_frequency * 2 * M_PI * n) / n;
-			//y2 += sin((audio_position * audio_frequency - P) * 2 * M_PI * n) / n;
-		}
-		y3 = y1 - y2;
-
-		y3 = (y1 - y2);//*0.996
-	/*if (y3 > 0) {
-		y3 = 1;
-	}
-	else if (y3 < 0) {
-		y3 = -1;
-	}*/
-
-
-	int amplitude = 1;
-	y3 = y3*(2.0 * amplitude / M_PI);
-
-		buf[i] = audio_volume * y3;
-		audio_position++;
-	}
-	//audio_len -= len;
-	//printf("playback!\n");
-	return buf;
-}
-int sound2() {
-	if (SDL_Init(SDL_INIT_AUDIO)) {
-		printf("[SDL] Failed to initialize: %s\n", SDL_GetError());
-		return 1;
-	}
-	//SDL_AudioSpec wave, got;
-	//wave.size = 34;
-	//if (!SDL_OpenAudio(&wave, &got)) {
-	//	printf("[SDL] Failed to initialize: %s\n", SDL_GetError());
-	//	return 0;
-	//}
-
-	//printf("queue have:%d\n", got.size);
-	//audio_position = 0;
-	//audio_frequency = 1.0 * FREQ / 2048; /* 1.0 to make it a float */
-	////audio_frequency = 0.15;
-	//audio_volume = 6000; /* ~1/5 max volume */
-	//Sint16* data = generateSoundData();
-	//SDL_QueueAudio(1, data, 34*sizeof(Sint16));
-	//
-	//SDL_PauseAudio(0);
-
-	//SDL_Delay(2000);
-	//return 0;
-	/* pass it 0 for playback */
-	int numAudioDevices = SDL_GetNumAudioDevices(0);
-
-	/* print the audio devices that we can see */
-	printf("[SDL] %d audio devices:", numAudioDevices);
-	for (int i = 0; i < numAudioDevices; i++)
-		printf(" \'%s\'", SDL_GetAudioDeviceName(i, 0)); /* again, 0 for playback */
-	printf("\n");
-
 	SDL_AudioSpec want, have;
 	SDL_zero(want);
 
-	//want.freq = 44100;
-	want.freq = 2048;
+	
+
+	want.freq = 131072;
 	want.format = AUDIO_S16;
 	want.channels = 1;
 	want.samples = 4096;
 	want.callback = MyAudioCallback2;
-	//want.callback = MyAudioCallback;
-
-
-	SDL_AudioDeviceID dev = SDL_OpenAudioDevice(NULL, 0, &want, &have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE | SDL_AUDIO_ALLOW_SAMPLES_CHANGE);
-	//SDL_AudioDeviceID dev = SDL_OpenAudioDevice(NULL, 0, &want, &have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE | SDL_AUDIO_ALLOW_SAMPLES_CHANGE);
-	//SDL_AudioDeviceID dev = SDL_OpenAudioDevice(NULL, 0, &want, &have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
-	if (!dev) {
-		printf("[SDL] Failed to open audio device: %s\n", SDL_GetError());
-		SDL_Quit();
-		return 1;
-	}
-
-	printf("[SDL] Obtained - frequency: %d format: f %d s %d be %d sz %d channels: %d samples: %d\n", have.freq, SDL_AUDIO_ISFLOAT(have.format), SDL_AUDIO_ISSIGNED(have.format), SDL_AUDIO_ISBIGENDIAN(have.format), SDL_AUDIO_BITSIZE(have.format), have.channels, have.samples);
+	SDL_AudioDeviceID dev = SDL_OpenAudioDevice(NULL, 0, &want, &have, SDL_AUDIO_ALLOW_FORMAT_CHANGE);
 
 	audio_len = have.freq * 5; /* 5 seconds */
-	audio_position = 0;
+	audio_pos = 0;
 	audio_frequency = 1.0 * FREQ / have.freq; /* 1.0 to make it a float */
-	//audio_frequency = 0.15;
 	audio_volume = 6000; /* ~1/5 max volume */
 
-
-
-	int p = 0;
-	SDL_PauseAudioDevice(dev, p); /* play! */
-
-	/*while (audio_len > 0) {
-		SDL_Delay(500);
-	}*/
-	while (true) {
-		char ch = getchar();
-		char c;
-		cin >> c;
-		if (c == 'a')
-			audio_volume -= 1000;
-		else if(c=='s')
-			audio_volume += 1000;
-		else if (c == 'z')
-			have.freq -= 256;
-		else if (c == 'x') {
-			have.freq += 256;
-			printf("%d\n", have.freq);
-			SDL_ClearQueuedAudio(dev);
-		}
-		else if (c == 'p') {
-			p = 1 - p;
-			SDL_PauseAudioDevice(dev, p);
-			
-		}else if (c == 'q')
-			audio_frequency -= 128;
-		else if (c == 'w')
-			audio_frequency += 128;
-	
-		printf("%c\n", c);
-	}
-
-	SDL_CloseAudioDevice(dev);
-	SDL_Quit();
-
-	return 0;
-}
-int sound() {
-	if (SDL_Init(SDL_INIT_AUDIO)) {
-		printf("[SDL] Failed to initialize: %s\n", SDL_GetError());
-		return 1;
-	}
-	SDL_AudioSpec wave, got;
-	wave.freq = 44100;
-	wave.freq = 22400;
-	wave.format = AUDIO_S8;
-	wave.channels = 1;
-	wave.samples = 800;
-	wave.callback = 0;
-	//wave.size = 34;
-	SDL_AudioDeviceID dev = SDL_OpenAudioDevice(NULL, 0, &wave, &got, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
-
-	//SDL_OpenAudio(&wave, &got);
-	
-	//SDL_zero(wave);
-	//SDL_AudioDeviceID dev = SDL_OpenAudioDevice(NULL, 0, &wave, &got, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
-	if (!dev) {
-		printf("[SDL] Failed to initialize: %s\n", SDL_GetError());
-		return 0;
-	}
-	audio_position = 0;
-	audio_frequency = 1.0 * FREQ / 2048; /* 1.0 to make it a float */
-	//audio_frequency = 0.15;
-	audio_volume = 6000; /* ~1/5 max volume */
-	//printf("queue have:%d\n", got.size);
-	Sint8* data = generateSoundData();
-	//SDL_zero(data,68);
-	//SDL_QueueAudio(dev, data, 34);
-	int bytesRemaining = SDL_GetQueuedAudioSize(dev);
-	//Sint16* data;
-
-	//SDL_QueueAudio(1,, 34 * sizeof(Sint16));
-	SDL_PauseAudioDevice(dev, 0);
-	printf("wating...\n");
-	SDL_Delay(2000);
-	
-	while (true) {
-		
-		//SDL_zero(data,68);
-		
-
-		SDL_Delay(1000);
-		//printf("%d\n", audio_position);
-		//if (audio_position == 2400) {
-			data = generateSoundData();
-			audio_position = 0;
-			SDL_QueueAudio(dev, data, 800);
-			audio_position = 0;
-			P += 0.125;
-			if(P==1)
-				P = 0.125;
-			printf("duty:%f\n", P);
-		
-	}
-	printf("stoped wating left:%d\n",bytesRemaining);
-
-	return 0;
-	
-	/*Sint16* data = generateSoundData();
-	SDL_QueueAudio(1, data, 34*sizeof(Sint16));*/
-	
-	SDL_PauseAudio(0);
-
-	SDL_Delay(2000);
-	
-	return 0;
-	
+	SDL_PauseAudioDevice(dev, 0); /* play! */
 
 	while (audio_len > 0) {
-		SDL_Delay(500);
-
+		SDL_Delay(5000);
 	}
-
-
-	
-	SDL_Quit();
-
 	return 0;
-
-	//	AudioGen::Speaker speaker;
-	// //speaker.pushBeep(440, 1000);
-	// speaker.pushBeep2(440.0f, 500);
-	// //speaker.pushBeep2(550.0f, 1000);
-	//// SDL_Delay(5000);
-	// //speaker.pushBeep2(240.0f, 1000);
-	// SDL_Delay(500);
-	//return 0;
 }
 
+//sound
 
 
 void displayThreadFunc(DISPLAY* display, bool* running)
@@ -384,6 +153,8 @@ void pipeRecive(BUS* bus, uint16_t opcode, uint16_t lastOpcode, int steps, strin
 }
 
 int main(void) {
+
+	
 
 	
 	//return 0;
@@ -496,58 +267,6 @@ int main(void) {
 		}
 	}
 
-
-	//return 0;
-	//string line;
-	//ifstream myfile("adcConfig.txt");
-	//ifstream myfile;
-	
-	/*while (true) {
-		bus->p->read(18);
-		if (bus->p->rBuffer[0] == 1) {
-			uint32_t freq = bus->p->rBuffer[1] << 24 | bus->p->rBuffer[2] << 16 | bus->p->rBuffer[3] << 8 | bus->p->rBuffer[4];
-			printf("new freq:%d\n", freq);
-			//myfile.open("adcConfig.txt");
-			f (myfile.is_open())
-			{
-				while (getline(myfile, line))
-				{
-
-					int n = 0;
-					int l = line.length();
-					int nums[5] = { 0,0,0,0,0 };
-					int index = 0;
-					for (int i = 0;i < l;i++) {
-
-						n *= 10;
-						n += line[i] - 48;
-						if (line[i + 1] == ' ' || (i + 1) == l) {
-							printf("%d\n", n);
-							nums[index] = n;
-							index++;
-							n = 0;
-							i++;
-						}
-
-
-					}
-					cout << line << '\n';
-				}
-				myfile.close();
-			}
-			else cout << "Unable to open file";
-		}
-
-		
-		bus->p->write(1);
-		Sleep(100);
-	}
-	*/
-	
-	
-
-
-
 	int renderTimer = 69905;
 	int renderCounter = 0;
 	bool writeToFile = false;
@@ -580,6 +299,7 @@ int main(void) {
 	display->close();
 	
 	return 0;*/
+	
 	while (true) {
 		if (SDL_PollEvent(&display->windowEvent))
 			if (SDL_QUIT == display->windowEvent.type)
@@ -587,6 +307,7 @@ int main(void) {
 				running = false;
 				break;
 			}
+		steady_clock::time_point start = steady_clock::now();
 		do {
 
 			//cpu->Execute(opcode);
@@ -608,7 +329,7 @@ int main(void) {
 
 			cpu->lastOpcodeCycles *= (4 * (cpu->speedMode + 1));
 			cpu->steps+= cpu->lastOpcodeCycles;
-
+			apu->fs.tick();
 			//apu->tick();
 			gpu->tick();
 			cpu->updateTimers();
@@ -632,7 +353,7 @@ int main(void) {
 					//cpu->cycelsCounter += cpu->lastOpcodeCycles;
 			cpu->time.addMCycles(cpu->lastOpcodeCycles / 4);
 			cpu->time.print(2);
-			//if (cpu->time.timeChanged[1]) {
+		//	if (cpu->time.timeChanged[1]) {
 			//	cpu->time.timeChanged[1] = false;
 			//	Sleep(1);
 			//	//printf("sleep\n");
@@ -642,12 +363,20 @@ int main(void) {
 		cyclesInFrameCounter = 0;
 
 		display->render();
+		
+		steady_clock::time_point end = steady_clock::now();
+		duration<double> elapsed_seconds = end - start;
+		double elapse = elapsed_seconds.count();
+		Sleep((elapse)*100);
+		
 		bool lastState = apu->adc.paused;
 		apu->adc.paused = true;
-		Sleep(5);
+		//Sleep(2);
 		apu->adc.paused = lastState;
 		//display->update();
 		//printf("render\n");
+		if (apu->restart)
+			apu->play();
 	}
 	display->close();
 	//displayThread.join();

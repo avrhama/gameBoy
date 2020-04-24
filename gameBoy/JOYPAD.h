@@ -8,7 +8,7 @@ private:
 	SDL_Event windowEvent;
 	BUS* bus;
 	char const   keysCount = 8;
-	KEY keys[16] = {
+	KEY keys[17] = {
 		KEY{KEYS::A,false,"A"},
 		KEY{KEYS::B,false,"B"},
 		KEY{KEYS::Space,false,"SELECT"},
@@ -24,7 +24,8 @@ private:
 		KEY{KEYS::Z,false,"Z"},
 		KEY{KEYS::X,false,"X"},
 		KEY{KEYS::C,false,"C"},
-		KEY{KEYS::V,false,"V"}
+		KEY{KEYS::V,false,"V"},
+		KEY{KEYS::N,false,"N"}
 	};
 public:
 	void connectToBus(BUS* bus);

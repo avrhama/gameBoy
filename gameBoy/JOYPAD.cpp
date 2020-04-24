@@ -39,42 +39,41 @@ bool JOYPAD::scanKeys(int start) {
 }
 bool JOYPAD::scanKeys2()
 {
-    for (uint8_t i = 8;i < 16 ;i++) {
+    for (uint8_t i = 8;i < 17 ;i++) {
         SHORT v = GetAsyncKeyState((int)keys[i].key);
         if ((v & 0x8000) == 0x8000) {
             if (!keys[i].isPressed) {
                 keys[i].isPressed = true;
-                printf(keys[i].name);
                 switch (keys[i].key)
                 {
                 case KEYS::W:
                     
-                    if (bus->f < 17) {
-                        bus->f += 1;
+                    if (bus->f < 4194304) {
+                        bus->f *= 2;
                         bus->modified = true;
                     }
-                    printf("f:%f\n",pow(2, bus->f));
+                    printf("frequency:%d\n", bus->f);
                     break;
                 case KEYS::E:
-                    if (bus->f > 5) {
-                        bus->f -= 1;
+                    if (bus->f > 1) {
+                        bus->f /= 2;
                         bus->modified = true;
                     }
-                    printf("f:%f\n", pow(2, bus->f));
+                    printf("frequency:%d\n", bus->f);
                     break;
                 case KEYS::S:
-                    if (bus->s < 17) {
-                        bus->s += 1;
+                    if (bus->s < 4194304) {
+                        bus->s *= 2;
                         bus->modified = true;
                     }
-                    printf("s:%f\n", pow(2, bus->s));
+                    printf("samples:%d\n", bus->s);
                     break;
                 case KEYS::D:
-                    if (bus->s > 5) {
-                        bus->s -= 1;
+                    if (bus->s > 1) {
+                        bus->s /= 2;
                         bus->modified = true;
                     }
-                    printf("s:%f\n", pow(2, bus->s));
+                    printf("samples:%d\n", bus->s);
                     break;
                 case KEYS::Z:
                     bus->h += 1;
@@ -93,6 +92,10 @@ bool JOYPAD::scanKeys2()
                 case KEYS::V:
                     bus->r -= 0.1;
                     printf("r:%f\n", bus->r);
+                    break;
+                case KEYS::N:
+                   
+                    printf("frequency:%d samples:%d\n",bus->f,bus->s);
                     break;
                 }
                 
