@@ -486,6 +486,9 @@ void APU::start() {
 	int nums[18] = { 1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536,131072 };
 	//adc.want.freq = 131072;
 	//adc.want.samples = 32;
+	adc.want.samples = 1024;
+	adc.want.callback = NULL;
+	adc.want.format = AUDIO_S16;
 	adc.dev = SDL_OpenAudioDevice(NULL, 0, &adc.want, &adc.have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
 	bus->f = adc.have.freq;
 	bus->s = adc.want.samples;
@@ -499,7 +502,7 @@ void APU::start() {
 	}
 	//SDL_PauseAudioDevice(dev, p); /* play! */
 	channels[0].channelIndex = 0;
-	channels[0].samplesData = (Sint8*)calloc(adc.have.samples, sizeof(Sint8));
+	channels[0].samplesData = (Sint16*)calloc(adc.have.samples, sizeof(Sint16));
 	channels[0].samplePosition = 0;
 	
 	startTimer = steady_clock::now();

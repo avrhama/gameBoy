@@ -26,8 +26,8 @@ private:
 		double counterReload = 0;
 		double len = 0;
 		uint32_t output = 0;
-		uint32_t tick() {
-			counter--;
+		uint32_t tick(int cycles) {
+			counter-=cycles;
 			if (counter <= 0) {
 				counter += counterReload;
 				//counter = len+1;
@@ -85,7 +85,7 @@ private:
 
 		Sequencer sequencer;
 		uint32_t samplePosition = 0;
-		Sint8* samplesData;
+		Sint16* samplesData;
 		int sampleRatePos = 0;
 	};
 	struct SoundControl {
@@ -166,6 +166,7 @@ public:
 		//timerReload freq is 512 hz==4194304/512 clocks cycels.
 		int timerReload = 8192;
 		int timer = 8192;
+		uint8_t frameStep = 0;
 		//lenCounterReload freq is 256 hz.
 		int lenTimerReload = 16384;//16384
 		int lenTimer = 16384;//16384
@@ -180,23 +181,26 @@ public:
 		uint8_t vol = 0;
 		uint8_t waveformInput = 0;
 		float output = 0;
-		double sampleCounterReload = 65536;
-		double sampleCounter = 65536;
+		int sampleCounter = 0;
+		int sampleGenerateCounterReload = 95;//4194304/44100
+		int sampleGenerateCounter = 95;
+		
 	public:
 
 		Channel* ch;
 		void tick() {
+			ch->sequencer.tick(apu->bus->cpu->lastOpcodeCycles);
 			//sampleCounterReload = 4194304 * (1 / (double)apu->adc.have.samples);
 			timer -= apu->bus->cpu->lastOpcodeCycles;
 			//return;
 
 			//sweepTimer -= apu->bus->cpu->lastOpcodeCycles;
-			
+			getSample();
 			if (!ch->enable)
 				return;
 			
 			envelope();
-			//getSample();
+		
 			lenCounter();
 			bool first = false;
 			
@@ -223,10 +227,58 @@ public:
 
 		}
 		float getSample() {
+
+			
+			sampleGenerateCounter-= apu->bus->cpu->lastOpcodeCycles;
+			if (sampleGenerateCounter <= 0) {
+				sampleGenerateCounter += sampleGenerateCounterReload;
+
+
+				
+				
+				Sint16 sample;
+				float phase = 2.0f * M_PI * apu->channels[0].duty;
+			
+				float f = (float)apu->channels[0].freq;
+				
+					double g = 0;
+					double c = 0, y1 = 0, y2 = 0;
+					double t = 2 * M_PI * apu->adc.audioPosition * f * apu->adc.sampleDurationSec;
+					//t= audio_pos* 2 * M_PI  * f * apu->adc.sampleDurationSec;
+					//t = audio_pos;
+					/*for (int k = 1;k < 20;k += 2) {
+
+						g += sin(t * k - (double)phase * k) / k;
+					}*/
+					for (int n = 1;n <= 20;n++) {
+						c = n * t;
+						y1 += -sin(c) / n;
+						y2 += -sin(c - phase * (double)n) / n;
+					}
+					g = (y1 - y2)* (2.0/ M_PI);
+					sample = g * apu->adc.audioVolume * apu->channels[0].envelopeVolume;
+					apu->adc.audioPosition++;
+
+				ch->samplesData[sampleCounter] = sample;
+				if (ch->samplesData[sampleCounter] != 0)
+					int test = 0;
+				sampleCounter++;
+				if (sampleCounter == apu->adc.have.samples) {
+					
+					sampleCounter = 0;
+				
+					SDL_QueueAudio(apu->adc.dev, ch->samplesData, apu->adc.have.samples*sizeof(Sint16));
+				}
+			}
+			return 0;
+		}
+		float getSample2() {
+
 			sampleCounter -= apu->bus->cpu->lastOpcodeCycles;
+			
 			if (sampleCounter <= 0) {
-				sampleCounter += sampleCounterReload;
-				//ch->sequencer.tick();
+			//	sampleCounter += sampleCounterReload;
+				
 
 
 				Sint16 sample;
@@ -312,18 +364,13 @@ public:
 		}
 		void duty() {
 
-			sampleCounter += apu->bus->cpu->lastOpcodeCycles;
-			if (sampleCounter >= sampleCounterReload) {
-				//incSample();
-				int g = 0;
-			}
+		
+			
 			bool first = true;
-			/*if(first)
-				ch->sequencer.tick();*/
+			
 			dutyTimer--;
 			if (dutyTimer <= 0) {
-				/*	if(!first)
-					ch->sequencer.tick();*/
+				
 
 
 				dutyTimer = dutyTimerReload;
@@ -331,7 +378,7 @@ public:
 				return;
 				if (!ch->enable)
 					return;
-				//output=ch->sequencer.tick();
+				
 
 
 
@@ -389,9 +436,9 @@ public:
 						ch->envelopeEnable = false;
 					}
 					else {
-						if (output != 0)
+						//if (output != 0)
 							vol = ch->envelopeVolume;
-						else vol = 0;
+						//else vol = 0;
 					}
 				}
 				volEnvelopeTimer -= apu->bus->cpu->lastOpcodeCycles;
@@ -424,11 +471,8 @@ public:
 
 
 		}
-		double out() {
-			if (output * vol != 0) {
-				int f = 0;
-			}
-			return output * vol;
+		float out() {
+			return (((float)ch->sequencer.output/100) * vol);
 		}
 	};
 	FrameSequencer fs;
