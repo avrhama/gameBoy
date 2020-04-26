@@ -21,19 +21,35 @@ private:
 	int apuCounter = 4194304;//32;
 	struct Sequencer {
 		bool enable = true;
-		uint32_t sequence = 0;
+		uint8_t sequence = 0;
 		double counter = 0;
 		double counterReload = 0;
 		double len = 0;
-		uint32_t output = 0;
+		uint8_t output = 0;
+		uint32_t wave = 0;
+		uint8_t step = 0;
+		const char* waveForms[4]=
+		{
+			"12.5% ( _-------_-------_------- )",
+			"25%   ( __------__------__------ )",
+			"50%   ( ____----____----____---- )",
+			"75%   ( ______--______--______-- )"
+		};
+		const char* waveForm;
 		uint32_t tick(int cycles) {
-			counter-=cycles;
-			if (counter <= 0) {
-				counter += counterReload;
+			//counter-=cycles;
+			//if (counter <= 0) {
+				//counter += counterReload;
 				//counter = len+1;
-				sequence = ((sequence & 0x0001) << 7) | ((sequence & 0x00FE) >> 1);
+				//sequence = ((sequence & 0x0001) << 7) | ((sequence & 0x00FE) >> 1);
+				sequence = ((sequence & 0x01) << 7) | ((sequence & 0xFE) >> 1);
 				output = sequence & 0x01;
-			}
+				if (step == 0) {
+					int test = 0;
+				}
+				step++;
+				step = step % 8;
+			//}
 			return output;
 		}
 	};
@@ -50,12 +66,13 @@ private:
 
 	float sweepTimes[8] = { 0,7.8125,15.625,23.4375,31.25,39.0625,46.875,54.6875 };
 	//float duites[8] = { 12.5,25,50,75 };
-	float duites[4] = { 0.125,0.25,0.5,0.75 };
+	float duties[4] = { 0.125,0.25,0.5,0.75 };
+	
 	uint8_t waveForms[4] = { 0b00000001,0b10000001,0b10000111,0b01111110 };
 	struct Channel {
 		uint8_t channelIndex;
 		bool enable = false;
-		double sweepTime;
+		double frequencySweepLenReload;
 		double frequencySweepLen;
 		//Lower 8 bits of 11 bit frequency in ($FF14). Next 3 bit are in NR14 ($FF14)
 		uint16_t freq;
@@ -85,7 +102,7 @@ private:
 
 		Sequencer sequencer;
 		uint32_t samplePosition = 0;
-		Sint16* samplesData;
+		Sint8* samplesData;
 		int sampleRatePos = 0;
 	};
 	struct SoundControl {
@@ -155,11 +172,9 @@ public:
 	void feedVolumeEnvelopeRegister(uint8_t channelIndex, uint8_t value);
 	void feedFrequencyLoRegister(uint8_t channelIndex, uint8_t value);
 	void feedFrequencyHiCtlRegister(uint8_t channelIndex, uint8_t value);
-	float getChannelSample(uint8_t channelIndex);
 	void updateChannelFreqData(uint8_t channelIndex, uint16_t newFreqData);
 	void close();
 	void play();
-	double getSample(double f, double t, double d, int h);
 
 	struct FrameSequencer {
 		APU* apu;
@@ -184,93 +199,276 @@ public:
 		int sampleCounter = 0;
 		int sampleGenerateCounterReload = 95;//4194304/44100
 		int sampleGenerateCounter = 95;
-		
+		const char* lastwaveform;
+		double time = 0;
+		bool volSaved = false;
+		float squareLimits[4] = {
+	-0.25, // 12.5% ( _-------_-------_------- )
+	 -0.5,  // 25%   ( __------__------__------ )
+	 0,     // 50%   ( ____----____----____---- ) (normal)
+	 0.5,   // 75%   ( ______--______--______-- )
+		};
+		float squareLimit;
+		bool hasSamples = false;
 	public:
 
 		Channel* ch;
 		void tick() {
-			ch->sequencer.tick(apu->bus->cpu->lastOpcodeCycles);
+			//ch->sequencer.tick(apu->bus->cpu->lastOpcodeCycles);
+			lenTimer -= apu->bus->cpu->lastOpcodeCycles;
 			//sampleCounterReload = 4194304 * (1 / (double)apu->adc.have.samples);
 			timer -= apu->bus->cpu->lastOpcodeCycles;
+			sampleGenerateCounter -= apu->bus->cpu->lastOpcodeCycles;
 			//return;
 
 			//sweepTimer -= apu->bus->cpu->lastOpcodeCycles;
-			getSample();
-			if (!ch->enable)
-				return;
 			
-			envelope();
-		
-			lenCounter();
-			bool first = false;
 			
-			if (first)
-				duty();
+			/*if (!ch->enable)
+				return;*/
+
+		//getSample();
+			
 			if (timer <= 0) {
-
+				vol = ch->envelopeVolume;
 				timer += timerReload;
-				//output = getSample();
-
-
-				if (!first)
-					duty();
-				return;
-				if (!ch->enable)
-					return;
-				//duty(buf);
-				 //duty(buf);
-				sweep();
-
-				lenCounter();
-
+				ch->sequencer.tick(apu->bus->cpu->lastOpcodeCycles);
+				//return;
+				switch (frameStep) {//prpblem with len counter.
+				case 0:
+					lenCounter();
+					break;
+				case 1:
+					break;
+				case 2:
+					sweep();
+					lenCounter();
+					break;
+				case 3:
+					break;
+				case 4:
+					lenCounter();
+					break;
+				case 5:
+					break;
+				case 6:
+					sweep();
+					lenCounter();
+					break;
+				case 7:
+					envelope();
+					break;
+				}
+				frameStep=frameStep<7?frameStep+1:0;
+			
+				
+				
 			}
-
+			getSample();
+			
 		}
 		float getSample() {
 
 			
-			sampleGenerateCounter-= apu->bus->cpu->lastOpcodeCycles;
+			
 			if (sampleGenerateCounter <= 0) {
 				sampleGenerateCounter += sampleGenerateCounterReload;
 
-
+				auto approxsin = [](float t) {
+					double j = t * 0.15915;
+					j = j - (int)j;
+					return 20.785 * j * (j - 0.5) * (j - 1.0f);
+				};
 				
 				
-				Sint16 sample;
+				//Sint16 sample;
+				//Sint32 sample;
+				//float sample;
+				Uint8 sample;
 				float phase = 2.0f * M_PI * apu->channels[0].duty;
 			
 				float f = (float)apu->channels[0].freq;
 				
 					double g = 0;
 					double c = 0, y1 = 0, y2 = 0;
-					double t = 2 * M_PI * apu->adc.audioPosition * f * apu->adc.sampleDurationSec;
-					//t= audio_pos* 2 * M_PI  * f * apu->adc.sampleDurationSec;
-					//t = audio_pos;
-					/*for (int k = 1;k < 20;k += 2) {
-
-						g += sin(t * k - (double)phase * k) / k;
+					double t = apu->adc.audioPosition *  apu->adc.sampleDurationSec;
+					//t = time;
+					time += ch->freq * M_PI / (float)apu->adc.have.freq;
+					
+					double x = t * 2 * M_PI * f;
+					
+					//g += sin(x * k - (double)phase * k) / k;
+				/*for (int k = 1;k < 20;k += 2) {	
+					//	g += approxsin(x * k - (double)phase * k) / k;
+						g += -approxsin(x * k) / k;
 					}*/
-					for (int n = 1;n <= 20;n++) {
-						c = n * t;
-						y1 += -sin(c) / n;
-						y2 += -sin(c - phase * (double)n) / n;
+				/*for (int n = 1;n <= 20;n++) {
+						c = n * x;
+						y1 += -approxsin(c) / n;
+						y2 += -approxsin(c - phase * (double)n) / n;
 					}
-					g = (y1 - y2)* (2.0/ M_PI);
-					sample = g * apu->adc.audioVolume * apu->channels[0].envelopeVolume;
+					g = (y1 - y2)* (2.0/ M_PI);*/
+				  //  vol= ch->envelopeVolume;
+					/*if (!ch->enable)
+						vol = 0;	*/	
+					
+					//sample = ((g*apu->adc.audioVolume * vol))/100;
+					if (false) {
+						if (ch->enable && (ch->sequencer.waveForm != lastwaveform || false)) {
+							printf("g:%f out:%d sequence:%d step:%d wave:%s\n", g, ch->sequencer.output, ch->sequencer.sequence, ch->sequencer.step, ch->sequencer.waveForm);
+							lastwaveform = ch->sequencer.waveForm;
+						}
+						float p = apu->adc.audioVolume * vol;
+						p = ch->sequencer.output * ch->duty * apu->adc.audioVolume * vol;
+						/*if(ch->enable)
+						printf("p:%f\n", p);*/
+						p = g * apu->adc.audioVolume * vol * ch->sequencer.output;
+						p = ((float)p) / (float)32768;
+						if (p > 1) p = 1;
+						if (p < -1) p = -1;
+						/*if (p < 0.5)
+							p = -p;*/
+							//p *= apu->adc.audioVolume * vol;
+
+						sample = p;
+					}
+
+					
+					
+					/*g = sin(time);
+					time += (2 * M_PI * ch->freq) / (float)apu->adc.have.samples;
+					sample = (g * ch->sequencer.output * apu->adc.audioVolume * vol);*/
+					//sample = ((g * apu->adc.audioVolume * vol));
+					
+					if (apu->adc.audioVolume == 0 || vol == 0 || !ch->enable) {
+						int test = 0;
+					}
+					//time =SDL_GetTicks()* ch->freq * M_PI;
+					//time =(apu->bus->cpu->steps/419433)*2.0f*M_PI;
+					float h = sin(x);
+					if (h > squareLimit)
+						h = 0xff;
+					else
+						h= 0;
+					if (h != 0) {
+						int test = 0;
+					}
+					
+
+					float v = (((float)(apu->soundCtrl.S01Volume + apu->soundCtrl.S02Volume) / 7))/10;
+					
+					//apu->adc.audioVolume
+				sample = ((h  * ((double)vol/15)*v));
+				//sample = ((g * apu->adc.audioVolume * vol));
+					/*sample /= 32768;
+					if (sample > 1) sample = 1;
+					if (sample < -1) sample = -1;*/
+					//sample = 0.5;
 					apu->adc.audioPosition++;
 
+					if (!ch->enable)
+						sample = 0;
+					else {
+						int test = 0;
+					}
 				ch->samplesData[sampleCounter] = sample;
+				volSaved = true;
 				if (ch->samplesData[sampleCounter] != 0)
 					int test = 0;
 				sampleCounter++;
 				if (sampleCounter == apu->adc.have.samples) {
-					
+					hasSamples = true;
 					sampleCounter = 0;
 				
-					SDL_QueueAudio(apu->adc.dev, ch->samplesData, apu->adc.have.samples*sizeof(Sint16));
+					SDL_QueueAudio(apu->adc.dev, ch->samplesData, apu->adc.have.samples);
+					
 				}
 			}
 			return 0;
+		}
+		void sweep() {
+			//return;
+			if (ch->frequencySweepLenReload && ch->nSweep) {
+				
+				if (ch->frequencySweepLen <= 0) {//change frequency
+					ch->frequencySweepLen = ch->frequencySweepLenReload;
+					uint16_t freqData = ch->loadedFreq + ch->sweepInc * (ch->loadedFreq >> ch->nSweep);
+					//uint16_t freqData = ch->freq + ch->sweepInc * (ch->freq >> ch->nSweep);
+
+					
+					//uint16_t newFreq = 131072 / (2048 - freqData);
+					if (freqData > 2047) {
+						ch->enable = false;
+						apu->setSoundState(ch->channelIndex, false);
+					}
+					else if (freqData >= 0) {
+						ch->loadedFreq = freqData;
+						uint16_t newFreq = 131072 / (2048 - freqData);
+						//uint16_t newFreq = ch->freqData + ch->sweepInc * (ch->freqData >> ch->nSweep);
+						ch->freq = newFreq;
+						//Lower 8 bits of 11 bit frequency (x). Next 3 bit are in NR14 ($FF14)
+						apu->updateChannelFreqData(ch->channelIndex, freqData);
+						//write freqDatato nn14 and nn13
+					}
+					
+				}
+				ch->frequencySweepLen--;
+			}
+
+		}
+		void lenCounter() {
+			//return;
+			//return;
+			/*if (ch->counterEnable) {
+				if (lenTimer <= 0) {
+
+					printf("conter!\n");
+					ch->enable = false;
+					apu->setSoundState(ch->channelIndex, false);
+				}
+			}*/
+			if (ch->counterEnable) {
+				if (ch->soundLen <= 0) {
+					ch->enable = false;
+					apu->setSoundState(ch->channelIndex, false);
+					
+				}
+				ch->soundLen--;
+			}
+		}
+		void envelope() {
+			if (ch->envelopeEnable) {
+				if (ch->volumeEnvelopeLen==0) {
+					ch->volumeEnvelopeLen = ch->loadedVolumeEnvelopeLen;
+					/*if (ch->volumeEnvelopeLen <= 0) {
+						ch->volumeEnvelopeLen = ch->loadedVolumeEnvelopeLen;
+					}*/
+					//if (ch->volumeEnvelopeLen == ch->loadedVolumeEnvelopeLen) {
+
+						//ch->envelopeVolume += ch->envelopeDirection;
+					uint8_t newVolume = ch->envelopeVolume + ch->envelopeDirection;
+					if (newVolume >=0x0f || newVolume < 0) {
+						ch->envelopeEnable = false;
+					}
+					else {
+						if (!volSaved) {
+							int test = 0;
+						}
+						ch->envelopeVolume = newVolume;
+						volSaved = false;
+					
+						/*if (ch->sequencer.output != 0)
+							vol = ch->envelopeVolume;
+						else vol = 0;*/
+					}
+					
+				}
+				else {
+			         //vol = 0;
+				}
+				//}
+				ch->volumeEnvelopeLen--;
+			}
 		}
 		float getSample2() {
 
@@ -337,13 +535,14 @@ public:
 			}
 			return 0;
 		}
-		void sweep() {
+		
+		void sweep3() {
 			//sweepTimer--;
-			if (sweepTimer <= 0 && ch->sweepTime && ch->nSweep) {
+			if (sweepTimer <= 0 && ch->frequencySweepLenReload && ch->nSweep) {
 				sweepTimer += sweepTimerReload;
 				ch->frequencySweepLen--;
 				if (ch->frequencySweepLen <= 0) {//change frequency
-					ch->frequencySweepLen = ch->sweepTime;
+					ch->frequencySweepLen = ch->frequencySweepLenReload;
 					uint16_t freqData = ch->loadedFreq + ch->sweepInc * (ch->loadedFreq >> ch->nSweep);
 
 					uint16_t newFreq = 131072 / (2048 - freqData);
@@ -362,7 +561,7 @@ public:
 			}
 
 		}
-		void duty() {
+		void sweep2() {
 
 		
 			
@@ -400,8 +599,11 @@ public:
 			ch->samplePosition = ch->samplePosition % apu->adc.have.samples;
 			sampleCounter = 0;
 		}
-		void lenCounter() {
+		
+		void lenCounter2() {
+			
 			if (ch->counterEnable) {
+
 				lenTimer -= apu->bus->cpu->lastOpcodeCycles;
 				if (lenTimer <= 0) {
 
@@ -423,30 +625,7 @@ public:
 				}
 			}
 		}
-		void envelope() {
-
-			if (ch->envelopeEnable) {
-				if (volEnvelopeTimer <= 0) {
-					volEnvelopeTimer += volEnvelopeTimerReload;
-				}
-				if (volEnvelopeTimer == volEnvelopeTimerReload) {
-
-					ch->envelopeVolume += ch->envelopeDirection;
-					if (ch->envelopeVolume == 0x0f || ch->envelopeVolume == 0) {
-						ch->envelopeEnable = false;
-					}
-					else {
-						//if (output != 0)
-							vol = ch->envelopeVolume;
-						//else vol = 0;
-					}
-				}
-				volEnvelopeTimer -= apu->bus->cpu->lastOpcodeCycles;
-			}
-
-
-
-		}
+		
 		void envelope2() {
 
 			if (ch->envelopeEnable) {

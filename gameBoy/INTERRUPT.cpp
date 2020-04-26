@@ -41,18 +41,32 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 			break;
 		case 0x10:
 			bus->apu->feedSweepRegister(0, value);
+			io[0x10] = value;
+			break;
 		case 0x11:
 			bus->apu->feedLenAndDutyRegister(0, value);
+			io[0x11] = value;
+			break;
 		case 0x12:
 			bus->apu->feedVolumeEnvelopeRegister(0, value);
+			io[0x12] = value;
+			break;
 		case 0x13:
 			bus->apu->feedFrequencyLoRegister(0, value);
+			io[0x13] = value;
+			break;
 		case 0x14:
 			bus->apu->feedFrequencyHiCtlRegister(0, value);
+			io[0x14] = value;
+			break;
 		case 0x24:
 			bus->apu->feedChannelCtrlRegister(value);
+			io[0x24] = value;
+			break;
 		case 0x25:
 			bus->apu->setSoundOutputTerminal(value);
+			io[0x25] = value;
+			break;
 		case 0x26:
 			bus->apu->soundState=(bus->apu->soundState&0x7f)|(value&0x80);
 			break;
@@ -71,11 +85,14 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 				io[address] = 0xfe|value;
 				if (print)
 				printf("write opcode:0x4f // VRAM Bank value:%04x value(io):%04x\n", value, io[address]);
-				break;
+				
 			}
+			break;
 		case 0x55:
 			if (print)
 			printf("write opcode:0x55 // Start DMA Transfer value:%04x value(io):%04x\n", value, io[address]);
+			io[0x55] =value;
+			break;
 		case 0x69:
 			if (bus->cartridge->header.colorGB) {
 				//bus->display->BGPaletteData[io[0x68]&0x3f] = value;
@@ -101,8 +118,8 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 			printf("write opcode:0x70 // WRAM Bank value:%04x\n", value);
 			break;
 		case 0x76://read 0nly
+			break;
 		case 0x77://read only
-			return;
 			break;
 		default:
 			io[address] = value;

@@ -289,7 +289,6 @@ int main(void) {
 			if (SDL_QUIT == display->windowEvent.type)
 			{
 				running = false;
-				//break;
 				bus->cpu->running = false;
 			}
 		if (apu->restart)
@@ -297,9 +296,11 @@ int main(void) {
 		Sleep(100);
 	}
 	display->close();
-	
 	return 0;*/
-	
+
+	int counters[5] = { 3,6,12,15,30 };
+	int sleeps[5] = { 50,100,200,250,500 };
+	int rendersCounter = 0;
 	while (true) {
 		if (SDL_PollEvent(&display->windowEvent))
 			if (SDL_QUIT == display->windowEvent.type)
@@ -307,7 +308,7 @@ int main(void) {
 				running = false;
 				break;
 			}
-		steady_clock::time_point start = steady_clock::now();
+		//steady_clock::time_point start = steady_clock::now();
 		do {
 
 			//cpu->Execute(opcode);
@@ -351,8 +352,8 @@ int main(void) {
 
 
 					//cpu->cycelsCounter += cpu->lastOpcodeCycles;
-			cpu->time.addMCycles(cpu->lastOpcodeCycles / 4);
-			cpu->time.print(2);
+			/*cpu->time.addMCycles(cpu->lastOpcodeCycles / 4);
+			cpu->time.print(2);*/
 		//	if (cpu->time.timeChanged[1]) {
 			//	cpu->time.timeChanged[1] = false;
 			//	Sleep(1);
@@ -363,15 +364,27 @@ int main(void) {
 		cyclesInFrameCounter = 0;
 
 		display->render();
+		rendersCounter++;
 		
-		steady_clock::time_point end = steady_clock::now();
-		duration<double> elapsed_seconds = end - start;
-		double elapse = elapsed_seconds.count();
-		Sleep((elapse)*100);
+		
+		/*steady_clock::time_point end = steady_clock::now();
+		duration<double> elapsed_seconds = end - start;*/
+		int i = 4;
+		/*if (rendersCounter == counters[i]) {
+			float factor = 0.5;
+			SDL_PauseAudioDevice(apu->adc.dev, 0);
+			Sleep(sleeps[i]*factor);
+			SDL_PauseAudioDevice(apu->adc.dev, 0);
+			rendersCounter = 0;
+		}*/
+		//double elapse = 1-elapsed_seconds.count();
+		/*if (elapse > 0) {
+			Sleep(elapse * 1000);
+		}*/
 		
 		bool lastState = apu->adc.paused;
 		apu->adc.paused = true;
-		//Sleep(2);
+		//Sleep(15);
 		apu->adc.paused = lastState;
 		//display->update();
 		//printf("render\n");
