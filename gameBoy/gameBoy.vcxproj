@@ -167,6 +167,7 @@
     <ClInclude Include="BUS.h" />
     <ClInclude Include="CARTRIDGE.h" />
     <ClInclude Include="CartridgeFactory.h" />
+    <ClInclude Include="APUstructures.h" />
     <ClInclude Include="CPU.h" />
     <ClInclude Include="DISPLAY.h" />
     <ClInclude Include="DMA.h" />

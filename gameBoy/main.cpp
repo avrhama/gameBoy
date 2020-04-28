@@ -153,11 +153,9 @@ void pipeRecive(BUS* bus, uint16_t opcode, uint16_t lastOpcode, int steps, strin
 }
 
 int main(void) {
-
 	
-
 	
-	//return 0;
+	
 	//sound();
 
 	//return 0;
@@ -199,7 +197,7 @@ int main(void) {
 	"roms\\Pokemon8.gb",
 	"roms\\mario.gb",//27
 	"roms\\zelda.gbc" };
-	uint8_t romIndex = 15;
+	uint8_t romIndex =15;
 
 	//
 	BUS* bus = new BUS();
@@ -231,6 +229,7 @@ int main(void) {
 	gpu->reset();
 	interrupt->reset();
 	apu->start();
+	//apu->fs.apu = apu;
 	printf("title:%s\n", cartridge->header.title);
 	printf("rom banks count:%d\n", cartridge->header.romBanksCount);
 	printf("romBank size:%d\n", cartridge->header.romBankSize);
@@ -309,6 +308,7 @@ int main(void) {
 				break;
 			}
 		//steady_clock::time_point start = steady_clock::now();
+		int timeBefore = SDL_GetTicks();
 		do {
 
 			//cpu->Execute(opcode);
@@ -330,8 +330,8 @@ int main(void) {
 
 			cpu->lastOpcodeCycles *= (4 * (cpu->speedMode + 1));
 			cpu->steps+= cpu->lastOpcodeCycles;
-			apu->fs.tick();
-			//apu->tick();
+			//apu->fs.tick(cpu->lastOpcodeCycles);
+			apu->tick();
 			gpu->tick();
 			cpu->updateTimers();
 
@@ -364,6 +364,10 @@ int main(void) {
 		cyclesInFrameCounter = 0;
 
 		display->render();
+		int timePassed = SDL_GetTicks() - timeBefore;
+		int sleep = 15 - timePassed;
+		if (sleep > 0)
+			Sleep(sleep);
 		rendersCounter++;
 		
 		
@@ -384,7 +388,7 @@ int main(void) {
 		
 		bool lastState = apu->adc.paused;
 		apu->adc.paused = true;
-		//Sleep(15);
+		//Sleep(4);
 		apu->adc.paused = lastState;
 		//display->update();
 		//printf("render\n");

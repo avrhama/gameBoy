@@ -20,7 +20,10 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 			printf("write opcode:0x4D // Speed Mode value:%04x\n", value);
 		break;
 	}
-	if (address < 0x80)
+	if (address < 0x80) {
+		if (address >= 0x10 && address <= 0x3f) {
+			bus->apu->write(address, value);
+		}
 		switch (address)
 		{
 		case 0x04:
@@ -39,39 +42,8 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 			io[0x0f] = value | 0xE0;
 			//printf("opcode:0x0f // IE value:%04x\n", value);
 			break;
-		case 0x10:
-			bus->apu->feedSweepRegister(0, value);
-			io[0x10] = value;
-			break;
-		case 0x11:
-			bus->apu->feedLenAndDutyRegister(0, value);
-			io[0x11] = value;
-			break;
-		case 0x12:
-			bus->apu->feedVolumeEnvelopeRegister(0, value);
-			io[0x12] = value;
-			break;
-		case 0x13:
-			bus->apu->feedFrequencyLoRegister(0, value);
-			io[0x13] = value;
-			break;
-		case 0x14:
-			bus->apu->feedFrequencyHiCtlRegister(0, value);
-			io[0x14] = value;
-			break;
-		case 0x24:
-			bus->apu->feedChannelCtrlRegister(value);
-			io[0x24] = value;
-			break;
-		case 0x25:
-			bus->apu->setSoundOutputTerminal(value);
-			io[0x25] = value;
-			break;
-		case 0x26:
-			bus->apu->soundState=(bus->apu->soundState&0x7f)|(value&0x80);
-			break;
 		case 0x41:
-			io[0x41] = value|0x80;
+			io[0x41] = value | 0x80;
 			break;
 		case 0x44:
 			io[0x44] = 0;
@@ -80,25 +52,25 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 			bus->dma->transfer(value);
 			break;
 		case 0x4f:
-			if(bus->cartridge->header.colorGB){
+			if (bus->cartridge->header.colorGB) {
 				bus->gpu->vRamBank = value & 0x01;
-				io[address] = 0xfe|value;
+				io[address] = 0xfe | value;
 				if (print)
-				printf("write opcode:0x4f // VRAM Bank value:%04x value(io):%04x\n", value, io[address]);
-				
+					printf("write opcode:0x4f // VRAM Bank value:%04x value(io):%04x\n", value, io[address]);
+
 			}
 			break;
 		case 0x55:
 			if (print)
-			printf("write opcode:0x55 // Start DMA Transfer value:%04x value(io):%04x\n", value, io[address]);
-			io[0x55] =value;
+				printf("write opcode:0x55 // Start DMA Transfer value:%04x value(io):%04x\n", value, io[address]);
+			io[0x55] = value;
 			break;
 		case 0x69:
 			if (bus->cartridge->header.colorGB) {
 				//bus->display->BGPaletteData[io[0x68]&0x3f] = value;
 				bus->display->setPaletteColor(io[0x68] & 0x3f, value, true);
 				if (io[0x68] >> 7)
-					io[0x68] = (io[0x68]&0x80)|((io[0x68] + 1) & 0x3f);
+					io[0x68] = (io[0x68] & 0x80) | ((io[0x68] + 1) & 0x3f);
 				break;
 			}
 		case 0x6b:
@@ -109,13 +81,13 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 				break;
 			}
 		case 0x70:
-			
+
 			bus->mmu->workingRamBank = value & 0x07;
-			if ( bus->mmu->workingRamBank == 0)
+			if (bus->mmu->workingRamBank == 0)
 				bus->mmu->workingRamBank = 1;
 			io[address] = value;
 			if (print)
-			printf("write opcode:0x70 // WRAM Bank value:%04x\n", value);
+				printf("write opcode:0x70 // WRAM Bank value:%04x\n", value);
 			break;
 		case 0x76://read 0nly
 			break;
@@ -124,6 +96,7 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 		default:
 			io[address] = value;
 		}
+	}
 
 }
 
@@ -137,9 +110,20 @@ uint8_t INTERRUPT::read(uint16_t address)
 	if (address < 0x80) {
 		switch (address)
 		{
-		
+		case 0x13:
+			return bus->apu->channels[0]->freqLo;
+			break;
+		case 0x14:
+			return bus->apu->channels[0]->freqHi;
+			break;
+		case 0x18:
+			return bus->apu->channels[1]->freqLo;
+			break;
+		case 0x19:
+			return bus->apu->channels[1]->freqHi;
+			break;
 		case 0x26:
-			return bus->apu->soundState;
+			return bus->apu->soundCtrl.soundState;
 		case 0x69:
 			if (bus->cartridge->header.colorGB)
 				return  bus->display->BGPaletteData[io[0x68] & 0x3f];
