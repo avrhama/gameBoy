@@ -179,6 +179,10 @@ public:
 	virtual void getSample() {}
 	virtual void sweep() {}
 	virtual void envelope() {}
+	virtual void loadNRX1(uint8_t  value) = 0;
+	virtual void loadNRX2(uint8_t  value) = 0;
+	virtual void loadNRX3(uint8_t  value) = 0;
+	virtual void loadNRX4(uint8_t  value) = 0;
 	float out() {
 		return 0;
 		//return (((float)ch->sequencer->output / 100) * vol);
@@ -204,6 +208,67 @@ public:
 		squareLimit = squareLimits[i];
 	}
 	int tempsteps = 0;
+	
+	void loadNRX1(uint8_t  value) {
+		/*
+		Bit 7-6 - Wave Pattern Duty (Read/Write)
+		Bit 5-0 - Sound length data (Write Only) (t1: 0-63)
+	*/
+		soundLenData = value & 0x3f;
+		//duty = duties[(value >> 6) & 0x03];
+		sequencer.setWave((value >> 6) & 0x03);
+		soundLen = ((64 - (double)soundLenData));
+		setSquareLimit((value >> 6) & 0x03);
+	}
+	void loadNRX2(uint8_t  value) {
+		/*
+			Bit 7-4 - Initial Volume of envelope (0-0Fh) (0=No Sound)
+			Bit 3   - Envelope Direction (0=Decrease, 1=Increase)
+			Bit 2-0 - Number of envelope sweep (n: 0-7)
+			(If zero, stop envelope operation.)
+			Length of 1 step = n*(1/64) seconds
+		*/
+		nEnvelopeSweep = value & 0x07;
+		envelopeDirection = (value >> 3) & 0x01 ? 1 : -1;
+		envelopeVolumeReload = (value >> 4) & 0x0f;
+		envelopeVolume = envelopeVolumeReload;
+		loadedVolumeEnvelopeLen = nEnvelopeSweep;
+		envelopeEnable = (nEnvelopeSweep != 0) && (0x100 - envelopeVolume > 0);
+
+	}
+	void loadNRX3(uint8_t value) {
+		//Lower 8 bits of 11 bit frequency (x). Next 3 bit are in NR14 ($FF14)
+		freqLo = value;
+		loadedFreq = (loadedFreq & 0x700) | (value & 0xff);
+	}
+	void loadNRX4(uint8_t value) {
+		/*
+		Bit 7   - Initial (1=Restart Sound)     (Write Only)
+		Bit 6   - Counter/consecutive selection (Read/Write)
+				(1=Stop output when length in NR11 expires)
+		Bit 2-0 - Frequency's higher 3 bits (x) (Write Only)
+	*/
+		freqHi = value;
+		loadedFreq = (value & 0x07) << 8 | (loadedFreq & 0xff);
+		counterEnable = (((value >> 6) & 0x01) == 0x01);
+		if (!counterEnable) {
+			soundLen = 0;
+		}
+
+		sequencer.counterReload = (4 * (2048 - freqData));
+		sequencer.counter = sequencer.counterReload;
+		if ((value >> 7) & 0x01) {//trigger 
+			enable = true;
+			if (soundLen == 0) 
+				soundLen = 64;
+	
+			freq = 131072 / (2048 - loadedFreq);
+			frequencySweepLen = frequencySweepLenReload;
+			volumeEnvelopeLen = loadedVolumeEnvelopeLen;
+			sequencer.setTimer(freq);
+			soundCtrl->setSoundState(channelIndex, true);
+		}
+	}
 	virtual void sweep() {}
 	void tick(int cycles) override {
 		timer -= cycles;
@@ -424,7 +489,18 @@ public:
 };
 class Channel1 :public SquareWave {
 public:
-	
+	void loadNRX0(uint8_t value) {
+		/*
+			Bit 6-4 - Sweep Time
+			Bit 3   - Sweep Increase/Decrease
+			0: Addition    (frequency increases)
+			1: Subtraction (frequency decreases)
+			Bit 2-0 - Number of sweep shift (n: 0-7)
+		*/
+		frequencySweepLenReload = (value >> 4) & 0x07;
+		sweepInc = ((value >> 3) & 0x01) ? -1 : 1;
+		nSweep = value & 0x07;
+	}
 	void sweep() override{
 		//return;
 		if (frequencySweepLenReload && nSweep) {
@@ -457,11 +533,277 @@ public:
 
 	}
 };
+class Wave :public Channel {
+protected:
+	float outputLevels[4]={ 0,1,0.5,0.25 };
+	float outputLevel = 0;
+	uint8_t wavePatternRamPosition = 0;
+	float squencerTimerReload;
+	float squencerTimer;
+public:
+	uint8_t wavePatternRam[0x10] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
+
+	int tempsteps = 0;
+	void loadNRX0(uint8_t value) {
+		/*
+			Bit 7 - Sound Channel 3 Off  (0=Stop, 1=Playback)  (Read/Write)
+		*/
+		enable = (value >> 7) & 0x01;
+	}
+	void loadNRX1(uint8_t  value) {
+		/*
+		Bit 7-0 - Sound length (t1: 0 - 255)
+	*/
+		soundLenData = value;
+		soundLen = ((256 - (double)soundLenData));
+	}
+	void loadNRX2(uint8_t  value) {
+		/*
+			Bit 6-5 - Select output level (Read/Write)
+		*/
+		outputLevel = outputLevels[(value >> 5) & 0x03];
+	}
+	void loadNRX3(uint8_t value) {
+		//Lower 8 bits of 11 bit frequency (x). Next 3 bit are in NR14 ($FF14)
+		freqLo = value;
+		loadedFreq = (loadedFreq & 0x700) | (value & 0xff);
+	}
+	void loadNRX4(uint8_t value) {
+		/*
+		Bit 7   - Initial (1=Restart Sound)     (Write Only)
+		Bit 6   - Counter/consecutive selection (Read/Write)
+           (1=Stop output when length in NR31 expires)
+		Bit 2-0 - Frequency's higher 3 bits (x) (Write Only)
+	*/
+		freqHi = value;
+		loadedFreq = (value & 0x07) << 8 | (loadedFreq & 0xff);
+		counterEnable = (((value >> 6) & 0x01) == 0x01);
+		if (!counterEnable) {
+			soundLen = 0;
+		}
+		//squencerTimerReload = (2 * (2048 - (float)freqData));
+		//timerReload = (1 / frequency) * 524288;
+		//4194304/32=131072 cycles per ram sample pormote
+		
+		//squencerTimer = squencerTimerReload;
+		if ((value >> 7) & 0x01) {//trigger 
+			enable = true;
+			if (soundLen == 0)
+				soundLen = 256;
+
+			freq = 65536 / (2048 - loadedFreq);
+			//freq= (2 * (2048 - (float)loadedFreq));
+			volumeEnvelopeLen = loadedVolumeEnvelopeLen;
+			squencerTimerReload = (1 / (float)freq) * 65536;
+			//squencerTimerReload = (1 / (float)freq) * 131072;
+			//squencerTimerReload = (1 / (float)freq) * 262144;
+			//squencerTimerReload = (1 / (float)freq) * 524288;
+			//float x =14;
+			//squencerTimerReload = (1 / (float)freq)*(pow(2,x));
+			squencerTimer = squencerTimerReload;
+			timer = timerReload;
+			wavePatternRamPosition = 0;
+			soundCtrl->setSoundState(channelIndex, true);
+		}
+	}
+	virtual void sweep() {}
+	void tick(int cycles) override {
+		timer -= cycles;
+
+		squencerTimer -= cycles;
+		if (squencerTimer <= 0) {
+			squencerTimer += squencerTimerReload;
+			wavePatternRamPosition++;
+			wavePatternRamPosition = wavePatternRamPosition % 32;
+		}
+
+
+		sampleGenerateCounter -= cycles;
+		tempsteps += cycles;
+		if (timer <= 0) {
+			vol = envelopeVolume;
+			timer += timerReload;
+
+			//return;
+			switch (frameStep) {//prpblem with len counter.
+			case 0:
+				lenCounter();
+				break;
+			case 1:
+				break;
+			case 2:
+				lenCounter();
+				break;
+			case 3:
+				break;
+			case 4:
+				lenCounter();
+				break;
+			case 5:
+				break;
+			case 6:
+				lenCounter();
+				break;
+			}
+			frameStep = frameStep < 7 ? frameStep + 1 : 0;
+
+
+
+		}
+
+
+		getSample();
+		
+	}
+	void getSample() {
+		if (sampleGenerateCounter <= 0) {
+			sampleGenerateCounter += sampleGenerateCounterReload;
+
+			Uint8 rightSample;
+			Uint8 leftSample;
+			float h = 0xff * (1 - sequencer.output);
+			uint8_t sampleByte = wavePatternRam[wavePatternRamPosition / 2];
+			h = ((sampleByte >> (4-4*(wavePatternRamPosition%2))))&0x0f;
+			
+			h *= outputLevel;
+			
+		
+			//apu->adc.audioVolume
+
+
+		//sample = ((g * ((double)vol / 15) * v));
+		//sample = ((g * apu->adc.audioVolume * vol));
+
+			//sample = 0.5;
+
+		//ch->samplesData[sampleCounter] = sample;
+		//ch->samplesData[2*sampleCounter+1] = 1;
+			if (!enable) {
+				vol = 0;
+			}
+			vol = 15;
+			float v = (((float)(soundCtrl->S01Volume + soundCtrl->S02Volume) / 7)) / 10;
+
+			if (!enable) {
+				h = 0;
+			}
+			//leftSample = (h/0xf)*0xff*v;
+		    //h = (h / 8) - 1;
+			//h = (h/0xf)*0xff;
+			//h /= 0xf;
+			//h = 1 - h;
+			leftSample = h;
+			//float v = (((float)(apu->soundCtrl.S01Volume + apu->soundCtrl.S02Volume) / 7)) / 10;
+
+			//rightSample = ((h * ((double)vol / 15) * (double)apu->soundCtrl.S01Volume / 70));
+			//leftSample = ((h * ((double)vol / 15) * (double)apu->soundCtrl.S02Volume / 70));
+
+
+
+
+			//ch->samplesData[2*sampleCounter] = rightSample;
+			//ch->samplesData[2*sampleCounter+1] = leftSample;
+			//ch->rightSamplesData[sampleCounter] = leftSample;
+			//ch->rightSamplesData[sampleCounter] = 0;
+			leftSamplesData[adc->sampleCounter] = leftSample;
+			//ch->samplesData[2*sampleCounter] = 128;
+			volSaved = true;
+			if (rightSamplesData[adc->sampleCounter] != 0)
+				int test = 0;
+			//sampleCounter++;
+			adc->hasSample = true;
+			//TODO
+			/*if (sampleCounter == apu->adc.have.samples) {
+				hasSamples = true;
+				sampleCounter = 0;
+				//SDL_QueueAudio(apu->adc.dev, ch->samplesData, apu->adc.have.channels * apu->adc.have.samples);
+				//SDL_QueueAudio(apu->adc.dev, ch->samplesData,  apu->adc.have.samples);
+				SDL_QueueAudio(apu->adc.dev, ch->leftSamplesData, apu->adc.have.samples);
+				//SDL_QueueAudio(apu->adc.dev, ch->leftSamplesData, apu->adc.have.samples);
+				//SDL_QueueAudio(apu->adc.dev, ch->samplesData, apu->adc.have.channels * apu->adc.have.samples);
+			}*/
+
+		}
+
+	}
+	void lenCounter() {
+		if (counterEnable) {
+			if (soundLen <= 0) {
+				enable = false;
+				soundCtrl->setSoundState(channelIndex, false);
+			}
+			soundLen--;
+		}
+	}
+};
 class Noise :public Channel {
 protected:
 	double squencerTimerReload = 0;
 	double squencerTimer = 0;
 public:
+	
+	void loadNRX1(uint8_t  value) {
+		/*
+		 Bit 5-0 - Sound length data (t1: 0-63)
+	*/
+		soundLenData = value & 0x3f;		
+		soundLen = ((64 - (double)soundLenData));
+	}
+	void loadNRX2(uint8_t  value) {
+		/*
+			Bit 7-4 - Initial Volume of envelope (0-0Fh) (0=No Sound)
+			Bit 3   - Envelope Direction (0=Decrease, 1=Increase)
+			Bit 2-0 - Number of envelope sweep (n: 0-7)
+			(If zero, stop envelope operation.)
+			Length of 1 step = n*(1/64) seconds
+		*/
+		nEnvelopeSweep = value & 0x07;
+		envelopeDirection = (value >> 3) & 0x01 ? 1 : -1;
+		envelopeVolumeReload = (value >> 4) & 0x0f;
+		envelopeVolume = envelopeVolumeReload;
+		loadedVolumeEnvelopeLen = nEnvelopeSweep;
+		envelopeEnable = (nEnvelopeSweep != 0) && (0x100 - envelopeVolume > 0);
+
+	}
+	void loadNRX3(uint8_t value) {
+		/*
+		Bit 7-4 - Shift Clock Frequency (s)
+		Bit 3   - Counter Step/Width (0=15 bits, 1=7 bits)
+		Bit 2-0 - Dividing Ratio of Frequencies (r)
+		*/
+		dividingROF = (value & 0x07);
+		dividingROF = dividingROF ? dividingROF : 0.5;
+		counterStep = ((value >> 3) & 0x01) ? 7 : 15;
+		sClockFreq = (value >> 4) & 0xf;
+		freq = (double)(524288 / dividingROF / pow(2, ((double)sClockFreq + 1)));
+		/*squencerTimerReload = ((1 / (double)freq) * 4194304);
+		squencerTimerReload = ((1 / (double)freq) * 4194304/(counterStep));
+		squencerTimer = squencerTimerReload;*/
+
+
+	}
+	void loadNRX4(uint8_t value) {
+		/*
+		Bit 7   - Initial (1=Restart Sound)     (Write Only)
+		Bit 6   - Counter/consecutive selection (Read/Write)
+		   (1=Stop output when length in NR41 expires)
+		*/
+		counterEnable = ((value >> 6) & 0x01);
+		enable = ((value >> 7) & 0x01);
+		if (enable) {
+			if (soundLen == 0) {
+				soundLen = 64;
+			}
+
+			squencerTimerReload = ((1 / (double)freq) * 4194304);
+			squencerTimerReload = ((1 / (double)freq) * 4194304 / (counterStep));
+			squencerTimer = squencerTimerReload;
+			volumeEnvelopeLen = loadedVolumeEnvelopeLen;
+			envelopeVolume = envelopeVolumeReload;
+			LFSR = 0xffff;
+			soundCtrl->setSoundState(3, true);
+		}
+	}
 	virtual void sweep() {}
 	uint16_t LFSR;
 	//Bit 7 - 4 - Shift Clock Frequency(s)
@@ -743,4 +1085,5 @@ public:
 		}
 	}
 };
+
 

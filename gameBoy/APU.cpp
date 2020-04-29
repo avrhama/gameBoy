@@ -6,10 +6,10 @@ void soundTick(void* user_data, Uint8* stream, int len) {
 
 
 
-	
-	for (int index = 0;index <len-1;index+=2)
+
+	for (int index = 0;index < len - 1;index += 2)
 	{
-		stream[index+1] = 120;
+		stream[index + 1] = 120;
 		//ch->samplesData[0] =255;
 		/*if(index>(apu->adc.have.channels * apu->adc.have.samples)/2)
 		ch->samplesData[index] = 128;*/
@@ -20,7 +20,7 @@ void soundTick(void* user_data, Uint8* stream, int len) {
 	//printf("len:%d\n",len);
 
 	//Sint16* buf = (Sint16*)stream;
-	
+
 
 	APU* apu = (APU*)user_data;
 
@@ -36,63 +36,63 @@ void soundTick(void* user_data, Uint8* stream, int len) {
 	}*/
 	BUS* bus = apu->bus;
 
-		uint16_t opcode;
-		uint8_t sampleCounter = 32;
-		uint16_t squencerCounter = 256;
-		float y1, y2, y3;
+	uint16_t opcode;
+	uint8_t sampleCounter = 32;
+	uint16_t squencerCounter = 256;
+	float y1, y2, y3;
 
-		apu->cyclesInSoundFrameCounter = 0;
-		//apu->cyclesInSoundFrame= 4194304 * elapse;
-		//4194304/44100=~95 cycles per sample. 97280 cycles for 1024 samples.
-	//	apu->cyclesInSoundFrame = (4194304/apu->adc.have.freq)* apu->adc.have.samples;
-		
-		apu->channels[0]->samplesData =(Sint8*)stream;
-		
-		bool rendered = false;
-		do {
+	apu->cyclesInSoundFrameCounter = 0;
+	//apu->cyclesInSoundFrame= 4194304 * elapse;
+	//4194304/44100=~95 cycles per sample. 97280 cycles for 1024 samples.
+//	apu->cyclesInSoundFrame = (4194304/apu->adc.have.freq)* apu->adc.have.samples;
 
+	apu->channels[0]->samplesData = (Sint8*)stream;
+
+	bool rendered = false;
+	do {
+
+		//cpu->Execute(opcode);
+		//pipeRecive(bus, opcode, lastopcode, steps,"Execute");
+		if (!bus->cpu->halt) {
+			opcode = bus->cpu->getOpcode();
+			opcode = (opcode == 0xCB) ? 0XCB00 | bus->cpu->getOpcode() : opcode;
 			//cpu->Execute(opcode);
-			//pipeRecive(bus, opcode, lastopcode, steps,"Execute");
-			if (!bus->cpu->halt) {
-				opcode = bus->cpu->getOpcode();
-				opcode = (opcode == 0xCB) ? 0XCB00 | bus->cpu->getOpcode() : opcode;
-				//cpu->Execute(opcode);
-				bus->cpu->ExecuteOpcode(opcode);
-				//cpu->steps++;
-				//pipeRecive(bus, opcode, lastopcode, cpu->steps, "Execute");
-				//cpu->Execute(opcode);
-			}
-			else {
-				bus->cpu->lastOpcodeCycles = 1;
-			}
+			bus->cpu->ExecuteOpcode(opcode);
+			//cpu->steps++;
+			//pipeRecive(bus, opcode, lastopcode, cpu->steps, "Execute");
+			//cpu->Execute(opcode);
+		}
+		else {
+			bus->cpu->lastOpcodeCycles = 1;
+		}
 
 
 
-			bus->cpu->lastOpcodeCycles *= (4 * (bus->cpu->speedMode + 1));
-			apu->cyclesInSoundFrameCounter += bus->cpu->lastOpcodeCycles;
+		bus->cpu->lastOpcodeCycles *= (4 * (bus->cpu->speedMode + 1));
+		apu->cyclesInSoundFrameCounter += bus->cpu->lastOpcodeCycles;
 
-			//apu->tick();
-			bus->gpu->tick();
-			bus->cpu->updateTimers();
-			bus->joypad->updateKeys();
+		//apu->tick();
+		bus->gpu->tick();
+		bus->cpu->updateTimers();
+		bus->joypad->updateKeys();
 
-			bus->cpu->lastOpcodeCycles += bus->interrupt->InterruptsHandler() * (4 * (bus->cpu->speedMode + 1));;
+		bus->cpu->lastOpcodeCycles += bus->interrupt->InterruptsHandler() * (4 * (bus->cpu->speedMode + 1));;
 
-			//bus->cpu->time.addMCycles(bus->cpu->lastOpcodeCycles / 4);
-		//	bus->cpu->time.print(2);
-			
-			bus->display->tick(bus->cpu->lastOpcodeCycles);
-			bus->cpu->steps += bus->cpu->lastOpcodeCycles;
-			sampleCounter-= bus->cpu->lastOpcodeCycles;
-			if (apu->cyclesInSoundFrameCounter >= 69905 && !rendered) {
-				bus->display->render();
-				rendered = true;
-			}
+		//bus->cpu->time.addMCycles(bus->cpu->lastOpcodeCycles / 4);
+	//	bus->cpu->time.print(2);
 
-		} while (false);
-		//while (apu->cyclesInSoundFrameCounter < apu->cyclesInSoundFrame);
+		bus->display->tick(bus->cpu->lastOpcodeCycles);
+		bus->cpu->steps += bus->cpu->lastOpcodeCycles;
+		sampleCounter -= bus->cpu->lastOpcodeCycles;
+		if (apu->cyclesInSoundFrameCounter >= 69905 && !rendered) {
+			bus->display->render();
+			rendered = true;
+		}
 
-		
+	} while (false);
+	//while (apu->cyclesInSoundFrameCounter < apu->cyclesInSoundFrame);
+
+
 }
 void APU::createAudioDeviceControl(bool closeOld)
 {
@@ -183,7 +183,7 @@ void APU::createAudioDeviceControl(bool closeOld)
 			SDL_Quit();
 			return;
 		}*/
-		
+
 		restart = true;
 		//SDL_PauseAudioDevice(dev, p); /* play! */
 		/*if (closeOld) {
@@ -192,12 +192,12 @@ void APU::createAudioDeviceControl(bool closeOld)
 		adc.wantOld = adc.want;
 		adc.haveOld = adc.have;
 		}*/
-	//	std::thread displayThread(closeDevice, old);
-		
-		
+		//	std::thread displayThread(closeDevice, old);
+
+
 	}
 
-	
+
 }
 
 APU::APU() {
@@ -211,7 +211,7 @@ void APU::start() {
 		printf("[SDL] Failed to initialize: %s\n", SDL_GetError());
 		return;
 	}
-	
+
 
 	SDL_zero(adc.want);
 	//queue device
@@ -231,15 +231,15 @@ void APU::start() {
 
 
 	//adc.want.freq = 224000;
-    //adc.want.freq = 131072;
+	//adc.want.freq = 131072;
 	//adc.want.freq = 88200;
-    adc.want.freq = 44100;// 44100&8192
+	adc.want.freq = 44100;// 44100&8192
 	// adc.want.freq = 22050;
 	//adc.want.freq = 65536;
 	//adc.want.freq = 32768;
-	
+
 	//adc.want.freq = 16384;
-	
+
    //adc.want.freq = 8192;
 	//adc.want.freq = 4096;
    // adc.want.freq = 2048;
@@ -260,8 +260,8 @@ void APU::start() {
 
 	//adc.want.samples = 8192;
 	//adc.want.samples = 4096;
-    //adc.want.samples = 2048;
-    // adc.want.samples = 1024;
+	//adc.want.samples = 2048;
+	// adc.want.samples = 1024;
    //adc.want.samples = 512;
 	adc.want.samples = 256;
 	//adc.want.samples = 128;
@@ -275,7 +275,7 @@ void APU::start() {
 	adc.H = 20;
 	//H:50 freq:65536 samples:1024
 	//adc.dev = SDL_OpenAudioDevice(NULL, 0, &adc.want, &adc.have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE | SDL_AUDIO_ALLOW_SAMPLES_CHANGE);
-	
+
 	int nums[18] = { 1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536,131072 };
 	//adc.want.freq = 131072;
 	//adc.want.samples = 32;
@@ -286,11 +286,11 @@ void APU::start() {
 	//adc.want.format = AUDIO_S32;
 	adc.want.format = AUDIO_S8;
 	adc.dev = SDL_OpenAudioDevice(NULL, 0, &adc.want, &adc.have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
-	
+
 	bus->f = adc.have.freq;
 	bus->s = adc.want.samples;
 	cyclesInSoundFrame = adc.have.freq;
-	
+
 	//cyclesInSoundFrame = 4194304/adc.have.freq;
 	if (!adc.dev) {
 		printf("[SDL] Failed to open audio device: %s\n", SDL_GetError());
@@ -310,7 +310,7 @@ void APU::start() {
 		channels[i]->samplesData = (Sint8*)calloc(((Uint16)adc.have.channels) * adc.have.samples, sizeof(Sint8));
 		channels[i]->samplePosition = 0;
 	}
-	
+
 	startTimer = steady_clock::now();
 	lastTick = startTimer;
 
@@ -321,13 +321,13 @@ void APU::start() {
 	adc.audioLen = 60 * adc.have.freq;//1 min.
 
 	SDL_PauseAudioDevice(adc.dev, 0);
-	
+
 
 
 	adc.sampleDurationSec = 0.001953125;//4096 samples steps in terms of seconds 
 	adc.sampleDurationMS = 1.953125;//4096 samples steps in terms of mili seconds
 	float m = adc.timeFactor;
-	adc.sampleDurationSec = 1/(double)adc.have.freq;
+	adc.sampleDurationSec = 1 / (double)adc.have.freq;
 
 
 	createChannels();
@@ -337,9 +337,9 @@ void APU::start() {
 void APU::createChannels() {
 
 	//Channel 1
-	
 
-	adc.sampleGenerateCounterReload= 4194304 / adc.have.freq;
+
+	adc.sampleGenerateCounterReload = 4194304 / adc.have.freq;
 	adc.sampleGenerateCounter = 4194304 / adc.have.freq;
 }
 
@@ -352,43 +352,71 @@ void APU::write(uint8_t address, uint8_t value)
 {
 	switch (address) {
 	case 0x10:
-		feedSweepRegister(0, value);
+		//feedSweepRegister(0, value);
+		chann1->loadNRX0(value);
 		break;
 	case 0x11:
-		feedLenAndDutyRegister(0, value);
+		//feedLenAndDutyRegister(0, value);
+		chann1->loadNRX1(value);
 		break;
 	case 0x12:
-		feedVolumeEnvelopeRegister(0, value);
+		//feedVolumeEnvelopeRegister(0, value);
+		chann1->loadNRX2(value);
 		break;
 	case 0x13:
-		feedFrequencyLoRegister(0, value);
+		//feedFrequencyLoRegister(0, value);
+		chann1->loadNRX3(value);
 		break;
 	case 0x14:
-		feedFrequencyHiCtlRegister(0, value);
+		//feedFrequencyHiCtlRegister(0, value);
+		chann1->loadNRX4(value);
 		break;
 	case 0x16:
-		feedLenAndDutyRegister(1, value);
+		//feedLenAndDutyRegister(1, value);
+		chann2->loadNRX1(value);
 		break;
 	case 0x17:
-		feedVolumeEnvelopeRegister(1, value);
+		//feedVolumeEnvelopeRegister(1, value);
+		chann2->loadNRX2(value);
 		break;
 	case 0x18:
-		feedFrequencyLoRegister(1, value);
+		//feedFrequencyLoRegister(1, value);
+		chann2->loadNRX3(value);
 		break;
 	case 0x19:
-		feedFrequencyHiCtlRegister(1, value);
+		//feedFrequencyHiCtlRegister(1, value);
+		chann2->loadNRX4(value);
+		break;
+	case 0x1a:
+		chann3->loadNRX0(value);
+		break;
+	case 0x1b:
+		chann3->loadNRX1(value);
+		break;
+	case 0x1c:
+		chann3->loadNRX2(value);
+		break;
+	case 0x1d:
+		chann3->loadNRX3(value);
+		break;
+	case 0x1e:
+		chann3->loadNRX4(value);
 		break;
 	case 0x20:
-		feedLenAndDutyRegister(3, value);
+		//feedLenAndDutyRegister(3, value);
+		chann4->loadNRX1(value);
 		break;
 	case 0x21:
 		feedVolumeEnvelopeRegister(3, value);
+		chann4->loadNRX2(value);
 		break;
 	case 0x22:
-		((Noise*)channels[3])->setPolynomialCounter(value);	
+		//((Noise*)channels[3])->setPolynomialCounter(value);
+		chann4->loadNRX3(value);
 		break;
 	case 0x23:
-		((Noise*)channels[3])->inital(value);
+		//((Noise*)channels[3])->inital(value);
+		chann4->loadNRX4(value);
 		break;
 	case 0x24:
 		feedChannelCtrlRegister(value);
@@ -399,7 +427,27 @@ void APU::write(uint8_t address, uint8_t value)
 	case 0x26:
 		soundCtrl.soundState = (bus->apu->soundCtrl.soundState & 0x7f) | (value & 0x80);
 		break;
+	case 0x30:
+	case 0x31:
+	case 0x32:
+	case 0x33:
+	case 0x34:
+	case 0x35:
+	case 0x36:
+	case 0x37:
+	case 0x38:
+	case 0x39:
+	case 0x3a:
+	case 0x3b:
+	case 0x3c:
+	case 0x3d:
+	case 0x3e:
+	case 0x3f:
+		if (!chann3->enable)
+			chann3->wavePatternRam[address - 0x30] = value;
+		break;
 	}
+
 }
 
 
@@ -410,23 +458,34 @@ void APU::connectToBus(BUS* bus)
 
 void APU::tick()
 {
-	//channels[0]->tick(bus->cpu->lastOpcodeCycles);
-	//channels[1]->tick(bus->cpu->lastOpcodeCycles);
+
+	channels[0]->tick(bus->cpu->lastOpcodeCycles);
+	channels[1]->tick(bus->cpu->lastOpcodeCycles);
+	channels[2]->tick(bus->cpu->lastOpcodeCycles);
 	channels[3]->tick(bus->cpu->lastOpcodeCycles);
 	if (adc.hasSample) {
 		adc.hasSample = false;
 		adc.audioPosition++;
 		adc.sampleCounter++;
-		
+
 		if (adc.sampleCounter == adc.have.samples) {
-			
+
 			adc.sampleCounter = 0;
 			//SDL_QueueAudio(apu->adc.dev, ch->samplesData, apu->adc.have.channels * apu->adc.have.samples);
 			//SDL_QueueAudio(apu->adc.dev, ch->samplesData,  apu->adc.have.samples);
-			//SDL_MixAudioFormat((Uint8*)channels[0]->leftSamplesData, (Uint8*)channels[1]->leftSamplesData, AUDIO_S8, adc.have.samples, SDL_MIX_MAXVOLUME);
-			//SDL_MixAudioFormat((Uint8*)channels[0]->leftSamplesData, (Uint8*)channels[3]->leftSamplesData, AUDIO_S8, adc.have.samples, SDL_MIX_MAXVOLUME);
+			SDL_MixAudioFormat((Uint8*)channels[0]->leftSamplesData, (Uint8*)channels[1]->leftSamplesData, AUDIO_S8, adc.have.samples, SDL_MIX_MAXVOLUME);
+			SDL_MixAudioFormat((Uint8*)channels[0]->leftSamplesData, (Uint8*)channels[2]->leftSamplesData, AUDIO_S8, adc.have.samples, SDL_MIX_MAXVOLUME);
+			SDL_MixAudioFormat((Uint8*)channels[0]->leftSamplesData, (Uint8*)channels[3]->leftSamplesData, AUDIO_S8, adc.have.samples, SDL_MIX_MAXVOLUME);
+			SDL_QueueAudio(adc.dev, channels[0]->leftSamplesData, adc.have.samples);
+			for (int i = 0;i < adc.have.channels * adc.have.samples;i++) {
 
-			SDL_QueueAudio(adc.dev, channels[3]->leftSamplesData, adc.have.samples);
+				channels[0]->leftSamplesData[i] = 0;
+				channels[1]->leftSamplesData[i] = 0;
+				channels[2]->leftSamplesData[i] = 0;
+				channels[3]->leftSamplesData[i] = 0;
+			}
+
+
 			//SDL_QueueAudio(apu->adc.dev, ch->leftSamplesData, apu->adc.have.samples);
 			//SDL_QueueAudio(apu->adc.dev, ch->samplesData, apu->adc.have.channels * apu->adc.have.samples);
 		}
@@ -445,7 +504,7 @@ void APU::setSoundOutputTerminal(uint8_t value) {
 		Bit 0 - Output sound 1 to SO1 terminal
 		*/
 	for (uint8_t i = 0;i < 4;i++) {
-		channels[i]->outputTerminal = (((value >> i + 4) & 0x01)<<1) |(value >> i)&0x01;
+		channels[i]->outputTerminal = (((value >> i + 4) & 0x01) << 1) | (value >> i) & 0x01;
 	}
 }
 void APU::feedChannelCtrlRegister(uint8_t value)
@@ -459,7 +518,7 @@ void APU::feedChannelCtrlRegister(uint8_t value)
 	soundCtrl.VinS02 = (((value >> 7) & 0x01) == 0x01);
 	soundCtrl.S02Volume = (value >> 4) & 0x07;
 	soundCtrl.VinS01 = (((value >> 3) & 0x01) == 0x01);
-	soundCtrl.S02Volume = value&0x07;
+	soundCtrl.S02Volume = value & 0x07;
 }
 void APU::feedSweepRegister(uint8_t channelIndex, uint8_t value)
 {
@@ -471,7 +530,7 @@ void APU::feedSweepRegister(uint8_t channelIndex, uint8_t value)
 		Bit 2-0 - Number of sweep shift (n: 0-7)
 	*/
 	//channels[channelIndex]->frequencySweepLenReload = sweepTimes[(value>>4)&0x07];
-	channels[channelIndex]->frequencySweepLenReload =(value >> 4) & 0x07;
+	channels[channelIndex]->frequencySweepLenReload = (value >> 4) & 0x07;
 	channels[channelIndex]->sweepInc = ((value >> 3) & 0x01) ? -1 : 1;
 	channels[channelIndex]->nSweep = value & 0x07;
 }
@@ -482,7 +541,7 @@ void APU::feedLenAndDutyRegister(uint8_t channelIndex, uint8_t value)
 		Bit 5-0 - Sound length data (Write Only) (t1: 0-63)
 	*/
 	channels[channelIndex]->soundLenData = value & 0x3f;
-	channels[channelIndex]->duty = duties[(value >> 6)&0x03];
+	channels[channelIndex]->duty = duties[(value >> 6) & 0x03];
 
 	channels[channelIndex]->sequencer.setWave((value >> 6) & 0x03);
 	channels[channelIndex]->soundLen = ((64 - (double)channels[channelIndex]->soundLenData));
@@ -501,12 +560,12 @@ void APU::feedVolumeEnvelopeRegister(uint8_t channelIndex, uint8_t value)
 	*/
 	channels[channelIndex]->nEnvelopeSweep = value & 0x07;
 	channels[channelIndex]->envelopeDirection = (value >> 3) & 0x01 ? 1 : -1;
-	channels[channelIndex]->envelopeVolumeReload= (value >> 4) & 0x0f;
-	channels[channelIndex]->envelopeVolume= channels[channelIndex]->envelopeVolumeReload;
+	channels[channelIndex]->envelopeVolumeReload = (value >> 4) & 0x0f;
+	channels[channelIndex]->envelopeVolume = channels[channelIndex]->envelopeVolumeReload;
 	//channels[channelIndex]->loadedVolumeEnvelopeLen = ((double)channels[channelIndex]->nEnvelopeSweep / 64);//*1000;//ms																	
 	channels[channelIndex]->loadedVolumeEnvelopeLen = channels[channelIndex]->nEnvelopeSweep;
-	channels[channelIndex]->envelopeEnable = (channels[channelIndex]->nEnvelopeSweep != 0) && (0x100-channels[channelIndex]->envelopeVolume> 0);
-		
+	channels[channelIndex]->envelopeEnable = (channels[channelIndex]->nEnvelopeSweep != 0) && (0x100 - channels[channelIndex]->envelopeVolume > 0);
+
 }
 
 void APU::feedFrequencyLoRegister(uint8_t channelIndex, uint8_t value)
@@ -525,17 +584,17 @@ void APU::feedFrequencyHiCtlRegister(uint8_t channelIndex, uint8_t value)
 		Bit 2-0 - Frequency's higher 3 bits (x) (Write Only)
 	*/
 	channels[channelIndex]->freqHi = value;
-	channels[channelIndex]->loadedFreq = (value & 0x07) << 8 |(channels[channelIndex]->loadedFreq & 0xff);
+	channels[channelIndex]->loadedFreq = (value & 0x07) << 8 | (channels[channelIndex]->loadedFreq & 0xff);
 	channels[channelIndex]->counterEnable = (((value >> 6) & 0x01) == 0x01);
 	if (!channels[channelIndex]->counterEnable) {
 		channels[channelIndex]->soundLen = 0;
 	}
-	
-	
+
+
 	channels[channelIndex]->sequencer.counterReload = (4 * (2048 - channels[channelIndex]->freqData));
 	channels[channelIndex]->sequencer.counter = channels[channelIndex]->sequencer.counterReload;
 	if ((value >> 7) & 0x01) {//trigger 
-		
+
 		channels[channelIndex]->enable = true;
 		/*if (channels[channelIndex]->counter == 0)
 			channels[channelIndex]->counter = channelIndex != 2 ? 64 : 256;*/
@@ -543,7 +602,7 @@ void APU::feedFrequencyHiCtlRegister(uint8_t channelIndex, uint8_t value)
 		if (channels[channelIndex]->soundLen == 0) {
 			channels[channelIndex]->soundLen = channelIndex != 2 ? 64 : 256;
 			//channels[channelIndex]->soundLen = ((64 - (double)channels[channelIndex]->soundLenData) / (256));//sec
-			
+
 		}
 		channels[channelIndex]->freq = 131072 / (2048 - channels[channelIndex]->loadedFreq);
 		channels[channelIndex]->frequencySweepLen = channels[channelIndex]->frequencySweepLenReload;
@@ -552,15 +611,15 @@ void APU::feedFrequencyHiCtlRegister(uint8_t channelIndex, uint8_t value)
 		soundCtrl.setSoundState(channelIndex, true);
 		//channels[channel]. = channels[channel].nEnvelopeSweep / 64;//sec
 
-		
+
 
 
 		if (adc.paused) {
-			
+
 			adc.paused = false;
-		//	printf("sound trigged!\n");
+			//	printf("sound trigged!\n");
 		}
-		
+
 	}
 	else {
 		if (!adc.paused) {
@@ -568,7 +627,7 @@ void APU::feedFrequencyHiCtlRegister(uint8_t channelIndex, uint8_t value)
 			//createAudioDeviceControl(true);
 			adc.paused = true;
 		}
-		
+
 	}
 }
 double approxsin(double t) {
@@ -591,12 +650,12 @@ void APU::play()
 {
 	restart = false;
 	adc.dev = SDL_OpenAudioDevice(NULL, 0, &adc.want, &adc.have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
-	
+
 	if (!adc.dev) {
 		printf("[SDL] Failed to open audio device: %s\n", SDL_GetError());
 		//SDL_Quit();
-		adc.want=adc.wantOld;
-		adc.have=adc.haveOld;
+		adc.want = adc.wantOld;
+		adc.have = adc.haveOld;
 		adc.dev = adc.devOld;
 		return;
 	}

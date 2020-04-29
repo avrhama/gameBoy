@@ -197,7 +197,7 @@ int main(void) {
 	"roms\\Pokemon8.gb",
 	"roms\\mario.gb",//27
 	"roms\\zelda.gbc" };
-	uint8_t romIndex =15;
+	uint8_t romIndex =27;
 
 	//
 	BUS* bus = new BUS();

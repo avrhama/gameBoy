@@ -62,8 +62,12 @@ public:
 	void start();
 	void connectToBus(BUS* bus);
 	AudioDeviceControl adc;
-
-	Channel* channels[4] = {new Channel1(),new SquareWave(),new Channel1(),new Noise() };
+	Channel1* chann1 =new Channel1();
+	SquareWave* chann2 = new SquareWave();
+	Wave* chann3 = new Wave();
+	Noise* chann4=new Noise();
+	Channel* channels[4] = { chann1,chann2,chann3,chann4};
+	
 	void tick();
 	void setSoundOutputTerminal(uint8_t value);
 	void setSoundState(uint8_t channelIndex, bool set);
