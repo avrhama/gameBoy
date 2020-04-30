@@ -151,7 +151,6 @@
   <ItemGroup>
     <ClCompile Include="APU.cpp" />
     <ClCompile Include="BUS.cpp" />
-    <ClCompile Include="CARTRIDGE.cpp" />
     <ClCompile Include="CPU.cpp" />
     <ClCompile Include="DISPLAY.cpp" />
     <ClCompile Include="DMA.cpp" />
@@ -181,7 +180,6 @@
     <ClInclude Include="MBC5.h" />
     <ClInclude Include="MMU.h" />
     <ClInclude Include="pipeChannel.h" />
-    <ClInclude Include="SHA1.h" />
     <ClInclude Include="SoundDevice.h" />
     <ClInclude Include="Speaker.h" />
     <ClInclude Include="Structures.h" />

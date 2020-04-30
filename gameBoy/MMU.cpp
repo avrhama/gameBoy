@@ -3,18 +3,12 @@
 #include "pipeChannel.h"
 void MMU::reset()
 {
-	
 	for (int i = 0;i < 0x60;i++)
 		unused[i] = 0;
 	for (int i = 0;i < 0x8000;i++)
 		workingRam[i] = 0;
 	for (int i = 0;i < 0x80;i++)
 		zeroRam[i] = 0;
-
-	
-	
-
-	
 }
 
 MMU::MMU()
@@ -30,7 +24,7 @@ void MMU::write(uint16_t address, uint8_t value)
 {
 	if (address == 0xff06)
 		int t=0;
-	if (bus->dma->transfering)
+	if (bus->dma->FF46transfering)
 		if (address < 0xff80)
 			return;
 	if (bus->pipeEnable&&false) {

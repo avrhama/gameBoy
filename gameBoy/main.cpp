@@ -19,63 +19,17 @@
 #include "CartridgeFactory.h"
 #include <conio.h>
 #include <SDL.h>
-#include "Speaker.h"
+
+#define _CRTDBG_MAP_ALLOC
+#include<iostream>
+#include <crtdbg.h>
+#ifdef _DEBUG
+#define DEBUG_NEW new(_NORMAL_BLOCK, __FILE__, __LINE__)
+#define new DEBUG_NEW
+#endif
+
 #undef main
 using namespace std;
-//sound
-#include "SDL.h"
-#include <stdio.h>
-#include <math.h>
-#define FREQ 200 /* the frequency we want */
-
-unsigned int audio_pos; /* which sample we are up to */
-int audio_len; /* how many samples left to play, stops when <= 0 */
-float audio_frequency; /* audio frequency in cycles per sample */
-float audio_volume; /* audio volume, 0 - ~32000 */
-
-void MyAudioCallback2(void* userdata, Uint8* stream, int len) {
-	len /= 2; /* 16 bit */
-	int i;
-	Sint16* buf = (Sint16*)stream;
-	for (i = 0; i < len; i++) {
-		buf[i] = audio_volume * sin(2 * M_PI * audio_pos * audio_frequency);
-		audio_pos++;
-	}
-	audio_len -= len;
-	return;
-}
-int sound() {
-	SDL_Init(SDL_INIT_AUDIO);
-
-	int numAudioDrivers = SDL_GetNumAudioDrivers();
-
-	
-	SDL_AudioSpec want, have;
-	SDL_zero(want);
-
-	
-
-	want.freq = 131072;
-	want.format = AUDIO_S16;
-	want.channels = 1;
-	want.samples = 4096;
-	want.callback = MyAudioCallback2;
-	SDL_AudioDeviceID dev = SDL_OpenAudioDevice(NULL, 0, &want, &have, SDL_AUDIO_ALLOW_FORMAT_CHANGE);
-
-	audio_len = have.freq * 5; /* 5 seconds */
-	audio_pos = 0;
-	audio_frequency = 1.0 * FREQ / have.freq; /* 1.0 to make it a float */
-	audio_volume = 6000; /* ~1/5 max volume */
-
-	SDL_PauseAudioDevice(dev, 0); /* play! */
-
-	while (audio_len > 0) {
-		SDL_Delay(5000);
-	}
-	return 0;
-}
-
-//sound
 
 
 void displayThreadFunc(DISPLAY* display, bool* running)
@@ -153,20 +107,14 @@ void pipeRecive(BUS* bus, uint16_t opcode, uint16_t lastOpcode, int steps, strin
 }
 
 int main(void) {
+	//_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
+	//_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+	
+	//_CrtMemState s1;
 	
 	
-	
-	//sound();
-
-	//return 0;
-	//SDL_DestroyTexture(texture);
-	//SDL_DestroyRenderer(renderer);
-	//SDL_DestroyWindow(window);
-	//SDL_Quit();
-	//return EXIT_SUCCESS;
-	//testRun();
-	//return 0;
-	string romsPaths[30] =
+	//_CrtMemState s1;
+	string romsPaths[36] =
 	{
 	"test\\cpu_instrs\\cpu_instrs.gb",
 	"test\\cpu_instrs\\individual\\01-special.gb",//good//blargg
@@ -183,22 +131,30 @@ int main(void) {
 	"test2\\daa.gb",
 	"roms\\alleyway.gb",
 	 "roms\\megaman.gb",
-	"roms\\pokemon.gb",//15
 	"roms\\tetris.gb",
-	"test\\instr_timing\\instr_timing.gb",//failed
+	"test\\instr_timing\\instr_timing.gb",//16
 	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\div_write.gb",
 	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\tima_reload.gb",
 	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\tima_write_reloading.gb",
 	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\tma_write_reloading.gb",
 	"roms\\mooneye-gb_hwtests\\misc\\boot_regs-cgb.gb",
 	"roms\\mooneye-gb_hwtests\\acceptance\\ld_hl_sp_e_timing.gb",
-	"roms\\mooneye-gb_hwtests\\acceptance\\oam_dma_start.gb",
+	"roms\\mooneye-gb_hwtests\\acceptance\\oam_dma_start.gb",//23
 	"test\\halt_bug.gb",
-	"roms\\Pokemon8.gb",
-	"roms\\mario.gb",//27
-	"roms\\zelda.gbc" };
-	uint8_t romIndex =27;
-
+	"roms\\mario.gb",//25
+	"roms\\zelda.gbc",
+	"roms\\pokemon.gb",//27
+	"roms\\pokemon2.gb",
+	"roms\\pokemon3.gb",
+	"roms\\pokemon4.gbc",
+	"roms\\pokemon5.gb",
+	"roms\\pokemon6.gbc",
+	"roms\\pokemon7.gbc",
+	"roms\\pokemonRed.gb",
+	"roms\\mooneye-gb_hwtests\\acceptance\\ppu\\intr_2_0_timing.gb",//35
+	};
+	uint8_t romIndex =30;
+	
 	//
 	BUS* bus = new BUS();
 	CPU* cpu = new CPU();
@@ -212,6 +168,8 @@ int main(void) {
 	DISPLAY* display = new DISPLAY(0, 0, 160, 144, 1);
 	JOYPAD* joypad = new JOYPAD();
 	APU* apu =new APU();
+
+
 
 	bus->connectCPU(cpu);
 	bus->connectMMU(mmu);
@@ -229,6 +187,7 @@ int main(void) {
 	gpu->reset();
 	interrupt->reset();
 	apu->start();
+	apu->mute = true;
 	//apu->fs.apu = apu;
 	printf("title:%s\n", cartridge->header.title);
 	printf("rom banks count:%d\n", cartridge->header.romBanksCount);
@@ -300,6 +259,7 @@ int main(void) {
 	int counters[5] = { 3,6,12,15,30 };
 	int sleeps[5] = { 50,100,200,250,500 };
 	int rendersCounter = 0;
+	//steady_clock::time_point start = steady_clock::now();
 	while (true) {
 		if (SDL_PollEvent(&display->windowEvent))
 			if (SDL_QUIT == display->windowEvent.type)
@@ -307,7 +267,7 @@ int main(void) {
 				running = false;
 				break;
 			}
-		//steady_clock::time_point start = steady_clock::now();
+		
 		int timeBefore = SDL_GetTicks();
 		do {
 
@@ -372,7 +332,9 @@ int main(void) {
 		
 		
 		/*steady_clock::time_point end = steady_clock::now();
-		duration<double> elapsed_seconds = end - start;*/
+		duration<double> elapsed_seconds = end - start;
+		if (elapsed_seconds.count() > 5)
+			break;*/
 		int i = 4;
 		/*if (rendersCounter == counters[i]) {
 			float factor = 0.5;
@@ -395,134 +357,27 @@ int main(void) {
 		if (apu->restart)
 			apu->play();
 	}
-	display->close();
+	apu->close();
+	display->close(true);
 	//displayThread.join();
-	return 0;
 
 	//myfile.close();
-
-
-	while (true) {
-
-
-		KEYS key = display->waitForKey();
-		display->setPixel(x, y, black);
-		if (display->keysMapper[KEYS::Up]->isPressed) {
-			cout << "Up";
-			y = (y - 1) % 144;
-			y = y < 0 ? 144 + y : y;
-
-		}
-		else if (display->keysMapper[KEYS::Down]->isPressed) {
-			cout << "Down";
-			y = (y + 1) % 144;
-		}
-		else if (display->keysMapper[KEYS::Left]->isPressed) {
-			cout << "Left";
-			x = (x - 1) % 160;
-			x = x < 0 ? 160 + x : x;
-		}
-		else if (display->keysMapper[KEYS::Right]->isPressed) {
-
-			cout << "Right: ";
-			x = (x + 1) % 160;
-
-		}
-		display->setPixel(x, y, white);
-		//Sleep(250);
-
-
-	}
-
-
+	bus->p->close();
+	delete bus;
+	delete cpu;
+	delete gpu;
+	delete dma;
+	delete cartridge;
+	delete interrupt;
+	delete mmu;
+	delete display;
+	delete joypad;
+	
+	delete apu;
+	
+	_CrtDumpMemoryLeaks();
+	
 	return 0;
 
 }
-
-//void testRomSwitching(MBC1 cartridge) {
-//	cartridge.write(0x2000, 0);
-//	printf("romBank:%d\n", cartridge.romBankIndex);
-//	cartridge.write(0x2000, 20);	 
-//	cartridge.write(0x5fff, 0);		 
-//	printf("romBank:%d\n", cartridge.romBankIndex);
-//	cartridge.write(0x2000, 40);	 
-//	cartridge.write(0x5fff, 1);		 
-//	printf("romBank:%d\n", cartridge.romBankIndex);
-//	cartridge.write(0x2000, 60);	 
-//	cartridge.write(0x5fff, 1);		 
-//	printf("romBank:%d\n", cartridge.romBankIndex);
-//	cartridge.write(0x2000, 1);		 
-//	cartridge.write(0x5fff, 0);		 
-//	printf("romBank:%d\n", cartridge.romBankIndex);
-//	cartridge.write(0x2000, 21);	 
-//	cartridge.write(0x5fff, 0);		 
-//	printf("romBank:%d\n", cartridge.romBankIndex);
-//	cartridge.write(0x2000, 41);	 
-//	cartridge.write(0x5fff, 41);	 
-//	printf("romBank:%d\n", cartridge.romBankIndex);
-//	cartridge.write(0x2000, 61);	 
-//	cartridge.write(0x5fff, 1);		 
-//	printf("romBank:%d\n", cartridge.romBankIndex);
-//	cartridge.write(0x2000, 2);		 
-//	cartridge.write(0x5fff, 0);		 
-//	printf("romBank:%d\n", cartridge.romBankIndex);
-//	cartridge.write(0x2000, 22);	 
-//	cartridge.write(0x5fff, 0);		 
-//	printf("romBank:%d\n", cartridge.header.romBankIndex);
-//	cartridge.write(0x2000, 42);	 
-//	cartridge.write(0x5fff, 1);		 
-//	printf("romBank:%d\n", cartridge.header.romBankIndex);
-//	cartridge.write(0x2000, 62);	 
-//	cartridge.write(0x5fff, 1);		 
-//	printf("romBank:%d\n", cartridge.header.romBankIndex);
-//}
-int testPipe() {
-
-
-	char c;
-	bool f;
-	pipeChannel p;
-	cin >> c;
-	if (c == 'c') {
-		f = p.createPipe(1, "Pipe", 100, 100);
-		printf("created?:%s\n", f ? "true" : "false");
-		if (!f)
-			f = p.wait();
-		printf("connect?:%s\n", f ? "true" : "false");
-		if (f) {
-			p.wBuffer[0] = 'a';
-			f = p.write(1);
-			p.wBuffer[0] = 'b';
-			f = p.write(1);
-			printf("write?:%s\n", f ? "true" : "false");
-		}
-	}
-	else {
-
-		f = p.createPipe(0, "Pipe", 100, 100);
-		if (!f)
-			f = p.wait();
-		printf("connect?:%s\n", f ? "true" : "false");
-		if (f) {
-			f = p.read();
-
-			printf("read?:%s\n", f ? "true" : "false");
-			if (f)
-				printf("read:%c\n", p.rBuffer[0]);
-
-		}
-
-	}
-
-	p.close();
-	return 0;
-
-}
-
-
-void tests(BUS  bus) {
-
-	//testPipe();
-}
-
 

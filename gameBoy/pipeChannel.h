@@ -10,8 +10,8 @@ public:
 	HANDLE hPipe;
 	DWORD dwRead;
 	DWORD dwWritten;
-	byte* rBuffer;
-	byte* wBuffer;
+	byte* rBuffer=NULL;
+	byte* wBuffer=NULL;
 	int rBufferSize;
 	int wBufferSize;
 	//type 0 for server 1 for client
@@ -105,4 +105,5 @@ public:
 			&dwWritten,
 			NULL)!=FALSE;
 	}
+	
 };

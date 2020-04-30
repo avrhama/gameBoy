@@ -211,80 +211,12 @@ void APU::start() {
 		printf("[SDL] Failed to initialize: %s\n", SDL_GetError());
 		return;
 	}
-
-
 	SDL_zero(adc.want);
-	//queue device
-	/*adc.want.freq = 44100;
+	adc.want.freq = 44100;
 	adc.want.format = AUDIO_S8;
 	adc.want.channels = 1;
-	adc.want.samples = 512;
-	adc.want.callback = 0;
-	adc.H = 20;
-	adc.dev = SDL_OpenAudioDevice(NULL, 0, &adc.want, &adc.have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
-	SDL_PauseAudioDevice(adc.dev, 0);
-	channels[0]->channelIndex = 0;
-	channels[0]->samplesData = (Sint8*)calloc(adc.want.samples, sizeof(Sint8));
-	channels[0]->samplePosition = 0;
-	return ;*/
-	//callback device
-
-
-	//adc.want.freq = 224000;
-	//adc.want.freq = 131072;
-	//adc.want.freq = 88200;
-	adc.want.freq = 44100;// 44100&8192
-	// adc.want.freq = 22050;
-	//adc.want.freq = 65536;
-	//adc.want.freq = 32768;
-
-	//adc.want.freq = 16384;
-
-   //adc.want.freq = 8192;
-	//adc.want.freq = 4096;
-   // adc.want.freq = 2048;
-	//adc.want.freq = 1024;
-   //adc.want.freq = 512;
-	//adc.want.freq = 256;
-	//adc.want.freq = 128;
-	//adc.want.freq = 64;
-	//adc.want.freq = 4;
-	//adc.want.format = AUDIO_S32;
-	//adc.want.format = AUDIO_S32MSB;
-	//adc.want.format = AUDIO_S16MSB;
-	adc.want.format = AUDIO_S16;
-	//adc.want.format = AUDIO_S8;
-	adc.want.channels = 1;
-	adc.want.samples = 32768;
-	//adc.want.samples = 16384;
-
-	//adc.want.samples = 8192;
-	//adc.want.samples = 4096;
-	//adc.want.samples = 2048;
-	// adc.want.samples = 1024;
-   //adc.want.samples = 512;
-	adc.want.samples = 256;
-	//adc.want.samples = 128;
-   // adc.want.samples = 64;
-	//adc.want.samples = 32;
-	//adc.want.samples = 8;
-	//adc.want.samples = 4;
-	//adc.want.samples = 1;
-	adc.want.callback = soundTick;
-	adc.want.userdata = this;
-	adc.H = 20;
-	//H:50 freq:65536 samples:1024
-	//adc.dev = SDL_OpenAudioDevice(NULL, 0, &adc.want, &adc.have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE | SDL_AUDIO_ALLOW_SAMPLES_CHANGE);
-
-	int nums[18] = { 1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536,131072 };
-	//adc.want.freq = 131072;
-	//adc.want.samples = 32;
 	adc.want.samples = 1024;
 	adc.want.callback = NULL;
-	adc.want.channels = 1;
-	//adc.want.format = AUDIO_F32SYS;
-	//adc.want.format = AUDIO_S32;
-	adc.want.format = AUDIO_S8;
 	adc.dev = SDL_OpenAudioDevice(NULL, 0, &adc.want, &adc.have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
 
 	bus->f = adc.have.freq;
@@ -297,8 +229,6 @@ void APU::start() {
 		SDL_Quit();
 		return;
 	}
-	//SDL_PauseAudioDevice(dev, p); /* play! */
-
 
 	adc.leftSamplesData = (Sint8*)calloc(adc.have.samples, sizeof(Sint8));
 	adc.rightSamplesData = (Sint8*)calloc(adc.have.samples, sizeof(Sint8));
@@ -352,39 +282,30 @@ void APU::write(uint8_t address, uint8_t value)
 {
 	switch (address) {
 	case 0x10:
-		//feedSweepRegister(0, value);
 		chann1->loadNRX0(value);
 		break;
 	case 0x11:
-		//feedLenAndDutyRegister(0, value);
 		chann1->loadNRX1(value);
 		break;
 	case 0x12:
-		//feedVolumeEnvelopeRegister(0, value);
 		chann1->loadNRX2(value);
 		break;
 	case 0x13:
-		//feedFrequencyLoRegister(0, value);
 		chann1->loadNRX3(value);
 		break;
 	case 0x14:
-		//feedFrequencyHiCtlRegister(0, value);
 		chann1->loadNRX4(value);
 		break;
 	case 0x16:
-		//feedLenAndDutyRegister(1, value);
 		chann2->loadNRX1(value);
 		break;
 	case 0x17:
-		//feedVolumeEnvelopeRegister(1, value);
 		chann2->loadNRX2(value);
 		break;
 	case 0x18:
-		//feedFrequencyLoRegister(1, value);
 		chann2->loadNRX3(value);
 		break;
 	case 0x19:
-		//feedFrequencyHiCtlRegister(1, value);
 		chann2->loadNRX4(value);
 		break;
 	case 0x1a:
@@ -403,19 +324,15 @@ void APU::write(uint8_t address, uint8_t value)
 		chann3->loadNRX4(value);
 		break;
 	case 0x20:
-		//feedLenAndDutyRegister(3, value);
 		chann4->loadNRX1(value);
 		break;
 	case 0x21:
-		feedVolumeEnvelopeRegister(3, value);
 		chann4->loadNRX2(value);
 		break;
 	case 0x22:
-		//((Noise*)channels[3])->setPolynomialCounter(value);
 		chann4->loadNRX3(value);
 		break;
 	case 0x23:
-		//((Noise*)channels[3])->inital(value);
 		chann4->loadNRX4(value);
 		break;
 	case 0x24:
@@ -476,6 +393,7 @@ void APU::tick()
 			SDL_MixAudioFormat((Uint8*)channels[0]->leftSamplesData, (Uint8*)channels[1]->leftSamplesData, AUDIO_S8, adc.have.samples, SDL_MIX_MAXVOLUME);
 			SDL_MixAudioFormat((Uint8*)channels[0]->leftSamplesData, (Uint8*)channels[2]->leftSamplesData, AUDIO_S8, adc.have.samples, SDL_MIX_MAXVOLUME);
 			SDL_MixAudioFormat((Uint8*)channels[0]->leftSamplesData, (Uint8*)channels[3]->leftSamplesData, AUDIO_S8, adc.have.samples, SDL_MIX_MAXVOLUME);
+			if(!mute)
 			SDL_QueueAudio(adc.dev, channels[0]->leftSamplesData, adc.have.samples);
 			for (int i = 0;i < adc.have.channels * adc.have.samples;i++) {
 
@@ -520,129 +438,13 @@ void APU::feedChannelCtrlRegister(uint8_t value)
 	soundCtrl.VinS01 = (((value >> 3) & 0x01) == 0x01);
 	soundCtrl.S02Volume = value & 0x07;
 }
-void APU::feedSweepRegister(uint8_t channelIndex, uint8_t value)
-{
-	/*
-		Bit 6-4 - Sweep Time
-		Bit 3   - Sweep Increase/Decrease
-		0: Addition    (frequency increases)
-		1: Subtraction (frequency decreases)
-		Bit 2-0 - Number of sweep shift (n: 0-7)
-	*/
-	//channels[channelIndex]->frequencySweepLenReload = sweepTimes[(value>>4)&0x07];
-	channels[channelIndex]->frequencySweepLenReload = (value >> 4) & 0x07;
-	channels[channelIndex]->sweepInc = ((value >> 3) & 0x01) ? -1 : 1;
-	channels[channelIndex]->nSweep = value & 0x07;
-}
-void APU::feedLenAndDutyRegister(uint8_t channelIndex, uint8_t value)
-{
-	/*
-		Bit 7-6 - Wave Pattern Duty (Read/Write)
-		Bit 5-0 - Sound length data (Write Only) (t1: 0-63)
-	*/
-	channels[channelIndex]->soundLenData = value & 0x3f;
-	channels[channelIndex]->duty = duties[(value >> 6) & 0x03];
-
-	channels[channelIndex]->sequencer.setWave((value >> 6) & 0x03);
-	channels[channelIndex]->soundLen = ((64 - (double)channels[channelIndex]->soundLenData));
-
-	((SquareWave*)(channels))->setSquareLimit((value >> 6) & 0x03);
-}
-
-void APU::feedVolumeEnvelopeRegister(uint8_t channelIndex, uint8_t value)
-{
-	/*
-		Bit 7-4 - Initial Volume of envelope (0-0Fh) (0=No Sound)
-		Bit 3   - Envelope Direction (0=Decrease, 1=Increase)
-		Bit 2-0 - Number of envelope sweep (n: 0-7)
-		(If zero, stop envelope operation.)
-		Length of 1 step = n*(1/64) seconds
-	*/
-	channels[channelIndex]->nEnvelopeSweep = value & 0x07;
-	channels[channelIndex]->envelopeDirection = (value >> 3) & 0x01 ? 1 : -1;
-	channels[channelIndex]->envelopeVolumeReload = (value >> 4) & 0x0f;
-	channels[channelIndex]->envelopeVolume = channels[channelIndex]->envelopeVolumeReload;
-	//channels[channelIndex]->loadedVolumeEnvelopeLen = ((double)channels[channelIndex]->nEnvelopeSweep / 64);//*1000;//ms																	
-	channels[channelIndex]->loadedVolumeEnvelopeLen = channels[channelIndex]->nEnvelopeSweep;
-	channels[channelIndex]->envelopeEnable = (channels[channelIndex]->nEnvelopeSweep != 0) && (0x100 - channels[channelIndex]->envelopeVolume > 0);
-
-}
-
-void APU::feedFrequencyLoRegister(uint8_t channelIndex, uint8_t value)
-{
-	//Lower 8 bits of 11 bit frequency (x). Next 3 bit are in NR14 ($FF14)
-	channels[channelIndex]->freqLo = value;
-	channels[channelIndex]->loadedFreq = (channels[channelIndex]->loadedFreq & 0x700) | (value & 0xff);
-}
-
-void APU::feedFrequencyHiCtlRegister(uint8_t channelIndex, uint8_t value)
-{
-	/*
-		Bit 7   - Initial (1=Restart Sound)     (Write Only)
-		Bit 6   - Counter/consecutive selection (Read/Write)
-				(1=Stop output when length in NR11 expires)
-		Bit 2-0 - Frequency's higher 3 bits (x) (Write Only)
-	*/
-	channels[channelIndex]->freqHi = value;
-	channels[channelIndex]->loadedFreq = (value & 0x07) << 8 | (channels[channelIndex]->loadedFreq & 0xff);
-	channels[channelIndex]->counterEnable = (((value >> 6) & 0x01) == 0x01);
-	if (!channels[channelIndex]->counterEnable) {
-		channels[channelIndex]->soundLen = 0;
-	}
-
-
-	channels[channelIndex]->sequencer.counterReload = (4 * (2048 - channels[channelIndex]->freqData));
-	channels[channelIndex]->sequencer.counter = channels[channelIndex]->sequencer.counterReload;
-	if ((value >> 7) & 0x01) {//trigger 
-
-		channels[channelIndex]->enable = true;
-		/*if (channels[channelIndex]->counter == 0)
-			channels[channelIndex]->counter = channelIndex != 2 ? 64 : 256;*/
-
-		if (channels[channelIndex]->soundLen == 0) {
-			channels[channelIndex]->soundLen = channelIndex != 2 ? 64 : 256;
-			//channels[channelIndex]->soundLen = ((64 - (double)channels[channelIndex]->soundLenData) / (256));//sec
-
-		}
-		channels[channelIndex]->freq = 131072 / (2048 - channels[channelIndex]->loadedFreq);
-		channels[channelIndex]->frequencySweepLen = channels[channelIndex]->frequencySweepLenReload;
-		channels[channelIndex]->volumeEnvelopeLen = channels[channelIndex]->loadedVolumeEnvelopeLen;
-		channels[channelIndex]->sequencer.setTimer(channels[channelIndex]->freq);
-		soundCtrl.setSoundState(channelIndex, true);
-		//channels[channel]. = channels[channel].nEnvelopeSweep / 64;//sec
 
 
 
 
-		if (adc.paused) {
-
-			adc.paused = false;
-			//	printf("sound trigged!\n");
-		}
-
-	}
-	else {
-		if (!adc.paused) {
-			//printf("sound stoped!\n");
-			//createAudioDeviceControl(true);
-			adc.paused = true;
-		}
-
-	}
-}
-double approxsin(double t) {
-	double j = t * 0.15915;
-	j = j - (int)j;
-	return 20.785 * j * (j - 0.5) * (j - 1.0f);
-
-}
-void APU::updateChannelFreqData(uint8_t channelIndex, uint16_t newFreqData)
-{
-	bus->interrupt->io[0x13] = newFreqData & 0xff;
-	bus->interrupt->io[0x14] = (bus->interrupt->io[0x14] & 0xf8) | ((newFreqData >> 8) & 0x07);
-}
-void APU::close() {
+void APU::close(bool closeSDL) {
 	SDL_CloseAudioDevice(adc.dev);
+	if(closeSDL)
 	SDL_Quit();
 }
 

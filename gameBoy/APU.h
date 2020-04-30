@@ -32,9 +32,6 @@ private:
 	 111: 54.7 ms (7/128Hz)
 	*/
 
-	float sweepTimes[8] = { 0,7.8125,15.625,23.4375,31.25,39.0625,46.875,54.6875 };
-	//float duites[8] = { 12.5,25,50,75 };
-	float duties[4] = { 0.125,0.25,0.5,0.75 };
 	
 	
 
@@ -49,6 +46,7 @@ private:
 public:
 	steady_clock::time_point startTimer;
 	steady_clock::time_point lastTick;
+	bool mute = false;
 	bool restart = false;
 	double time = 0;
 	double tickElapse = 0;
@@ -59,6 +57,7 @@ public:
 	
 	SoundControl soundCtrl;
 	APU();
+	
 	void start();
 	void connectToBus(BUS* bus);
 	AudioDeviceControl adc;
@@ -70,20 +69,20 @@ public:
 	
 	void tick();
 	void setSoundOutputTerminal(uint8_t value);
-	void setSoundState(uint8_t channelIndex, bool set);
 	void feedChannelCtrlRegister(uint8_t value);
-	void feedTriggerRegister(uint8_t channelIndex, uint8_t value);
-	void feedSweepRegister(uint8_t channelIndex, uint8_t value);
-	void feedLenAndDutyRegister(uint8_t channelIndex, uint8_t value);
-	void feedVolumeEnvelopeRegister(uint8_t channelIndex, uint8_t value);
-	void feedFrequencyLoRegister(uint8_t channelIndex, uint8_t value);
-	void feedFrequencyHiCtlRegister(uint8_t channelIndex, uint8_t value);
-	void updateChannelFreqData(uint8_t channelIndex, uint16_t newFreqData);
-	void close();
+	void close(bool closeSDL = false);
 	void play();
 	void createChannels();
 	uint8_t read(uint8_t address);
 	void write(uint8_t address,uint8_t value);
-
+	~APU() {
+		delete chann1;
+		delete chann2;
+		delete chann3;
+		delete chann4;
+		free(adc.leftSamplesData);
+		free(adc.rightSamplesData);
+		free(adc.samplesData);
+	}
 };
 

@@ -63,7 +63,10 @@ public:
 		/*int size_ = (int)header.ramSize * header.ramBankSize;
 		ram = (uint8_t*)calloc(size_, 1);*/
 	}
-	virtual ~CARTRIDGE() {}
+	virtual ~CARTRIDGE() {
+		free(rom);
+		free(ram);
+	}
 	
 	virtual void write(uint16_t address, uint8_t value) {
 		return;

@@ -79,6 +79,9 @@ public:
 
 	map<KEYS, KEY*>keysMapper;
 	DISPLAY(int posX , int posY,int width,int height,int pixelSize,int displayNum=0);
+	~DISPLAY() {
+		delete pixels;
+	}
 	void render();
 	void setPixel(int posX, int posY, Scalar color);
 	uint32_t* getLineCV(uint8_t y);
@@ -97,7 +100,7 @@ public:
 	void drawPixel(uint8_t x, uint8_t y, uint8_t sprite);
 	void setPaletteColor(uint8_t paletteByteIndex, uint8_t value, bool isBGP);
 	void tick(int cycles);
-	void close();
+	void close(bool closeSDL = false);
 
 };
 

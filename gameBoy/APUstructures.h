@@ -192,6 +192,11 @@ public:
 		freqLo = newFreqData & 0xff;
 		freqHi = (freqHi & 0xf8) | ((newFreqData >> 8) & 0x07);
 	}
+	~Channel() {
+		free(leftSamplesData);
+		free(rightSamplesData);
+		free(samplesData);
+	}
 };
 class SquareWave :public Channel {
 protected:

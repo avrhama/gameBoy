@@ -60,10 +60,27 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 
 			}
 			break;
+		case 0x51:
+			bus->dma->setSourceHi(value);
+			io[0x51] = value;
+			break;
+		case 0x52:
+			bus->dma->setSourceLo(value);
+			io[0x52] = value;
+			break;
+		case 0x53:
+			bus->dma->setDestinationHi(value);
+			io[0x53] = value;
+			break;
+		case 0x54:
+			bus->dma->setDestinationLo(value);
+			io[0x54] = value;
+			break;
 		case 0x55:
 			if (print)
 				printf("write opcode:0x55 // Start DMA Transfer value:%04x value(io):%04x\n", value, io[address]);
-			io[0x55] = value;
+			
+			bus->dma->HDMATransfer(value);;
 			break;
 		case 0x69:
 			if (bus->cartridge->header.colorGB) {
@@ -124,6 +141,8 @@ uint8_t INTERRUPT::read(uint16_t address)
 			break;
 		case 0x26:
 			return bus->apu->soundCtrl.soundState;
+		case 0x55:
+			return bus->dma->hDMA5;
 		case 0x69:
 			if (bus->cartridge->header.colorGB)
 				return  bus->display->BGPaletteData[io[0x68] & 0x3f];

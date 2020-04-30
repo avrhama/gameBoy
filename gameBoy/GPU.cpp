@@ -15,6 +15,7 @@ void GPU::connectToBus(BUS* bus)
 }
 bool GPU::checkLCDStatus()
 {
+	bool useLockers = false;
 	
 	if (!((bus->interrupt->io[0x40] >> 7) & 0x1)) {//LCD Display Disable
 		//bus->interrupt->io[0x41] &= 252;//web
@@ -23,8 +24,11 @@ bool GPU::checkLCDStatus()
 		bus->interrupt->io[0x41] |= 0x01;
 		bus->interrupt->io[0x44] = 0;
 		cyclesPerScanline = 456;
-		/*bus->mmu->vRamLock = false;
-		bus->mmu->OAMLock = false;*/
+		if (useLockers) {
+			bus->mmu->vRamLock = false;
+			bus->mmu->OAMLock = false;
+		}
+		bus->dma->generalPurposeDMA();
 		return false;
 	}
 	
@@ -36,31 +40,42 @@ bool GPU::checkLCDStatus()
 		mode = 1;
 		bus->interrupt->io[0x41] &= 0xFD;
 		bus->interrupt->io[0x41] |= 0x01;
-	/*	bus->mmu->OAMLock = false;
-		bus->mmu->vRamLock = false;*/
+
+		//bus->dma->generalPurposeDMA();
+		if (useLockers) {
+			bus->mmu->OAMLock = false;
+			bus->mmu->vRamLock = false;
+		}
 	}
 	//cyclesPerScanline decrement from 456 to 0 split to 3 sections:
-	//mode 2:Searching Sprites Atts 80 [456->376] 
-	//mode 3:Transfering Data to LCD Driver 172 [375->204] 
-	//mode 0:H-Blank  204 [204->0)
-	else if (cyclesPerScanline>=376) {
+	else if (cyclesPerScanline>=376) {//mode 2:Searching Sprites Atts 80 [456->376] 
 		mode = 2;
 		bus->interrupt->io[0x41] &= 0xFE;
 		bus->interrupt->io[0x41] |= 0x02;
-		/*bus->mmu->OAMLock = true;
-		bus->mmu->vRamLock = false;*/
+		if (useLockers) {
+			bus->mmu->OAMLock = true;
+			bus->mmu->vRamLock = false;
+		}
 	}
-	else if (cyclesPerScanline >= 204) {
+	else if (cyclesPerScanline >= 204) {//mode 3:Transfering Data to LCD Driver 172 [375->204] 
 		mode = 3;
 		bus->interrupt->io[0x41] |= 0x03;
-		/*bus->mmu->OAMLock = true;
-		bus->mmu->vRamLock = true;*/
+		if (useLockers) {
+			bus->mmu->OAMLock = true;
+			bus->mmu->vRamLock = true;
+		}
 	}
-	else {
+	else {//mode 0:H-Blank  204 [204->0)
 		mode = 0;
 		bus->interrupt->io[0x41] &= 0xFC;
-		/*bus->mmu->OAMLock = false;
-		bus->mmu->vRamLock = false;*/
+	
+		//bus->dma->generalPurposeDMA();
+		//bus->dma->hBlankDMA();
+		if (useLockers) {
+			bus->mmu->OAMLock = false;
+			bus->mmu->vRamLock = false;
+		}
+		
 	}
 	//bus->interrupt->io[0x41] |= mode;
 	if(mode!=oldLCDmode&& mode != 3)
@@ -75,7 +90,6 @@ bool GPU::checkLCDStatus()
 	}
 	else
 		bus->interrupt->io[0x41]&=0xfb;//reset coinciedence
-
 
 
 	return true;
@@ -99,48 +113,20 @@ void GPU::tick()
 			bus->interrupt->setInterruptRequest(0);
 			//bus->display->render();
 		}
-		if (currScanLine > 153) 
+		if (currScanLine > 153) {
 			bus->interrupt->io[0x44] = 0;
+			bus->dma->generalPurposeDMA();
+		}
 		if (currScanLine < 144) {
+			bus->dma->generalPurposeDMA();
+			bus->dma->hBlankDMA();
 			draw();
+			
 			
 		}
 
 	}
 	
-	/*if (bus->pipeEnable) {
-		bus->p->read(8);
-		uint16_t otherPC = bus->p->rBuffer[1] << 8 | bus->p->rBuffer[0];
-		uint32_t othercyclesPerScanline = bus->p->rBuffer[5] << 24 | bus->p->rBuffer[4] << 16 | bus->p->rBuffer[3] << 8 | bus->p->rBuffer[2];
-		uint8_t othercycles = bus->p->rBuffer[6];
-		uint8_t otherIO0x44 = bus->p->rBuffer[7];
-		bus->p->wBuffer[0] = 0;
-		int errorCode = -1;
-		
-	     if (otherPC != bus->cpu->PC) {
-			errorCode = 1;
-		}
-		else if (othercyclesPerScanline != cyclesPerScanline) {
-			errorCode = 2;
-		}
-		else if (othercycles != bus->cpu->lastOpcodeCycles) {
-			errorCode = 3;
-		}
-		else if (otherIO0x44 != bus->interrupt->io[0x44]){
-			errorCode = 4;
-		}
-		
-		
-		if (errorCode!=-1)
-		{
-			bus->p->wBuffer[0] = 1;
-		}
-		bus->p->write();
-		if (bus->p->wBuffer[0] == 1) {
-			bus->p->wBuffer[1] = 0;
-		}
-
-	}*/
 }
 
 bool GPU::TestBit(BYTE n, int b) {
