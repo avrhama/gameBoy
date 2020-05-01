@@ -19,34 +19,36 @@
 #include "CartridgeFactory.h"
 #include <conio.h>
 #include <SDL.h>
-
-#define _CRTDBG_MAP_ALLOC
-#include<iostream>
-#include <crtdbg.h>
-#ifdef _DEBUG
-#define DEBUG_NEW new(_NORMAL_BLOCK, __FILE__, __LINE__)
-#define new DEBUG_NEW
-#endif
+//#define _CRTDBG_MAP_ALLOC
+//#include<iostream>
+//#include <crtdbg.h>
+//#ifdef _DEBUG
+//#define DEBUG_NEW new(_NORMAL_BLOCK, __FILE__, __LINE__)
+//#define new DEBUG_NEW
+//#endif
 
 #undef main
 using namespace std;
 
+mutex saveRamMutex;
 
 void displayThreadFunc(DISPLAY* display, bool* running)
 {
-	while (*running) {
-		if (!display->displayLock) {
-			display->render();
-			//display->update();
-			//Sleep(16.6);
-			Sleep(16);
-		}
-		else
-			Sleep(5);
-	}
+	//while (*running) {
+	//	if (!display->displayLock) {
+	//		display->render();
+	//		//display->update();
+	//		//Sleep(16.6);
+	//		Sleep(16);
+	//	}
+	//	else
+	//		Sleep(5);
+	//}
 	printf("goodbye thread!\n");
 	// do stuff...
 }
+
+
 void pipeRecive(BUS* bus, uint16_t opcode, uint16_t lastOpcode, int steps, string funcName) {
 	if (steps == 123176) {
 		int h = 0;
@@ -146,7 +148,7 @@ int main(void) {
 	"roms\\pokemon.gb",//27
 	"roms\\pokemon2.gb",
 	"roms\\pokemon3.gb",
-	"roms\\pokemon4.gbc",
+	"roms\\pokemon4.gbc",//crystal
 	"roms\\pokemon5.gb",
 	"roms\\pokemon6.gbc",
 	"roms\\pokemon7.gbc",
@@ -154,7 +156,7 @@ int main(void) {
 	"roms\\mooneye-gb_hwtests\\acceptance\\ppu\\intr_2_0_timing.gb",//35
 	};
 	uint8_t romIndex =30;
-	
+	romIndex = 27;
 	//
 	BUS* bus = new BUS();
 	CPU* cpu = new CPU();
@@ -187,13 +189,13 @@ int main(void) {
 	gpu->reset();
 	interrupt->reset();
 	apu->start();
-	apu->mute = true;
+	apu->mute = false;
 	//apu->fs.apu = apu;
 	printf("title:%s\n", cartridge->header.title);
 	printf("rom banks count:%d\n", cartridge->header.romBanksCount);
 	printf("romBank size:%d\n", cartridge->header.romBankSize);
 	printf("ram banks count:%d\n", cartridge->header.ramBanksCount);
-	printf("ramBank size:%d\n", cartridge->header.ramBankSize);
+	printf("ram size:%d\n", cartridge->header.ramSize);
 
 
 	//ofstream myfile;
@@ -235,7 +237,7 @@ int main(void) {
 	Scalar black = Scalar(0, 0, 0, 0);
 	bool running = true;
 
-	//std::thread displayThread(displayThreadFunc, display,&running);
+   //std::thread displayThread(displayThreadFunc, display,&running);
 
 	int cyclesInFrameCounter = 0;
 	int framesForSeconds = 60;
@@ -267,7 +269,6 @@ int main(void) {
 				running = false;
 				break;
 			}
-		
 		int timeBefore = SDL_GetTicks();
 		do {
 
@@ -326,8 +327,8 @@ int main(void) {
 		display->render();
 		int timePassed = SDL_GetTicks() - timeBefore;
 		int sleep = 15 - timePassed;
-		if (sleep > 0)
-			Sleep(sleep);
+		/*if (sleep > 0)
+			Sleep(sleep);*/
 		rendersCounter++;
 		
 		
@@ -375,7 +376,7 @@ int main(void) {
 	
 	delete apu;
 	
-	_CrtDumpMemoryLeaks();
+	//_CrtDumpMemoryLeaks();
 	
 	return 0;
 

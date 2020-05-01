@@ -45,7 +45,7 @@ private:
 	
 public:
 	bool running = true;
-	ConsoleModel consoleModel = ConsoleModel::GBC;
+	
 	int speed = 0;
 	int steps = 0;
 	TIME time;

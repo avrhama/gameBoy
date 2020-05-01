@@ -33,7 +33,7 @@ static CARTRIDGE* createCartrige(string path) {
 	header.ramSizeType = (RamSizeType)(rom[0x0149]);
 	header.romBanksCount = CARTRIDGE::getRomBanksCount(header.romSizeType);
 	header.ramBanksCount = CARTRIDGE::getRamBanksCount(header.ramSizeType);
-	header.ramBankSize= CARTRIDGE::getRamSize(header.ramSizeType);
+	header.ramSize= CARTRIDGE::getRamSize(header.ramSizeType);
 	printf("colorGB?:%d\n", header.colorGB);
 	CARTRIDGE::printCartridgeType(header.cartridgeType);
 	}

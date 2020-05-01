@@ -9,7 +9,7 @@ class GPU
 {
 private:
 	BUS* bus=NULL;
-	
+	uint16_t lastScanline = 0;
 public:
 	
 	//videoRam

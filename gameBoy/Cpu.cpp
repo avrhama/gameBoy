@@ -995,7 +995,7 @@ void CPU::LDHL_SP_$n(uint8_t* none1, uint8_t* none2)
 {
 	signed char N_ = bus->mmu->read(PC++);
 	HL = SP + N_;
-	
+
 	uint16_t temp = HL ^ N_ ^ SP;
 	flagsArray[Z] = 0;
 	flagsArray[N] = 0;
@@ -1068,8 +1068,8 @@ void CPU::LD_$NN_SP(uint8_t* $NN, uint8_t* none)
 {
 	Word word = WordToBytes(SP);
 	bus->mmu->write(*(uint16_t*)$NN, word.lsb);
-	bus->mmu->write(*(uint16_t*)$NN+1, word.msb);
-	
+	bus->mmu->write(*(uint16_t*)$NN + 1, word.msb);
+
 }
 
 void CPU::PUSH_nn(uint8_t* nn, uint8_t* none)
@@ -1096,12 +1096,12 @@ void CPU::PUSH_nn(uint8_t* nn, uint8_t* none)
 	bus->mmu->write(SP - 2, word.lsb);
 	SP -= 2;
 
-	
+
 }
 
 void CPU::POP_nn(uint8_t* none, uint8_t* nn)
 {
-	
+
 
 	uint8_t lsb = bus->mmu->read(SP);
 	uint8_t msb = bus->mmu->read(SP + 1);
@@ -1573,8 +1573,8 @@ int lastn = 0;
 void CPU::ADD_SP_n(uint8_t* none, uint8_t* n) {
 	uint16_t oldSP = SP;
 	signed char n_ = *(signed char*)n;
-	
-	if (n_ == -1&&lastn==1) {
+
+	if (n_ == -1 && lastn == 1) {
 		int k = 0;
 	}
 	lastn = n_;
@@ -1583,10 +1583,10 @@ void CPU::ADD_SP_n(uint8_t* none, uint8_t* n) {
 	flagsArray[Z] = 0;
 	flagsArray[N] = 0;
 	flagsArray[C] = ((temp & 0x100) == 0x100) ? 1 : 0;
-	flagsArray[H] = ((temp & 0x10) == 0x10)?1 : 0;
+	flagsArray[H] = ((temp & 0x10) == 0x10) ? 1 : 0;
 	updateFlags();
 	return;
-	if ((oldSP&0xff) + n_ > 0xff)
+	if ((oldSP & 0xff) + n_ > 0xff)
 		//setFlag('C');
 		flagsArray[C] = 1;
 	else
@@ -1634,7 +1634,7 @@ void CPU::ADD_SP_n(uint8_t* none, uint8_t* n) {
 	flagsArray[Z] = 0;
 	flagsArray[N] = 0;
 	if (n_ >= 0) {
-		if (oldSP&0xff + n_ > 0xff)
+		if (oldSP & 0xff + n_ > 0xff)
 			//setFlag('C');
 			flagsArray[C] = 1;
 		else
@@ -1648,7 +1648,7 @@ void CPU::ADD_SP_n(uint8_t* none, uint8_t* n) {
 			flagsArray[H] = 0;
 	}
 	else {
-		if (oldSP&0xff <n_)
+		if (oldSP & 0xff < n_)
 			//setFlag('C');
 			flagsArray[C] = 1;
 		else
@@ -1825,18 +1825,18 @@ void CPU::HALT(uint8_t* none, uint8_t* none2) {
 }
 void CPU::STOP(uint8_t* none, uint8_t* none2) {
 	halt = true;
-	
+
 	/*if (lastOpcode != 0x10)
 	printf("stop\n");*/
 	//if (bus->cartridge->colorGB) {
-		uint8_t prepareSpeedSwitch = bus->interrupt->io[0x4d];
-		if (prepareSpeedSwitch & 0x01) {
-			speedMode = 1 - speedMode; // 1 + (bus->interrupt->io[0x4d] >> 7) & 0x01;
-			bus->interrupt->io[0x4d] = (speedMode << 7) | 0xfe;
-			halt = false;
-			lastOpcodeCycles += 32749;
-			printf("spedd chaned");
-		}
+	uint8_t prepareSpeedSwitch = bus->interrupt->io[0x4d];
+	if (prepareSpeedSwitch & 0x01) {
+		speedMode = 1 - speedMode; // 1 + (bus->interrupt->io[0x4d] >> 7) & 0x01;
+		bus->interrupt->io[0x4d] = (speedMode << 7) | 0xfe;
+		halt = false;
+		lastOpcodeCycles += 32749;
+		printf("spedd chaned");
+	}
 	//}
 
 	//haltCPU = 1;
@@ -1848,7 +1848,7 @@ void CPU::DI(uint8_t* none, uint8_t* none2) {
 }
 void CPU::EI(uint8_t* none, uint8_t* none2) {
 	bus->cpu->setIME = true;
-	
+
 }
 void CPU::RLCA(uint8_t* none, uint8_t* none2) {
 	uint8_t A = *getA();
@@ -2159,7 +2159,7 @@ void CPU::RR_$HL(uint8_t* none1, uint8_t* none2) {
 	updateFlags();
 }
 void CPU::SLA_n(uint8_t* n, uint8_t* none) {
-	
+
 	uint8_t bitLeaving = (1 & (*n >> 7));
 	*n <<= 1;
 	//bitLeaving ? //setFlag('C') : resetFlag('C');
@@ -2453,7 +2453,7 @@ void CPU::RETI(uint8_t* none, uint8_t* none2) {
 	uint8_t msb = bus->mmu->read(SP + 1);
 	SP += 2;
 	PC = BytesToWord(msb, lsb);*/
-	
+
 	POP_nn(NULL, (uint8_t*)&PC);
 	IME = true;
 	//setIME = true;
@@ -5995,13 +5995,15 @@ void CPU::ExecuteOpcode(uint16_t opcode) {
 	if ((opcode & 0xFF00) == 0xCB00) {
 		//lastOpcodeCycles += 1;
 	}
-	
+
 	//time.addMCycles(lastOpcodeCycles);
 	//time.print(2);
 }
 void CPU::reset()
 {
 	int stage = 4;
+	//1 bad
+	stage = 4;
 	switch (stage) {
 	case 0:
 		//antonio reset
@@ -6068,7 +6070,15 @@ void CPU::reset()
 		}
 		break;
 	}
+
+
 	
+	
+	
+
+
+	//PC = 0;
+
 }
 int CPU::getCycelPerIncrementTIMA(uint8_t freqIndex) {
 	switch (freqIndex) {//read tac selected freq
@@ -6089,7 +6099,7 @@ int CPU::getCycelPerIncrementTIMA(uint8_t freqIndex) {
 //if tima counter pass half of the counter target, tima incease.
 void CPU::isCycelPerIncrementTIMAPassedHalf(int newCycelPerIncrementTIMA) {
 	uint8_t timcont = 0;
-		bool increaseTima = false;
+	bool increaseTima = false;
 	int stage = 1;
 	switch (stage) {
 	case 0:
@@ -6116,8 +6126,8 @@ void CPU::isCycelPerIncrementTIMAPassedHalf(int newCycelPerIncrementTIMA) {
 		break;
 	case 1:
 
-		 timcont = bus->mmu->read(0xff07);//timer controler reister
-		 increaseTima = (cyclesPerIncrementTIMA == 1024 && newCycelPerIncrementTIMA == 256 && ((timcont >> 2) & 0x1)) ? true : false;
+		timcont = bus->mmu->read(0xff07);//timer controler reister
+		increaseTima = (cyclesPerIncrementTIMA == 1024 && newCycelPerIncrementTIMA == 256 && ((timcont >> 2) & 0x1)) ? true : false;
 		if (cyclesPerIncrementTIMA / 2 <= cyclesPerIncrementTIMACounter || (increaseTima)) {
 			int freq = getCycelPerIncrementTIMA(timcont & 0x3);
 
@@ -6242,7 +6252,7 @@ void CPU::updateTimers()
 
 			cyclesPerIncrementTIMACounter -= freq;
 		}
-		
+
 	}
 
 }

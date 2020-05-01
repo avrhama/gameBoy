@@ -42,7 +42,7 @@ public:
 	//int romBankSize = 0x4000;//MBC1
 	//int ramBankSize = 0x2000;//MBC1
 	int romBankSize= 0x4000;
-	int ramBankSize;
+	int ramSize;
 };
 class CARTRIDGE
 {
@@ -55,9 +55,8 @@ public:
 	CARTRIDGE(uint8_t* rom, CartridgeHeader header) {
 		this->rom = rom;
 		this->header = header;
-		int size_ = (int)header.ramBanksCount * header.ramBankSize;
-		if(size_>0)
-		this->ram = (uint8_t*)calloc(size_, 1);
+		if(header.ramSize>0)
+		this->ram = (uint8_t*)calloc(header.ramSize, 1);
 	}
 	CARTRIDGE() {
 		/*int size_ = (int)header.ramSize * header.ramBankSize;

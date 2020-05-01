@@ -19,8 +19,8 @@ DISPLAY::DISPLAY(int posX, int posY, int width, int height, int pixelSize,int di
     if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
         std::cout << "error with sdl " << SDL_GetError() << std::endl;
     }
-
-    win = SDL_CreateWindow("gameBoy", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 160, 144, 0);
+    int x = 2;
+    win = SDL_CreateWindow("gameBoy", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 160*x, 144*x, SDL_WindowFlags::SDL_WINDOW_RESIZABLE);
     if (NULL == win) {
         std::cout << "error with sdl window" << SDL_GetError() << std::endl;
        

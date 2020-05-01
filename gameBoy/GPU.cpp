@@ -41,11 +41,15 @@ bool GPU::checkLCDStatus()
 		bus->interrupt->io[0x41] &= 0xFD;
 		bus->interrupt->io[0x41] |= 0x01;
 
-		//bus->dma->generalPurposeDMA();
 		if (useLockers) {
 			bus->mmu->OAMLock = false;
 			bus->mmu->vRamLock = false;
 		}
+		bus->dma->generalPurposeDMA();
+	/*	if (currScanLine != lastScanline) {
+			bus->dma->generalPurposeDMA();
+			lastScanline = currScanLine;
+		}*/
 	}
 	//cyclesPerScanline decrement from 456 to 0 split to 3 sections:
 	else if (cyclesPerScanline>=376) {//mode 2:Searching Sprites Atts 80 [456->376] 
@@ -69,13 +73,17 @@ bool GPU::checkLCDStatus()
 		mode = 0;
 		bus->interrupt->io[0x41] &= 0xFC;
 	
-		//bus->dma->generalPurposeDMA();
-		//bus->dma->hBlankDMA();
 		if (useLockers) {
 			bus->mmu->OAMLock = false;
 			bus->mmu->vRamLock = false;
 		}
-		
+		bus->dma->generalPurposeDMA();
+		/*if (currScanLine != lastScanline) {
+			bus->dma->hBlankDMA();
+			bus->dma->generalPurposeDMA();
+			bus->dma->FF46DMATransfer();
+			lastScanline = currScanLine;
+		}*/
 	}
 	//bus->interrupt->io[0x41] |= mode;
 	if(mode!=oldLCDmode&& mode != 3)
@@ -109,20 +117,30 @@ void GPU::tick()
 		cyclesPerScanline += 456*(bus->cpu->speedMode + 1);
 		bus->interrupt->io[0x44]++;
 		uint8_t currScanLine = bus->interrupt->io[0x44];
+		//lastScanline = currScanLine;
 		if (currScanLine == 144) {
 			bus->interrupt->setInterruptRequest(0);
 			//bus->display->render();
 		}
 		if (currScanLine > 153) {
 			bus->interrupt->io[0x44] = 0;
-			bus->dma->generalPurposeDMA();
+			//bus->dma->FF46transfering = false;
+			//bus->dma->generalPurposeDMA();
 		}
 		if (currScanLine < 144) {
-			bus->dma->generalPurposeDMA();
+		
+			
+			//bus->dma->FF46transfering = false;
+			
+
+
+			
 			bus->dma->hBlankDMA();
+			//bus->dma->generalPurposeDMA();
+			bus->dma->FF46DMATransfer();
+			
+			
 			draw();
-			
-			
 		}
 
 	}

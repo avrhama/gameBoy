@@ -27,27 +27,14 @@ void MMU::write(uint16_t address, uint8_t value)
 	if (bus->dma->FF46transfering)
 		if (address < 0xff80)
 			return;
-	if (bus->pipeEnable&&false) {
-		bus->p->read();
-		uint16_t pipeAddress = bus->p->rBuffer[0] << 8 | bus->p->rBuffer[1];
-		uint8_t pipeValue = bus->p->rBuffer[2];
-		bus->p->rBuffer[0] = 0;
-		if (pipeAddress != address)
-			bus->p->rBuffer[0] = 1;
-		else if (pipeValue != value)
-			bus->p->rBuffer[0] = 2;
-		else
-			printf("write mem OK!");
-		bus->p->wBuffer[0] = 'a';
-		bus->p->write(1);
-	}
+	
 		
 	if (0 <= address &&address <= 0x7fff) {//bios ROM0 and ROM1 (unbanked) (16k)
 		
 		if (biosLoaded)
 			return;
 		bus->cartridge->write(address,value);
-		//rom[address] = value;
+	
 	}
 	else if (0x8000 <= address &&address <= 0x9fff) {// Graphics: VRAM (8k)
 		if (vRamLock)
@@ -123,7 +110,9 @@ uint8_t MMU::read(uint16_t address)
 			if (address < 0x100)
 				return bios[address];
 				//return bus->cartridge->read(address);
+			//else if (address == 0x100)
 			else if (bus->cpu->PC == 0x100)
+			//else
 				biosLoaded = false;
 		}
 		return bus->cartridge->read(address);

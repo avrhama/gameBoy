@@ -14,9 +14,7 @@ public:
 		CARTRIDGE::rom = rom;
 		CARTRIDGE::header = header;
 		CARTRIDGE::header.romBankSize = 0x4000;
-		CARTRIDGE::header.ramBankSize = 0x2000;
-		int size_ = (int)header.ramBanksCount * header.ramBankSize;
-		CARTRIDGE::ram = (uint8_t*)calloc(size_, 1);
+		CARTRIDGE::ram = (uint8_t*)calloc(header.ramSize, 1);
 	}
 	static CARTRIDGE* create(uint8_t* rom, CartridgeHeader header) {
 		return new MBC2(rom, header);

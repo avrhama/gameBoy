@@ -165,13 +165,6 @@ public:
 	const char* lastwaveform;
 	double time = 0;
 	bool volSaved = false;
-	//	float squareLimits[4] = {
-	//-0.25, // 12.5% ( _-------_-------_------- )
-	// -0.5,  // 25%   ( __------__------__------ )
-	// 0,     // 50%   ( ____----____----____---- ) (normal)
-	// 0.5,   // 75%   ( ______--______--______-- )
-	//	};
-
 	bool hasSamples = false;
 	uint8_t freqLo;
 	uint8_t freqHi;
@@ -323,97 +316,10 @@ public:
 		if (sampleGenerateCounter <= 0) {
 			sampleGenerateCounter += sampleGenerateCounterReload;
 
-			/*auto approxsin = [](float t) {
-				double j = t * 0.15915;
-				j = j - (int)j;
-				return 20.785 * j * (j - 0.5) * (j - 1.0f);
-			};*/
-
 			Uint8 rightSample;
 			Uint8 leftSample;
-			float phase = 2.0f * M_PI * duty;
-
-			float f = (float)freq;
-
-			double g = 0;
-			double c = 0, y1 = 0, y2 = 0;
-			double t = adc->audioPosition * adc->sampleDurationSec;
-			//t = (double)tempsteps / 4194304+(adc->audioPosition * adc->sampleDurationSec);
-			time += freq * M_PI / (float)adc->have.freq;
-			time = 0;
-			double x = t * 2 * M_PI * f;
-
-			//g += sin(x * k - (double)phase * k) / k;
-		//for (int k = 1;k < 20;k += 2) {	
-		//		g += approxsin(x * k - (double)phase * k) / k;
-		//	//	g += -approxsin(x * k) / k;
-		//	}
-		/*for (int n = 1;n <= 20;n++) {
-				c = n * x;
-				y1 += -approxsin(c) / n;
-				y2 += -approxsin(c - phase * (double)n) / n;
-			}
-			g = (y1 - y2)* (2.0/ M_PI);*/
-			//  vol= ch->envelopeVolume;
-			  /*if (!ch->enable)
-				  vol = 0;	*/
-
-				  //sample = ((g*apu->adc.audioVolume * vol))/100;
-			if (false) {
-				/*if (ch->enable && (ch->sequencer->waveForm != lastwaveform || false)) {
-					printf("g:%f out:%d sequence:%d step:%d wave:%s\n", g, ch->sequencer->output, ch->sequencer->sequence, ch->sequencer->step, ch->sequencer->waveForm);
-					lastwaveform = ch->sequencer->waveForm;
-				}*/
-
-				float p = adc->audioVolume * vol;
-				p = sequencer.output * duty * adc->audioVolume * vol;
-				p = g * adc->audioVolume * vol * sequencer.output;
-				p = ((float)p) / (float)32768;
-				if (p > 1) p = 1;
-				if (p < -1) p = -1;
-				/*if (p < 0.5)
-					p = -p;*/
-					//p *= apu->adc.audioVolume * vol;
-
-				rightSample = p;
-			}
-
-
-
-			/*g = sin(time);
-			time += (2 * M_PI * ch->freq) / (float)apu->adc.have.samples;
-			sample = (g * ch->sequencer.output * apu->adc.audioVolume * vol);*/
-			//sample = ((g * apu->adc.audioVolume * vol));
-
-			//time =SDL_GetTicks()* ch->freq * M_PI;
-			//time =(apu->bus->cpu->steps/419433)*2.0f*M_PI;
-			/*float h = sin(x);
-			Sint8 temp = sequencer.output;
-			
-			if (h > squareLimit)
-				h = 0xff;
-			else
-				h = 0;
-			if (h != h2) {
-				int test = 0;
-			}
-			else if (h == h2) {
-				int test = 0;
-			}*/
-
-			//h = h2;
 			float h = 0xff * (1 - sequencer.output);
 
-				//apu->adc.audioVolume
-
-
-			//sample = ((g * ((double)vol / 15) * v));
-			//sample = ((g * apu->adc.audioVolume * vol));
-
-				//sample = 0.5;
-
-			//ch->samplesData[sampleCounter] = sample;
-			//ch->samplesData[2*sampleCounter+1] = 1;
 			if (!enable) {
 				vol = 0;
 			}
@@ -421,12 +327,6 @@ public:
 			float v = (((float)(soundCtrl->S01Volume + soundCtrl->S02Volume) / 7)) / 10;
 
 			leftSample = ((h * ((double)vol / 15) * v));
-			//float v = (((float)(apu->soundCtrl.S01Volume + apu->soundCtrl.S02Volume) / 7)) / 10;
-
-			//rightSample = ((h * ((double)vol / 15) * (double)apu->soundCtrl.S01Volume / 70));
-			//leftSample = ((h * ((double)vol / 15) * (double)apu->soundCtrl.S02Volume / 70));
-
-
 
 
 			//ch->samplesData[2*sampleCounter] = rightSample;
@@ -435,22 +335,8 @@ public:
 			//ch->rightSamplesData[sampleCounter] = 0;
 			leftSamplesData[adc->sampleCounter] = leftSample;
 			//ch->samplesData[2*sampleCounter] = 128;
-			volSaved = true;
-			if (rightSamplesData[adc->sampleCounter] != 0)
-				int test = 0;
-			//sampleCounter++;
+			
 			adc->hasSample = true;
-			//TODO
-			/*if (sampleCounter == apu->adc.have.samples) {
-				hasSamples = true;
-				sampleCounter = 0;
-				//SDL_QueueAudio(apu->adc.dev, ch->samplesData, apu->adc.have.channels * apu->adc.have.samples);
-				//SDL_QueueAudio(apu->adc.dev, ch->samplesData,  apu->adc.have.samples);
-				SDL_QueueAudio(apu->adc.dev, ch->leftSamplesData, apu->adc.have.samples);
-				//SDL_QueueAudio(apu->adc.dev, ch->leftSamplesData, apu->adc.have.samples);
-				//SDL_QueueAudio(apu->adc.dev, ch->samplesData, apu->adc.have.channels * apu->adc.have.samples);
-			}*/
-
 		}
 
 	}
@@ -476,7 +362,6 @@ public:
 						int test = 0;
 					}
 					envelopeVolume = newVolume;
-					volSaved = false;
 
 					/*if (sequencer.output != 0)
 						vol = ch->envelopeVolume;

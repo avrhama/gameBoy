@@ -49,7 +49,7 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 			io[0x44] = 0;
 			break;
 		case 0x46:
-			bus->dma->transfer(value);
+			bus->dma->FF46DMATransferStart(value);
 			break;
 		case 0x4f:
 			if (bus->cartridge->header.colorGB) {
@@ -97,6 +97,10 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 					io[0x6a] = (io[0x6a] & 0x80) | ((io[0x6a] + 1) & 0x3f);
 				break;
 			}
+		case 0x6c:
+			if (bus->consoleModel == ConsoleModel::GBC)
+				io[0x6c] = 0xfe | (value) & 0x01;
+			break;
 		case 0x70:
 
 			bus->mmu->workingRamBank = value & 0x07;
@@ -105,6 +109,9 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 			io[address] = value;
 			if (print)
 				printf("write opcode:0x70 // WRAM Bank value:%04x\n", value);
+			break;
+		case 0x75:
+			io[0x75] = value & 0x70;
 			break;
 		case 0x76://read 0nly
 			break;
@@ -121,9 +128,6 @@ uint8_t INTERRUPT::read(uint16_t address)
 {
 	
 	bool print = true;
-	if (address == 0x55)
-		if (print)
-		printf("read dma?\n");
 	if (address < 0x80) {
 		switch (address)
 		{
@@ -425,5 +429,48 @@ void INTERRUPT::reset()
 	
 	}
 
+	
+	io[0x75] = 0x00;
+	if (bus->consoleModel != ConsoleModel::GBC) {
+		io[0x6c] = 0xff;
+		io[0x74] = 0xff;
+	}
+	else {
+		io[0x6c] = 0xfe;
+		io[0x74] = 0x00;
+	}
+
+	
+	io[0x05] = 0x00;// TIMA
+	io[0x06] = 0x00;// TMA
+	io[0x07] = 0x00;// TAC
+	io[0x10] = 0x80;// NR10
+	io[0x11] = 0xBF;// NR11
+	io[0x12] = 0xF3;// NR12
+	io[0x14] = 0xBF;// NR14
+	io[0x16] = 0x3F;// NR21
+	io[0x17] = 0x00;// NR22
+	io[0x19] = 0xBF;// NR24
+	io[0x1A] = 0x7F;// NR30
+	io[0x1B] = 0xff;// NR31
+	io[0x1C] = 0x9F;// NR32
+	io[0x1E] = 0xBF;// NR33
+	io[0x20] = 0xff;// NR41
+	io[0x21] = 0x00;// NR42
+	io[0x22] = 0x00;// NR43
+	io[0x23] = 0xBF;// NR44
+	io[0x24] = 0x77;// NR50
+	io[0x25] = 0xF3;// NR51
+	io[0x26] = 0xF1;//-GB, 0xF0-SGB ;// NR52
+	io[0x40] = 0x91;// LCDC
+	io[0x42] = 0x00;// SCY
+	io[0x43] = 0x00;// SCX
+	io[0x45] = 0x00;// LYC
+	io[0x47] = 0xFC;// BGP
+	io[0x48] = 0xff;// OBP0
+	io[0x49] = 0xff;// OBP1
+	io[0x4A] = 0x00;// WY
+	io[0x4B] = 0x00;// WX
+	io[0xFF] = 0x00;// IE
 
 }

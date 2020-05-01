@@ -15,9 +15,7 @@ public:
 		CARTRIDGE::rom = rom;
 		CARTRIDGE::header = header;
 		CARTRIDGE::header.romBankSize = 0x4000;
-		CARTRIDGE::header.ramBankSize = 0x2000;
-		int size_ = (int)header.ramBanksCount * header.ramBankSize;
-		CARTRIDGE::ram = (uint8_t*)calloc(size_, 1);
+		CARTRIDGE::ram = (uint8_t*)calloc(header.ramSize, 1);
 	}
 	static CARTRIDGE* create(uint8_t* rom, CartridgeHeader header) {
 		//return new MBC1();
@@ -38,7 +36,7 @@ public:
 		else if (0xa000 <= address && address <= 0xbfff) {//Ram m
 			if (ramEnable) {
 				if (header.maxMemMode == MaximumMemoryMode::_4_32_mode)
-					return ram[(address - 0xa000) + ramBankIndex * header.ramBankSize];
+					return ram[(address - 0xa000) + ramBankIndex * 0x2000];
 				else
 					return ram[address - 0xa000];
 			}
@@ -95,7 +93,7 @@ public:
 		}
 		else if (0xa000 <= address && address <= 0xbfff && ramEnable) {
 			if (header.maxMemMode == MaximumMemoryMode::_4_32_mode)
-				ram[(address - 0xa000) + ramBankIndex * header.ramBankSize] = value;
+				ram[(address - 0xa000) + ramBankIndex * 0x2000] = value;
 			else
 				ram[address - 0xa000] = value;
 		}

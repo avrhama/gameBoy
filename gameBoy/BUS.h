@@ -1,5 +1,7 @@
 #pragma once
 using namespace std;
+#include "Structures.h"
+
 class CPU;
 class MMU;
 class CARTRIDGE;
@@ -21,6 +23,7 @@ public:
 	bool modified = false;
 	bool pipeEnable;
 	pipeChannel *p;
+	ConsoleModel consoleModel = ConsoleModel::GBC;
 	CPU* cpu;
 	MMU* mmu;
 	CARTRIDGE* cartridge;

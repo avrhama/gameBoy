@@ -96,6 +96,7 @@ void soundTick(void* user_data, Uint8* stream, int len) {
 }
 void APU::createAudioDeviceControl(bool closeOld)
 {
+	return;
 	if (bus->pipeEnable) {
 
 
@@ -375,11 +376,13 @@ void APU::connectToBus(BUS* bus)
 
 void APU::tick()
 {
-
-	channels[0]->tick(bus->cpu->lastOpcodeCycles);
-	channels[1]->tick(bus->cpu->lastOpcodeCycles);
-	channels[2]->tick(bus->cpu->lastOpcodeCycles);
-	channels[3]->tick(bus->cpu->lastOpcodeCycles);
+	int i = 0;
+	//chann1->tick(bus->cpu->lastOpcodeCycles);
+	//channels[0]->tick(bus->cpu->lastOpcodeCycles);
+	
+	channels[i]->tick(bus->cpu->lastOpcodeCycles);
+	//channels[2]->tick(bus->cpu->lastOpcodeCycles);
+	//channels[3]->tick(bus->cpu->lastOpcodeCycles);
 	if (adc.hasSample) {
 		adc.hasSample = false;
 		adc.audioPosition++;
@@ -390,18 +393,19 @@ void APU::tick()
 			adc.sampleCounter = 0;
 			//SDL_QueueAudio(apu->adc.dev, ch->samplesData, apu->adc.have.channels * apu->adc.have.samples);
 			//SDL_QueueAudio(apu->adc.dev, ch->samplesData,  apu->adc.have.samples);
-			SDL_MixAudioFormat((Uint8*)channels[0]->leftSamplesData, (Uint8*)channels[1]->leftSamplesData, AUDIO_S8, adc.have.samples, SDL_MIX_MAXVOLUME);
-			SDL_MixAudioFormat((Uint8*)channels[0]->leftSamplesData, (Uint8*)channels[2]->leftSamplesData, AUDIO_S8, adc.have.samples, SDL_MIX_MAXVOLUME);
-			SDL_MixAudioFormat((Uint8*)channels[0]->leftSamplesData, (Uint8*)channels[3]->leftSamplesData, AUDIO_S8, adc.have.samples, SDL_MIX_MAXVOLUME);
-			if(!mute)
-			SDL_QueueAudio(adc.dev, channels[0]->leftSamplesData, adc.have.samples);
-			for (int i = 0;i < adc.have.channels * adc.have.samples;i++) {
+
+			//SDL_MixAudioFormat((Uint8*)channels[0]->leftSamplesData, (Uint8*)channels[1]->leftSamplesData, AUDIO_S8, adc.have.samples, SDL_MIX_MAXVOLUME);
+			//SDL_MixAudioFormat((Uint8*)channels[0]->leftSamplesData, (Uint8*)channels[2]->leftSamplesData, AUDIO_S8, adc.have.samples, SDL_MIX_MAXVOLUME);
+			//SDL_MixAudioFormat((Uint8*)channels[0]->leftSamplesData, (Uint8*)channels[3]->leftSamplesData, AUDIO_S8, adc.have.samples, SDL_MIX_MAXVOLUME);
+			//if(!mute)
+			SDL_QueueAudio(adc.dev, channels[i]->leftSamplesData, adc.have.samples);
+			/*for (int i = 0;i < adc.have.channels * adc.have.samples;i++) {
 
 				channels[0]->leftSamplesData[i] = 0;
 				channels[1]->leftSamplesData[i] = 0;
 				channels[2]->leftSamplesData[i] = 0;
 				channels[3]->leftSamplesData[i] = 0;
-			}
+			}*/
 
 
 			//SDL_QueueAudio(apu->adc.dev, ch->leftSamplesData, apu->adc.have.samples);

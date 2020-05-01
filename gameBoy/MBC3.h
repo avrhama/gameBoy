@@ -36,9 +36,7 @@ public:
 		CARTRIDGE::rom = rom;
 		CARTRIDGE::header = header;
 		CARTRIDGE::header.romBankSize = 0x4000;
-		CARTRIDGE::header.ramBankSize = 0x2000;
-		int size_ = (int)header.ramBanksCount * header.ramBankSize;
-		CARTRIDGE::ram = (uint8_t*)calloc(size_, 1);
+		CARTRIDGE::ram = (uint8_t*)calloc(header.ramSize, 1);
 		startTimer = steady_clock::now();
 
 	
@@ -64,7 +62,7 @@ public:
 		}else if (0xa000 <= address && address <= 0xbfff) {//Ram m
 			if (ramAndTimerEnable) {
 				if (ramAndTimerBankIndex < 0x04)
-					return ram[(address - 0xa000) + ramAndTimerBankIndex * header.ramBankSize];
+					return ram[(address - 0xa000) + ramAndTimerBankIndex * 0x2000];
 				else if (ramAndTimerBankIndex < 0x0d)
 					return *((uint8_t*)&timer + (ramAndTimerBankIndex - 0x04));
 					
@@ -136,7 +134,7 @@ public:
 		}else if (0xa000 <= address && address <= 0xbfff) {
 			if (ramAndTimerEnable) {
 				if (ramAndTimerBankIndex < 0x04)
-					 ram[(address - 0xa000) + ramAndTimerBankIndex * header.ramBankSize]=value;
+					 ram[(address - 0xa000) + ramAndTimerBankIndex * 0x2000]=value;
 				else if (ramAndTimerBankIndex < 0x0d) {
 					timer.RTCFlags |= 0x40;
 					*((uint8_t*)&timer + (ramAndTimerBankIndex - 0x08)) = value;
