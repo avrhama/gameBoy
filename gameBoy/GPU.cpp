@@ -28,7 +28,8 @@ bool GPU::checkLCDStatus()
 			bus->mmu->vRamLock = false;
 			bus->mmu->OAMLock = false;
 		}
-		bus->dma->generalPurposeDMA();
+		
+		//bus->dma->generalPurposeDMA();
 		return false;
 	}
 	
@@ -45,21 +46,34 @@ bool GPU::checkLCDStatus()
 			bus->mmu->OAMLock = false;
 			bus->mmu->vRamLock = false;
 		}
-		bus->dma->generalPurposeDMA();
-	/*	if (currScanLine != lastScanline) {
+		
+			//bus->dma->generalPurposeDMA();
+		
+	
+		/*	if (currScanLine != lastScanline) {
 			bus->dma->generalPurposeDMA();
 			lastScanline = currScanLine;
 		}*/
+		bus->display->setLock(false);
 	}
 	//cyclesPerScanline decrement from 456 to 0 split to 3 sections:
 	else if (cyclesPerScanline>=376) {//mode 2:Searching Sprites Atts 80 [456->376] 
 		mode = 2;
+		if (lastScanline != currScanLine) {
+			if (lastScanline == currScanLine)
+				printf("lcdCtrlChanged\n");
+			draw();
+			lastScanline = currScanLine;
+			lcdCtrlChanged = false;
+		}
+		bus->display->setLock(true);
 		bus->interrupt->io[0x41] &= 0xFE;
 		bus->interrupt->io[0x41] |= 0x02;
 		if (useLockers) {
 			bus->mmu->OAMLock = true;
 			bus->mmu->vRamLock = false;
 		}
+
 	}
 	else if (cyclesPerScanline >= 204) {//mode 3:Transfering Data to LCD Driver 172 [375->204] 
 		mode = 3;
@@ -68,6 +82,7 @@ bool GPU::checkLCDStatus()
 			bus->mmu->OAMLock = true;
 			bus->mmu->vRamLock = true;
 		}
+		bus->display->setLock(false);
 	}
 	else {//mode 0:H-Blank  204 [204->0)
 		mode = 0;
@@ -77,13 +92,13 @@ bool GPU::checkLCDStatus()
 			bus->mmu->OAMLock = false;
 			bus->mmu->vRamLock = false;
 		}
-		bus->dma->generalPurposeDMA();
-		/*if (currScanLine != lastScanline) {
+		if (mode != oldLCDmode) {
+
 			bus->dma->hBlankDMA();
-			bus->dma->generalPurposeDMA();
-			bus->dma->FF46DMATransfer();
-			lastScanline = currScanLine;
-		}*/
+			//bus->dma->FF46DMATransfer();
+		}
+		
+		bus->display->setLock(false);
 	}
 	//bus->interrupt->io[0x41] |= mode;
 	if(mode!=oldLCDmode&& mode != 3)
@@ -121,32 +136,50 @@ void GPU::tick()
 		if (currScanLine == 144) {
 			bus->interrupt->setInterruptRequest(0);
 			//bus->display->render();
+			//bus->display->setLock(false);
 		}
 		if (currScanLine > 153) {
 			bus->interrupt->io[0x44] = 0;
+			
 			//bus->dma->FF46transfering = false;
 			//bus->dma->generalPurposeDMA();
 		}
 		if (currScanLine < 144) {
-		
+			/*if (currScanLine == 0) {
 			
-			//bus->dma->FF46transfering = false;
+			}*/
 			
+			//bus->display->setLock(true);
 
-
+			//draw();
 			
-			bus->dma->hBlankDMA();
-			//bus->dma->generalPurposeDMA();
-			bus->dma->FF46DMATransfer();
+			//bus->dma->hBlankDMA();
+			//bus->dma->FF46DMATransfer();
 			
-			
-			draw();
+		/*	if (lastScanline != currScanLine) {
+				draw();
+				lastScanline = currScanLine;
+			}*/
+		}
+		else {
+			//bus->display->setLock(false);
 		}
 
 	}
 	
 }
+void GPU::draw() {
+	//bus->display->setLock(true);
+	uint8_t BGpriority[20] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
+	uint32_t BGTransparents[20] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
+	uint8_t y = lastScanline;//currLine
+	uint32_t* BGLine = bus->display->getLineSDL(y);
 
+	bool render = false;
+	render = drawBG(BGLine, BGpriority, BGTransparents);
+	render=drawSprites(BGLine,BGpriority, BGTransparents)||render;
+	//bus->display->setLock(false);
+}
 bool GPU::TestBit(BYTE n, int b) {
 	return (n >> b) & 1;
 }
@@ -200,22 +233,23 @@ uint8_t GPU::drawBGLine(uint8_t y, uint8_t* BGLine, uint8_t* BGcolos)
 	return offset;
 
 }
-bool GPU::drawBG(uint32_t* BGLine, uint8_t* BGpriorities, uint32_t* BGTransparents) {
-	
-	
+bool GPU::drawBG2(uint32_t* BGLine, uint8_t* BGpriorities, uint32_t* BGTransparents) {
+
+
 	if (bus->interrupt->io[0x40] & 0x1) {//BG Display Enable
 		uint16_t bgTileMap = 0x9800;//store locations of tiles to display	
 		//map<int, int> palette;
 		int palette[4];
 		getPalette2(0xff47, palette);
-		
-		uint8_t tileY = bus->interrupt->io[0x44];
+
+		//uint8_t tileY = bus->interrupt->io[0x44];
+		uint8_t tileY = lastScanline;
 		uint8_t scrollY = bus->interrupt->io[0x42];
 		uint8_t scrollX = bus->interrupt->io[0x43];
 		uint8_t windowY = bus->interrupt->io[0x4A];
 		uint8_t windowX = bus->interrupt->io[0x4B] - 7;
-		Color* BGpalette= bus->display->bgPalette;
-		bool windowDisplay = ((bus->interrupt->io[0x40] >> 5) & 0x1)&&(tileY>=windowY);
+		Color* BGpalette = bus->display->bgPalette;
+		bool windowDisplay = ((bus->interrupt->io[0x40] >> 5) & 0x1) && (tileY >= windowY);
 		bool windowAdjusment;
 		// windowDisplay = ((bus->interrupt->io[0x40] >> 5) & 0x1);
 		if (windowDisplay) {
@@ -234,28 +268,228 @@ bool GPU::drawBG(uint32_t* BGLine, uint8_t* BGpriorities, uint32_t* BGTransparen
 		if ((bus->interrupt->io[0x40] >> 4) & 0x1) {
 			tileDataTable = 0x8000;//unsigned indexing
 		}
-		
+
 		//uint16_t  tileRow = ((uint8_t)(tileY / 8)) * 32;//number of tiles from 0 to currline. //num of tiles includes cols.
 		uint16_t  tileRow = ((tileY / 8)) * 32;//number of tiles from 0 to currline. //num of tiles includes cols.
 		uint16_t  tileIndexAddress;
 		for (int x = 0;x < 160;) {
-			
-			
-			uint8_t bgX = scrollX + x;
+
+
+			uint8_t bgX = (scrollX + x);
+			//int bgX = scrollX + x;
+			if (scrollX + x > 250) {
+				int test = 0;
+			}
 			windowAdjusment = false;
 			if (windowDisplay && x >= windowX) {
 				bgX = x - windowX;
 				windowAdjusment = true;
 			}
 			uint8_t tileCol = bgX / 8;//number of tiles from 0 to scrollX.
-			tileIndexAddress = bgTileMap+ tileRow+ tileCol;
+			tileIndexAddress = bgTileMap + tileRow + tileCol;
 			uint16_t tileAddress;
 			if (tileDataTable == 0x8800) {
-				uint8_t tileIndex =(int8_t)vRam[tileIndexAddress -0x8000]+128;
-				tileAddress = 0x800 + tileIndex*16;
+				uint8_t tileIndex = (int8_t)vRam[tileIndexAddress - 0x8000] + 128;
+				tileAddress = 0x800 + tileIndex * 16;
 			}
 			else {
 				uint8_t tileIndex = vRam[tileIndexAddress - 0x8000];
+				tileAddress = (tileIndex) * 16;
+
+			}
+
+
+			//uint8_t yDisplay = bus->interrupt->io[0x44];//currLine
+			//uint8_t tileLine = (tileY % 8) * 2;//each  bytes are a line
+			uint8_t tileLine = (tileY % 8) * 2;
+			uint16_t vRamBank = 0;
+
+			uint8_t attributes = vRam[tileIndexAddress - 0x6000];//tile attributes in vRam bank 1
+			bool priority;
+			bool Xflip = false;
+			if (bus->cartridge->header.colorGB) {
+
+				if ((attributes >> 3) & 0x01)
+					vRamBank = 0x2000;
+				//Horizontal Flip
+				if ((attributes >> 5) & 0x01) {
+					bgX = 7 - bgX;
+					//Xflip = true;
+				}
+				//Vertical Flip 
+				if ((attributes >> 6) & 0x01)
+					tileLine = ((7 - tileY) % 8) * 2;
+				else
+					tileLine = (tileY % 8) * 2;
+
+				BGpalette = bus->display->BGPlatettes[attributes & 0x07];
+				//priority = (attributes >> 7)&0x01 ? true : false;
+				if ((attributes >> 7) & 0x01) {
+					BGpriorities[x / 8] |= 0xff >> (x % 8);
+					if (x % 8 != 0 && (x / 8) + 1 < 20)
+						BGpriorities[(x / 8) + 1] |= (0xff << (7 - (x % 8)));
+				}
+				BGTransparents[x / 8] = BGpalette[0].val;
+			}
+
+			/*uint8_t lsbData = bus->mmu->read(tileAddress+ tileLine);
+			uint8_t msbData = bus->mmu->read(tileAddress + tileLine+1);*/
+			uint8_t lsbData = vRam[tileAddress + tileLine + vRamBank];
+			uint8_t msbData = vRam[tileAddress + tileLine + 1 + vRamBank];
+			/*if (Xflip) {
+
+				lsbData = reverseByteLockup[lsbData];
+				msbData = reverseByteLockup[msbData];
+			}*/
+
+			uint8_t pixelIndex = bgX % 8;
+			//uint8_t lineBlock = 2 * (x / 8);
+
+			//BGLineTile[lineBlock] |=((lsbData>> (7 - (x % 8)))&0x1) << (7 - (x % 8));
+			//BGLineTile[lineBlock+1] |= ((msbData >> (7 - (x % 8))) & 0x1) << (7 - (x % 8));
+
+
+			/*uint8_t colorPaletteDataIndex = (((msbData >> (7 - pixelIndex)) & 0x1) << 1) | ((lsbData >> (7 - pixelIndex)) & 0x1);
+			uint8_t  colorIndex = palette[colorPaletteDataIndex];
+
+			BGLine[x] = bus->display->bgPalette[colorIndex].val;
+			x++;
+			*/
+			/*x++;
+			continue;*/
+			int k = pixelIndex;
+			uint8_t shiftBit;
+			int restoredX = 0;
+			int8_t direction = 1;
+			/*if (Xflip) {
+				restoredX = x;
+				x = 160 - x;
+				direction = -1;
+			}*/
+
+			/*for (k = pixelIndex;k < 8&&x<160&&x>=0;k++) {
+				shiftBit = 7 - k;
+				uint8_t colorPaletteDataIndex = (((msbData >> shiftBit) & 0x1) << 1) | ((lsbData >> shiftBit) & 0x1);
+				uint8_t  colorIndex = palette[colorPaletteDataIndex];
+				BGLine[x] = BGpalette[colorIndex].val;
+				x+=direction;
+				if (windowDisplay && x >= windowX) {
+					if(!windowAdjusment)
+					break;
+				}
+
+			}*/
+			int p = x;
+			for (k = pixelIndex;k < 8;k++) {
+				shiftBit = 7 - k;
+				uint8_t colorPaletteDataIndex = (((msbData >> shiftBit) & 0x1) << 1) | ((lsbData >> shiftBit) & 0x1);
+				uint8_t  colorIndex = palette[colorPaletteDataIndex];
+				BGLine[p % 160] = BGpalette[colorIndex].val;
+				p++;
+				x += direction;
+				if (windowDisplay && x >= windowX) {
+					if (!windowAdjusment)
+						break;
+				}
+
+			}
+			/*if (Xflip) {
+				x = restoredX + ((160 - restoredX)-x);
+			}*/
+
+		}
+
+		//bus->display->drawBGLine(y,BGLine);
+		return true;
+	}
+	return false;
+}
+
+bool GPU::drawBG(uint32_t* BGLine, uint8_t* BGpriorities, uint32_t* BGTransparents) {
+	
+	
+	if (bus->interrupt->io[0x40] & 0x1) {//BG Display Enable
+		uint16_t bgTileMap = 0x9800;//store locations of tiles to display	
+		//map<int, int> palette;
+		int palette[4];
+		getPalette2(0xff47, palette);
+		
+		//uint8_t tileY = bus->interrupt->io[0x44];
+		uint8_t tileY = lastScanline;
+		uint8_t scrollY = bus->interrupt->io[0x42];
+		uint8_t scrollX = bus->interrupt->io[0x43];
+		uint8_t windowY = bus->interrupt->io[0x4A];
+		uint8_t windowX = bus->interrupt->io[0x4B] - 7;
+		Color* BGpalette= bus->display->bgPalette;
+		bool windowDisplay = ((bus->interrupt->io[0x40] >> 5) & 0x1)&&(tileY>=windowY);
+		//bool windowDisplay = ((bus->interrupt->io[0x40] >> 5) & 0x1)&&(143<= windowY&&159<=windowX&&windowX>=0);
+		bool windowAdjusment;
+		// windowDisplay = ((bus->interrupt->io[0x40] >> 5) & 0x1);
+		if (windowDisplay) {
+			tileY -= windowY;
+		}
+		else {
+			tileY += scrollY;
+		}
+		if (bus->interrupt->io[0x43] < 0 || bus->interrupt->io[0x43]>159) {
+			int test = 0;
+		}
+
+		/*if (tileY < 0)
+			return false;*/
+		if ((windowDisplay && ((bus->interrupt->io[0x40] >> 6) & 0x1)) ||//window display set and and Window Tile Map is 1 OR window not display and BG Tile Map is 1
+			(!windowDisplay && ((bus->interrupt->io[0x40] >> 3) & 0x01))) {//BG & Window Tile Data Select 9c00-9fff
+			bgTileMap = 0x9C00;
+		}
+		uint16_t tileDataTable = 0x8800;//signed indexing
+		if ((bus->interrupt->io[0x40] >> 4) & 0x1) {
+			tileDataTable = 0x8000;//unsigned indexing
+		}
+		
+		//uint16_t  tileRow = ((uint8_t)(tileY / 8)) * 32;//number of tiles from 0 to currline. //num of tiles includes cols.
+		uint16_t  tileRow = ((tileY / 8)) * 32;//number of tiles from 0 to currline. //num of tiles includes cols.
+		uint16_t  tileIndexAddress;
+
+		for (int x = 0;x < 160;x++) {
+			
+			
+			uint8_t bgX = (scrollX + x);
+			//int bgX = scrollX + x;
+			if (bgX > 159) {
+				//x++;
+				//continue;
+				
+			}
+			if (scrollX + x > 159) {
+				
+				//bgX = bgX % 256;
+				//continue;
+				int test = 0;
+			}
+			windowAdjusment = false;
+			/*if (windowDisplay && x >= windowX) {
+				bgX = x - windowX;
+				windowAdjusment = true;
+			}*/
+			if (windowDisplay) {
+				bgX = x - windowX;
+				windowAdjusment = true;
+			}
+
+
+			/*else {
+				continue;
+			}*/
+			uint8_t tileCol = bgX / 8;//number of tiles from 0 to scrollX.
+			tileIndexAddress = bgTileMap+ tileRow+ tileCol;
+			uint16_t tileAddress;
+			uint8_t tileIndex;
+			if (tileDataTable == 0x8800) {
+				 tileIndex =(int8_t)vRam[tileIndexAddress -0x8000]+128;
+				 tileAddress = 0x800 + tileIndex*16;
+			}
+			else {
+				tileIndex = vRam[tileIndexAddress - 0x8000];
 				tileAddress =   (tileIndex)*16;
 				
 			}
@@ -268,12 +502,17 @@ bool GPU::drawBG(uint32_t* BGLine, uint8_t* BGpriorities, uint32_t* BGTransparen
 			
 			uint8_t attributes = vRam[tileIndexAddress -0x6000];//tile attributes in vRam bank 1
 			bool priority;
+			bool Xflip = false;
 			if (bus->cartridge->header.colorGB) {
 			
 				if((attributes>>3)&0x01)
 					vRamBank = 0x2000;
-				if ((attributes >> 5) & 0x01)
+				//Horizontal Flip
+				if ((attributes >> 5) & 0x01) {
 					bgX = 7 - bgX;
+					//Xflip = true;
+				}
+				//Vertical Flip 
 				if ((attributes >> 6) & 0x01) 
 					tileLine = ((7-tileY) % 8) * 2;
 				else
@@ -281,6 +520,7 @@ bool GPU::drawBG(uint32_t* BGLine, uint8_t* BGpriorities, uint32_t* BGTransparen
 				
 				BGpalette = bus->display->BGPlatettes[attributes&0x07];
 				//priority = (attributes >> 7)&0x01 ? true : false;
+				
 				if ((attributes >> 7) & 0x01) {
 						BGpriorities[x / 8] |= 0xff>>(x%8);
 					if(x % 8 != 0&&(x / 8) + 1<20)
@@ -293,6 +533,12 @@ bool GPU::drawBG(uint32_t* BGLine, uint8_t* BGpriorities, uint32_t* BGTransparen
 			uint8_t msbData = bus->mmu->read(tileAddress + tileLine+1);*/
 			uint8_t lsbData =vRam[tileAddress + tileLine + vRamBank];
 			uint8_t msbData = vRam[tileAddress + tileLine + 1 + vRamBank];
+			/*if (Xflip) {
+
+				lsbData = reverseByteLockup[lsbData];
+				msbData = reverseByteLockup[msbData];
+			}*/
+			//bgX = bgX % 256;
 			uint8_t pixelIndex = bgX % 8;
 			//uint8_t lineBlock = 2 * (x / 8);
 
@@ -308,58 +554,73 @@ bool GPU::drawBG(uint32_t* BGLine, uint8_t* BGpriorities, uint32_t* BGTransparen
 			*/
 			/*x++;
 			continue;*/
+
+			if (tileY == 0x38 && tileIndex == 0x15 && tileAddress == 0x8150) {
+				int test = 0;
+			}
+			if (tileAddress + tileLine + vRamBank+0x8000== 0x8150) {
+				int test = 0;
+			}
 			int k = pixelIndex;
 			uint8_t shiftBit;
+			int restoredX = 0;
+			int8_t direction = 1;
+			/*if (Xflip) {
+				restoredX = x;
+				x = 160 - x;
+				direction = -1;
+			}*/
 			
-			for (k = pixelIndex;k < 8&&x<160;k++) {
+			/*for (k = pixelIndex;k < 8&&x<160&&x>=0;k++) {
 				shiftBit = 7 - k;
 				uint8_t colorPaletteDataIndex = (((msbData >> shiftBit) & 0x1) << 1) | ((lsbData >> shiftBit) & 0x1);
-				
 				uint8_t  colorIndex = palette[colorPaletteDataIndex];
-				//uint8_t  colorIndex = palette[0];
-				//x++;
-			
 				BGLine[x] = BGpalette[colorIndex].val;
-				
-				x++;
+				x+=direction;
 				if (windowDisplay && x >= windowX) {
 					if(!windowAdjusment)
 					break;
 				}
 				
+			}*/
+			int p = x;
+			for (k = pixelIndex;k <= pixelIndex ;k++) {
+				shiftBit = 7 - k;
+				uint8_t colorPaletteDataIndex = (((msbData >> shiftBit) & 0x1) << 1) | ((lsbData >> shiftBit) & 0x1);
+				uint8_t  colorIndex = palette[colorPaletteDataIndex];
+				BGLine[p] = BGpalette[colorIndex].val;
+				p++;
+				//x += direction;
+				/*if (windowDisplay && x >= windowX) {
+					if (!windowAdjusment)
+						break;
+				}*/
+
 			}
-			//x += (k-pixelIndex);
-
-			//uint8_t offset =setPixel(x, yDisplay, lsbData, msbData, pixelIndex,palette,true, currBGLine+(x / 8));//x: the leftmost x tile pos[0-159],pixelIndex: pos of pixel in the tile[0-7]
-			//uint8_t colorIndex = setPixel(x, yDisplay, lsbData, msbData, pixelIndex, palette);//x: the leftmost x tile pos[0-159],pixelIndex: pos of pixel in the tile[0-7]
-			//x += (offset - pixelIndex);
-			//x++;
-			/*continue;
-			if (colorIndex == 0) {//set the bit if the pixel color is white.
-				int  index_ = (x + pixelIndex) / 8;
-
-				if (index_ > 19) {
-					int p = 0;
-				}
-				int  c = currBGLine[x / 8] | 0x1 << (7 - (x% 8));
-				if (c > 0xff) {
-					int p = 0;
-				}
-
-				currBGLine[x / 8] |= 0x1 << (7 - (x % 8));
-			}
-			x++;*/
+			/*if (Xflip) {
+				x = restoredX + ((160 - restoredX)-x);
+			}*/
+			
 		}
 		
 		//bus->display->drawBGLine(y,BGLine);
 		return true;
 	}
+	else {
+		if (bus->consoleModel == ConsoleModel::DMG||!bus->cartridge->header.colorGB) {
+		
+		}
+		else {
+		
+		}
+}
 	return false;
 }
 bool GPU::drawSprites(uint32_t* BGLine, uint8_t* BGpriorities, uint32_t* BGTransparents) {
 	if ((bus->interrupt->io[0x40] >> 1) & 0x1) {//OBJ (Sprite) Display Enable
 		uint8_t spriteSize = ((bus->interrupt->io[0x40] >> 2) & 0x01) ? 16 : 8;
-		uint currentScanLine = bus->interrupt->io[0x44];
+		//uint currentScanLine = bus->interrupt->io[0x44];
+		uint currentScanLine = lastScanline;
 		uint32_t transparent = bus->display->bgPalette[0].val;
 		Color* OBpalette= bus->display->bgPalette;
 		uint16_t vRamBankOffset = 0;
@@ -367,12 +628,14 @@ bool GPU::drawSprites(uint32_t* BGLine, uint8_t* BGpriorities, uint32_t* BGTrans
 		int palette[4] = {0x0,0x1,0x2,0x3};
 		for (uint8_t i = 0;i < 160;i += 4) {//loop 4 byte(sprite) in OAM
 			uint8_t posY = oam[i] - 16;//if there are any bugs with drawing consider to change uint8_t to int16.
-			//if(posY <= currentScanLine && posY + spriteSize >= currentScanLine) {//check if the sprite is crossing the current scanline
+			
+									   //if(posY <= currentScanLine && posY + spriteSize >= currentScanLine) {//check if the sprite is crossing the current scanline
 				uint8_t posX = oam[i + 1] - 8;
 				/*if (posX < 0 || posX>160 || posY > currentScanLine || posY + spriteSize <= currentScanLine)
 					continue;*/
-				if (posY > currentScanLine || posY + spriteSize <= currentScanLine)
+				if (posY > currentScanLine|| posY + spriteSize <= currentScanLine)
 					continue;
+				
 				uint16_t patternNum = oam[i + 2];
 				if (spriteSize == 16)
 					patternNum &= 0xfffe;
@@ -387,6 +650,7 @@ bool GPU::drawSprites(uint32_t* BGLine, uint8_t* BGpriorities, uint32_t* BGTrans
 					spriteDataLine = currentScanLine - posY;
 				else
 					spriteDataLine = spriteSize - 1 - (currentScanLine - posY);
+				
 				if (bus->cartridge->header.colorGB) {
 					vRamBankOffset = (attributes >> 3)&0x01 ? 0x2000 : 0;
 					OBpalette = bus->display->OBPlatettes[attributes&0x07];
@@ -447,39 +711,7 @@ bool GPU::drawSprites(uint32_t* BGLine, uint8_t* BGpriorities, uint32_t* BGTrans
 	
 }
 
-void GPU::draw() {
-	bus->display->setLock(true);
-	//uint8_t currBGLine[20] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
-	//uint32_t* BGLine[160];
-	uint8_t BGpriority[20] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-	uint32_t BGTransparents[20]={ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
-	uint8_t y = bus->interrupt->io[0x44];//currLine
-	//uint32_t * BGLine= bus->display->getLineCV(y);
-	uint32_t* BGLine = bus->display->getLineSDL(y);
-	//uint8_t currBGLine[20] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
-	bool render = false;
-	render=drawBG(BGLine,BGpriority, BGTransparents);
-	render=drawSprites(BGLine,BGpriority, BGTransparents)||render;
-	bus->display->setLock(false);
-	
-	if (bus->cpu->speed == -1) {
-		//bus->display->update();
-		//printf("line: %d\n", y);
-		//Sleep(30);
-	}
-	
 
-	//bus->display->update();
-	//uint8_t currScanLine = bus->mmu->read(0xFF44);
-	//for (uint8_t i = 0;i < 160;i+=4) {//loop 4 byte(sprite) in OAM
-	//	uint8_t posY = bus->mmu->read(0xFE00+i);
-	//	uint8_t posX = bus->mmu->read(0xFE00 + i+1);
-	//	uint8_t tileNum = bus->mmu->read(0xFE00 + i + 2);
-	//	uint8_t flags = bus->mmu->read(0xFE00 + i + 3);
-	//	if(posY+posX+tileNum+flags>0)
-	//	int x = 0;
-	//}
-}
 //uint8_t GPU::setPixel(int x, int y, uint8_t lsb, uint8_t msb,uint8_t pixelIndex, map<int, int> palette)
 //{	
 //	//uint8_t offset = 0;

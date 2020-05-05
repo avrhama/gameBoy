@@ -11,7 +11,7 @@ static CARTRIDGE* createCartrige(string path) {
 	//ifstream rf(path, ios::out | ios::binary);
 	ifstream rf(path, ios::in | ios::binary);
 	if (!rf) {
-		
+
 		cout << "Cannot open file!" << endl;
 		return NULL;
 	}
@@ -23,23 +23,24 @@ static CARTRIDGE* createCartrige(string path) {
 		int p = 0;
 		rf.read((char*)rom, size);
 
-	
-
-	memcpy(header.title, (rom + 0x0134), 9);
-	header.colorGB = (rom[0x0143] == 0x80 || rom[0x0143] == 0xc0) ? true : false;
-	header.GB_SGBIndicator = rom[0x0146];
-	header.cartridgeType = (CartridgeType)rom[0x0147];
-	header.romSizeType = (RomSizeType)(rom[0x0148]);
-	header.ramSizeType = (RamSizeType)(rom[0x0149]);
-	header.romBanksCount = CARTRIDGE::getRomBanksCount(header.romSizeType);
-	header.ramBanksCount = CARTRIDGE::getRamBanksCount(header.ramSizeType);
-	header.ramSize= CARTRIDGE::getRamSize(header.ramSizeType);
-	printf("colorGB?:%d\n", header.colorGB);
-	CARTRIDGE::printCartridgeType(header.cartridgeType);
+		int index = path.find_last_of('\\') + 1;
+		header.romFileName = path.substr(index, path.find_last_of('.')- index);
+		header.romFileFolder = path.substr(0, index);
+		memcpy(header.title, (rom + 0x0134), 9);
+		header.colorGB = (rom[0x0143] == 0x80 || rom[0x0143] == 0xc0) ? true : false;
+		header.GB_SGBIndicator = rom[0x0146];
+		header.cartridgeType = (CartridgeType)rom[0x0147];
+		header.romSizeType = (RomSizeType)(rom[0x0148]);
+		header.ramSizeType = (RamSizeType)(rom[0x0149]);
+		header.romBanksCount = CARTRIDGE::getRomBanksCount(header.romSizeType);
+		header.ramBanksCount = CARTRIDGE::getRamBanksCount(header.ramSizeType);
+		header.ramSize = CARTRIDGE::getRamSize(header.ramSizeType);
+		printf("colorGB?:%d\n", header.colorGB);
+		CARTRIDGE::printCartridgeType(header.cartridgeType);
 	}
 	rf.close();
 	//CARTRIDGE s;
-	
+
 	//CARTRIDGE* gg=new MBC1(rom, header);
 	switch (header.cartridgeType) {
 	case CartridgeType::ROM_ONLY:
@@ -48,7 +49,7 @@ static CARTRIDGE* createCartrige(string path) {
 		//return new CARTRIDGE(rom, header);
 		return MBC1::create(rom, header);
 		//return new CARTRIDGE();
-	
+
 
 	case CartridgeType::ROM_MBC1:
 	case CartridgeType::ROM_MBC1_RAM:

@@ -1834,8 +1834,8 @@ void CPU::STOP(uint8_t* none, uint8_t* none2) {
 		speedMode = 1 - speedMode; // 1 + (bus->interrupt->io[0x4d] >> 7) & 0x01;
 		bus->interrupt->io[0x4d] = (speedMode << 7) | 0xfe;
 		halt = false;
-		lastOpcodeCycles += 32749;
-		printf("spedd chaned");
+		//lastOpcodeCycles += 32749;
+		printf("speed changed");
 	}
 	//}
 

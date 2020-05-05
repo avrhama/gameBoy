@@ -19,6 +19,8 @@
 #include "CartridgeFactory.h"
 #include <conio.h>
 #include <SDL.h>
+#include <SDL_thread.h>
+
 //#define _CRTDBG_MAP_ALLOC
 //#include<iostream>
 //#include <crtdbg.h>
@@ -30,7 +32,124 @@
 #undef main
 using namespace std;
 
-mutex saveRamMutex;
+static Uint8* audio_chunk;
+static Uint32 audio_len;
+static Uint8* audio_pos;
+
+/* The audio function callback takes the following parameters:
+   stream:  A pointer to the audio buffer to be filled
+   len:     The length (in bytes) of the audio buffer
+*/
+
+void fill_audio(void* udata, Uint8* stream, int len)
+{
+	/* Only play if we have data left */
+	/*if (audio_len == 0)
+		return;*/
+	Sint16* buf = (Sint16*)stream;
+	int len_ = len / 2;
+	for (int i = 0;i < len/2;i+=1) {
+		//buf[i] = 0x10;
+		stream[i] = 0x10;
+	}
+	/* Mix as much data as possible */
+	len = (len > audio_len ? audio_len : len);
+	SDL_MixAudio(stream, audio_pos, len, SDL_MIX_MAXVOLUME);
+	audio_pos += len;
+	audio_len -= len;
+}
+std::wstring s2ws(const std::string& s)
+{
+	int len;
+	int slength = (int)s.length() + 1;
+	len = MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, 0, 0);
+	wchar_t* buf = new wchar_t[len];
+	MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, buf, len);
+	std::wstring r(buf);
+	delete[] buf;
+	return r;
+}
+bool openFile(string* romPath) {
+	OPENFILENAME ofn;
+	::memset(&ofn, 0, sizeof(ofn));
+	std::wstring filename(MAX_PATH, L'\0');
+	char f1[MAX_PATH];
+	f1[0] = 0;
+	ofn.lStructSize = sizeof(ofn);
+	string title = "Select A File";
+	std::wstring stemp = s2ws(title);
+	//ofn.lpstrTitle = stemp.c_str();
+	LPCWSTR g = (LPCWSTR)"jjkjkjk";
+	ofn.lpstrTitle = L"Select A File";
+	
+	string filter = "Text Files\0*.txt\0All Files\0*.*\0\0";
+	stemp = s2ws(title);
+	ofn.lpstrFilter = L"All Roms\0*.gbc;*.gb\0GB Roms\0*.gb\0GBC Roms\0*.gbc\0";
+	ofn.nFilterIndex = 0;
+	ofn.lpstrFile = &filename[0];
+	ofn.nMaxFile = MAX_PATH;
+	ofn.Flags = OFN_FILEMUSTEXIST;
+
+	if (::GetOpenFileName(&ofn) != FALSE)
+	{
+		//printf("%s opened", filename);
+		//std::wcout << filename;
+
+		//convert wstring to string
+		const std::wstring ws = filename;
+		const std::locale locale("");
+		typedef std::codecvt<wchar_t, char, std::mbstate_t> converter_type;
+		const converter_type& converter = std::use_facet<converter_type>(locale);
+		std::vector<char> to(ws.length() * converter.max_length());
+		std::mbstate_t state;
+		const wchar_t* from_next;
+		char* to_next;
+		const converter_type::result result = converter.out(state, ws.data(), ws.data() + ws.length(), from_next, &to[0], &to[0] + to.size(), to_next);
+		if (result == converter_type::ok or result == converter_type::noconv) {
+			const std::string s(&to[0], to_next);
+			*romPath = s;
+			return true;
+		}
+	}
+	return false;
+}
+int sound() {
+	SDL_AudioSpec wanted;
+//	extern void fill_audio(void* udata, Uint8 * stream, int len);
+
+	/* Set the audio format */
+	wanted.freq = 22050;
+	wanted.format = AUDIO_S16;
+	wanted.channels = 2;    /* 1 = mono, 2 = stereo */
+	wanted.samples = 1024;  /* Good low-latency value for callback */
+	wanted.callback = fill_audio;
+	wanted.userdata = NULL;
+
+	/* Open the audio device, forcing the desired format */
+	if (SDL_OpenAudio(&wanted, NULL) < 0) {
+		fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
+		return(-1);
+	}
+
+
+	audio_pos = audio_chunk;
+
+	/* Let the callback function play the audio chunk */
+	SDL_PauseAudio(0);
+
+	/* Do some processing */
+
+
+
+	/* Wait for sound to complete */
+	while (audio_len == 0) {
+		SDL_Delay(10000);         /* Sleep 1/10 second */
+	}
+	SDL_CloseAudio();
+
+	return(0);
+}
+
 
 void displayThreadFunc(DISPLAY* display, bool* running)
 {
@@ -108,7 +227,37 @@ void pipeRecive(BUS* bus, uint16_t opcode, uint16_t lastOpcode, int steps, strin
 	}
 }
 
+static int renderDisplay(void* ptr) {
+	DISPLAY* display=(DISPLAY*)ptr;
+	do {
+		display->render();
+		Sleep(1);
+	} while (display->displayLock);
+	/*MBC5* mbc = (MBC5*)ptr;
+	printf("save ram thread starts\n");
+	string saveFile = "roms\\pokemon.sav";
+	uint8_t wait = 0;
+	do {
+		Sleep(10);
+		mbc->saveRamMutex.lock();
+		mbc->saveRamWait = mbc->saveRamWait - 1;
+		wait = mbc->saveRamWait;
+		mbc->saveRamMutex.unlock();
+		
+	} while (wait > 0);
+
+	ofstream myFile(saveFile, ios::out | ios::binary);
+	myFile.write((char*)mbc->ram, mbc->header.ramSize);*/
+	//printf("save ram thread ended\n");
+	return 0;
+}
+
 int main(void) {
+	
+	
+	//sound();
+	//return 0;
+
 	//_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
 	//_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	
@@ -150,19 +299,26 @@ int main(void) {
 	"roms\\pokemon3.gb",
 	"roms\\pokemon4.gbc",//crystal
 	"roms\\pokemon5.gb",
-	"roms\\pokemon6.gbc",
+	"roms\\pokemonSilver.gbc",
 	"roms\\pokemon7.gbc",
 	"roms\\pokemonRed.gb",
-	"roms\\mooneye-gb_hwtests\\acceptance\\ppu\\intr_2_0_timing.gb",//35
+	"roms\\mooneye-gb_hwtests\\acceptance\\oam_dma\\basic.gb",//35
 	};
 	uint8_t romIndex =30;
 	romIndex = 27;
-	//
+	romIndex = 14;
+	string romPath;
+	romPath = romsPaths[romIndex];
+	bool openFileDialog = true;
+	if (openFileDialog&&!openFile(&romPath)) {
+		return 0;
+	}
+
 	BUS* bus = new BUS();
 	CPU* cpu = new CPU();
 	GPU* gpu = new GPU();
 	DMA* dma = new DMA();
-	CARTRIDGE* cartridge = createCartrige(romsPaths[romIndex]);
+	CARTRIDGE* cartridge = createCartrige(romPath);
 	if (cartridge == NULL)
 		return 1;
 	INTERRUPT* interrupt = new INTERRUPT();
@@ -182,8 +338,6 @@ int main(void) {
 	bus->connectCartridge(cartridge);
 	bus->connectJoypad(joypad);
 	bus->connectAPU(apu);
-	/*cartridge->loadRom(romsPaths[romIndex]);
-	cartridge->load();*/
 	cpu->reset();
 	mmu->reset();
 	gpu->reset();
@@ -325,10 +479,12 @@ int main(void) {
 		cyclesInFrameCounter = 0;
 
 		display->render();
+		//SDL_Thread* thread = SDL_CreateThread(renderDisplay, "render", (void*)display);
+		//SDL_DetachThread(thread);
 		int timePassed = SDL_GetTicks() - timeBefore;
 		int sleep = 15 - timePassed;
-		/*if (sleep > 0)
-			Sleep(sleep);*/
+		if (sleep > 0)
+			Sleep(sleep);
 		rendersCounter++;
 		
 		

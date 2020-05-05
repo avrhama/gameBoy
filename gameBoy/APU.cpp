@@ -6,17 +6,6 @@ void soundTick(void* user_data, Uint8* stream, int len) {
 
 
 
-
-	for (int index = 0;index < len - 1;index += 2)
-	{
-		stream[index + 1] = 120;
-		//ch->samplesData[0] =255;
-		/*if(index>(apu->adc.have.channels * apu->adc.have.samples)/2)
-		ch->samplesData[index] = 128;*/
-	}
-	return;
-
-
 	//printf("len:%d\n",len);
 
 	//Sint16* buf = (Sint16*)stream;
@@ -46,9 +35,10 @@ void soundTick(void* user_data, Uint8* stream, int len) {
 	//4194304/44100=~95 cycles per sample. 97280 cycles for 1024 samples.
 //	apu->cyclesInSoundFrame = (4194304/apu->adc.have.freq)* apu->adc.have.samples;
 
-	apu->channels[0]->samplesData = (Sint8*)stream;
 
 	bool rendered = false;
+	apu->adc.have.samples = len;
+	apu->adc.hasSamples = false;
 	do {
 
 		//cpu->Execute(opcode);
@@ -71,7 +61,7 @@ void soundTick(void* user_data, Uint8* stream, int len) {
 		bus->cpu->lastOpcodeCycles *= (4 * (bus->cpu->speedMode + 1));
 		apu->cyclesInSoundFrameCounter += bus->cpu->lastOpcodeCycles;
 
-		//apu->tick();
+		apu->tick();
 		bus->gpu->tick();
 		bus->cpu->updateTimers();
 		bus->joypad->updateKeys();
@@ -89,9 +79,13 @@ void soundTick(void* user_data, Uint8* stream, int len) {
 			rendered = true;
 		}
 
-	} while (false);
+	} while (!apu->adc.hasSamples);
+	
 	//while (apu->cyclesInSoundFrameCounter < apu->cyclesInSoundFrame);
-
+	//stream = (Uint8*)apu->channels[0]->leftSamplesData;
+	for (int i = 0;i < len;i++) {
+	stream[i]= apu->channels[0]->leftSamplesData[i];
+	}
 
 }
 void APU::createAudioDeviceControl(bool closeOld)
@@ -214,10 +208,13 @@ void APU::start() {
 	}
 	SDL_zero(adc.want);
 	adc.want.freq = 44100;
+	//adc.want.freq = 16384;
 	adc.want.format = AUDIO_S8;
 	adc.want.channels = 1;
 	adc.want.samples = 1024;
+	//adc.want.samples = 128;
 	adc.want.callback = NULL;
+	adc.want.userdata = this;
 	adc.dev = SDL_OpenAudioDevice(NULL, 0, &adc.want, &adc.have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
 
 	bus->f = adc.have.freq;
@@ -240,6 +237,8 @@ void APU::start() {
 		channels[i]->rightSamplesData = (Sint8*)calloc(adc.have.samples, sizeof(Sint8));
 		channels[i]->samplesData = (Sint8*)calloc(((Uint16)adc.have.channels) * adc.have.samples, sizeof(Sint8));
 		channels[i]->samplePosition = 0;
+		channels[i]->sampleGenerateCounterReload = 4194304 / adc.have.freq;
+		channels[i]->sampleGenerateCounter = 4194304 / adc.have.freq;
 	}
 
 	startTimer = steady_clock::now();
@@ -361,8 +360,10 @@ void APU::write(uint8_t address, uint8_t value)
 	case 0x3d:
 	case 0x3e:
 	case 0x3f:
-		if (!chann3->enable)
+		if (!chann3->enable) {
 			chann3->wavePatternRam[address - 0x30] = value;
+			chann3->write(address - 0x30,value);
+		}
 		break;
 	}
 
@@ -376,36 +377,36 @@ void APU::connectToBus(BUS* bus)
 
 void APU::tick()
 {
-	int i = 0;
+	//int i = 2;
 	//chann1->tick(bus->cpu->lastOpcodeCycles);
-	//channels[0]->tick(bus->cpu->lastOpcodeCycles);
-	
-	channels[i]->tick(bus->cpu->lastOpcodeCycles);
-	//channels[2]->tick(bus->cpu->lastOpcodeCycles);
-	//channels[3]->tick(bus->cpu->lastOpcodeCycles);
+	channels[0]->tick(bus->cpu->lastOpcodeCycles);
+	channels[1]->tick(bus->cpu->lastOpcodeCycles);
+	channels[2]->tick(bus->cpu->lastOpcodeCycles);
+	channels[3]->tick(bus->cpu->lastOpcodeCycles);
 	if (adc.hasSample) {
 		adc.hasSample = false;
 		adc.audioPosition++;
 		adc.sampleCounter++;
 
 		if (adc.sampleCounter == adc.have.samples) {
-
+			adc.hasSamples = true;
 			adc.sampleCounter = 0;
 			//SDL_QueueAudio(apu->adc.dev, ch->samplesData, apu->adc.have.channels * apu->adc.have.samples);
 			//SDL_QueueAudio(apu->adc.dev, ch->samplesData,  apu->adc.have.samples);
 
-			//SDL_MixAudioFormat((Uint8*)channels[0]->leftSamplesData, (Uint8*)channels[1]->leftSamplesData, AUDIO_S8, adc.have.samples, SDL_MIX_MAXVOLUME);
-			//SDL_MixAudioFormat((Uint8*)channels[0]->leftSamplesData, (Uint8*)channels[2]->leftSamplesData, AUDIO_S8, adc.have.samples, SDL_MIX_MAXVOLUME);
-			//SDL_MixAudioFormat((Uint8*)channels[0]->leftSamplesData, (Uint8*)channels[3]->leftSamplesData, AUDIO_S8, adc.have.samples, SDL_MIX_MAXVOLUME);
+			SDL_MixAudioFormat((Uint8*)channels[0]->leftSamplesData, (Uint8*)channels[1]->leftSamplesData, AUDIO_S8, adc.have.samples, SDL_MIX_MAXVOLUME);
+			SDL_MixAudioFormat((Uint8*)channels[0]->leftSamplesData, (Uint8*)channels[2]->leftSamplesData, AUDIO_S8, adc.have.samples, SDL_MIX_MAXVOLUME);
+			SDL_MixAudioFormat((Uint8*)channels[0]->leftSamplesData, (Uint8*)channels[3]->leftSamplesData, AUDIO_S8, adc.have.samples, SDL_MIX_MAXVOLUME);
 			//if(!mute)
-			SDL_QueueAudio(adc.dev, channels[i]->leftSamplesData, adc.have.samples);
-			/*for (int i = 0;i < adc.have.channels * adc.have.samples;i++) {
-
+			if(!adc.have.callback)
+			SDL_QueueAudio(adc.dev, channels[0]->leftSamplesData, adc.have.samples);
+			for (int i = 0;i < adc.have.channels * adc.have.samples;i++) {
+				if (!adc.have.callback)
 				channels[0]->leftSamplesData[i] = 0;
 				channels[1]->leftSamplesData[i] = 0;
 				channels[2]->leftSamplesData[i] = 0;
 				channels[3]->leftSamplesData[i] = 0;
-			}*/
+			}
 
 
 			//SDL_QueueAudio(apu->adc.dev, ch->leftSamplesData, apu->adc.have.samples);

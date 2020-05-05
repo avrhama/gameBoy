@@ -17,6 +17,7 @@ void DMA::FF46DMATransferStart(uint8_t sourceAddressPrefix)
 
 	//Sleep(160);
 	transfer = true;
+	FF46DMATransfer();
 }
 
 void DMA::FF46DMATransfer()
@@ -68,6 +69,7 @@ void DMA::HDMATransfer(uint8_t value)
 	if (dmaMode==DMAMode::hBlank) {
 		if (!((value >> 7) & 0x01)) {
 			// It is also possible to terminate an active H-Blank transfer by writing zero to Bit 7 of FF55
+			hDMA5 |= 0x80;
 			stopHDMATransfer();
 			return;
 		}
@@ -76,6 +78,8 @@ void DMA::HDMATransfer(uint8_t value)
 	transferLen = (((value & 0x7f) + 1) << 4);
 	dmaMode = (DMAMode)((value >> 7) & 0x01);
 	vRamBankOffset = (uint16_t)bus->gpu->vRamBank * 0x2000;
+	if (dmaMode == DMAMode::General)
+		generalPurposeDMA();
 }
 void DMA::generalPurposeDMA()
 {

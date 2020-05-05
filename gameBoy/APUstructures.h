@@ -59,7 +59,10 @@ struct AudioDeviceControl {
 
 	int sampleGenerateCounterReload;
 	int sampleGenerateCounter;
+	//has new sample
 	bool hasSample;
+	//has all samples
+	bool hasSamples;
 	int sampleCounter = 0;
 	Sint8* leftSamplesData;
 	Sint8* rightSamplesData;
@@ -430,15 +433,17 @@ protected:
 	uint8_t wavePatternRamPosition = 0;
 	float squencerTimerReload;
 	float squencerTimer;
+	bool on = false;
 public:
 	uint8_t wavePatternRam[0x10] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
+	uint8_t wavePatternRam2[0x20] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
 
 	int tempsteps = 0;
 	void loadNRX0(uint8_t value) {
 		/*
 			Bit 7 - Sound Channel 3 Off  (0=Stop, 1=Playback)  (Read/Write)
 		*/
-		enable = (value >> 7) & 0x01;
+		on = (value >> 7) & 0x01;
 	}
 	void loadNRX1(uint8_t  value) {
 		/*
@@ -456,8 +461,9 @@ public:
 	void loadNRX3(uint8_t value) {
 		//Lower 8 bits of 11 bit frequency (x). Next 3 bit are in NR14 ($FF14)
 		freqLo = value;
-		loadedFreq = (loadedFreq & 0x700) | (value & 0xff);
+		loadedFreq = freqHi<<8 | freqLo;
 	}
+	int lastwavePatternRamPosition = 31;
 	void loadNRX4(uint8_t value) {
 		/*
 		Bit 7   - Initial (1=Restart Sound)     (Write Only)
@@ -465,12 +471,13 @@ public:
            (1=Stop output when length in NR31 expires)
 		Bit 2-0 - Frequency's higher 3 bits (x) (Write Only)
 	*/
-		freqHi = value;
-		loadedFreq = (value & 0x07) << 8 | (loadedFreq & 0xff);
+		freqHi = (value & 0x07);
+		loadedFreq = freqHi << 8 | freqLo;
 		counterEnable = (((value >> 6) & 0x01) == 0x01);
 		if (!counterEnable) {
 			soundLen = 0;
 		}
+		
 		//squencerTimerReload = (2 * (2048 - (float)freqData));
 		//timerReload = (1 / frequency) * 524288;
 		//4194304/32=131072 cycles per ram sample pormote
@@ -480,21 +487,30 @@ public:
 			enable = true;
 			if (soundLen == 0)
 				soundLen = 256;
-
+			
 			freq = 65536 / (2048 - loadedFreq);
 			//freq= (2 * (2048 - (float)loadedFreq));
 			volumeEnvelopeLen = loadedVolumeEnvelopeLen;
-			squencerTimerReload = (1 / (float)freq) * 65536;
-			//squencerTimerReload = (1 / (float)freq) * 131072;
+			//squencerTimerReload = (1 / (float)freq) * 65536;
+			squencerTimerReload = (1 / (float)freq) * 131072;
+			squencerTimerReload = ((1 / (float)freq) * (131072 / 44100));
+			squencerTimerReload = ((1 / (float)freq) * (131072*95));
+
 			//squencerTimerReload = (1 / (float)freq) * 262144;
 			//squencerTimerReload = (1 / (float)freq) * 524288;
 			//float x =14;
 			//squencerTimerReload = (1 / (float)freq)*(pow(2,x));
+			
 			squencerTimer = squencerTimerReload;
-			timer = timerReload;
+			//timer = timerReload;
 			wavePatternRamPosition = 0;
+			lastwavePatternRamPosition = 31;
 			soundCtrl->setSoundState(channelIndex, true);
 		}
+	}
+	void write(uint8_t address, uint8_t value) {
+		wavePatternRam2[address / 2] = value >> 0x04;
+		wavePatternRam2[address / 2+1] = value&0x0f;
 	}
 	virtual void sweep() {}
 	void tick(int cycles) override {
@@ -511,7 +527,7 @@ public:
 		sampleGenerateCounter -= cycles;
 		tempsteps += cycles;
 		if (timer <= 0) {
-			vol = envelopeVolume;
+			//vol = envelopeVolume;
 			timer += timerReload;
 
 			//return;
@@ -554,10 +570,23 @@ public:
 			float h = 0xff * (1 - sequencer.output);
 			uint8_t sampleByte = wavePatternRam[wavePatternRamPosition / 2];
 			h = ((sampleByte >> (4-4*(wavePatternRamPosition%2))))&0x0f;
+
+			/*if (wavePatternRamPosition != (lastwavePatternRamPosition + 1) % 32 && enable) {
+
+				int test = 0;
+				printf("wavePatternRamPosition:%d,lastwavePatternRamPosition:%d\n", wavePatternRamPosition, lastwavePatternRamPosition);
+			}
+			else if (wavePatternRamPosition == (lastwavePatternRamPosition + 1) % 32 && enable) {
+				wavePatternRamPosition = (wavePatternRamPosition + 1) % 32;
+			}*/
+
+			//h = wavePatternRam2[wavePatternRamPosition&0x1f];
 			
-			h *= outputLevel;
+			h *= (outputLevel);
+
+			//int temp = wavePatternRamPosition / 2 + wavePatternRamPosition % 2;
 			
-		
+			lastwavePatternRamPosition = wavePatternRamPosition;
 			//apu->adc.audioVolume
 
 
@@ -573,7 +602,8 @@ public:
 			}
 			vol = 15;
 			float v = (((float)(soundCtrl->S01Volume + soundCtrl->S02Volume) / 7)) / 10;
-
+			if ((!outputLevel||v==0) && enable)
+				int test = 0;
 			if (!enable) {
 				h = 0;
 			}

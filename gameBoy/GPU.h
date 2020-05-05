@@ -13,6 +13,7 @@ private:
 public:
 	
 	//videoRam
+
 	uint8_t vRam[0x4000] = {};
 	uint8_t oam[0xA0] = {};//object attribute memory
 	uint8_t mode = 0;
@@ -38,6 +39,7 @@ public:
   0x07, 0x87, 0x47, 0xC7, 0x27, 0xA7, 0x67, 0xE7, 0x17, 0x97, 0x57, 0xD7, 0x37, 0xB7, 0x77, 0xF7,
   0x0F, 0x8F, 0x4F, 0xCF, 0x2F, 0xAF, 0x6F, 0xEF, 0x1F, 0x9F, 0x5F, 0xDF, 0x3F, 0xBF, 0x7F, 0xFF
 	};
+	bool lcdCtrlChanged = false;
 	void reset();
 	void connectToBus(BUS* bus);
 	bool checkLCDStatus();
@@ -50,6 +52,7 @@ public:
 	void getPalette2(uint16_t paletteAddress, int* palette);
 	bool drawBG(uint32_t* BGLine, uint8_t* BGpriority, uint32_t* BGTransparents);
 	uint8_t drawBGLine(uint8_t y,uint8_t* BGLine, uint8_t* currBGLine);
+	bool drawBG2(uint32_t* BGLine, uint8_t* BGpriorities, uint32_t* BGTransparents);
 	void draw();
 	uint8_t setPixel(int x, int y, uint8_t lsb, uint8_t msb,uint8_t pixelIndex, map<int, int> palette,bool BGTile = false, uint8_t* BGcolos = NULL);
 	void drawTest();

@@ -30,6 +30,7 @@ enum class MaximumMemoryMode :uint8_t {
 
 struct CartridgeHeader {
 public:
+	
 	MaximumMemoryMode maxMemMode = MaximumMemoryMode::_16_8_mode;
 	CartridgeType cartridgeType = CartridgeType::Bandai_TAMA5;
 	RomSizeType romSizeType = RomSizeType::_128_banks;
@@ -43,6 +44,8 @@ public:
 	//int ramBankSize = 0x2000;//MBC1
 	int romBankSize= 0x4000;
 	int ramSize;
+	string romFileName;
+	string romFileFolder;
 };
 class CARTRIDGE
 {

@@ -20,6 +20,8 @@ DISPLAY::DISPLAY(int posX, int posY, int width, int height, int pixelSize,int di
         std::cout << "error with sdl " << SDL_GetError() << std::endl;
     }
     int x = 2;
+    //win = SDL_CreateWindow("gameBoy", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 160 * x, 144 * x, 0);
+
     win = SDL_CreateWindow("gameBoy", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 160*x, 144*x, SDL_WindowFlags::SDL_WINDOW_RESIZABLE);
     if (NULL == win) {
         std::cout << "error with sdl window" << SDL_GetError() << std::endl;
@@ -27,6 +29,7 @@ DISPLAY::DISPLAY(int posX, int posY, int width, int height, int pixelSize,int di
     }
 
    renderer = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
+   //SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     texture = SDL_CreateTexture(renderer,SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, 160, 144);
    
    
@@ -96,7 +99,11 @@ void DISPLAY::drawBGLineSDL(uint8_t y, uint32_t* BGLine) {
     }
 }
 uint32_t* DISPLAY::getLineSDL(uint8_t y) {
-    return (uint32_t*)pixels + y*width;
+    uint32_t* line = (uint32_t*)pixels + y * width;
+ /*   for (int i = 0;i < width;i++)
+        line[i] = 0;*/
+  //  return (uint32_t*)pixels + y*width;
+    return line;
 }
 void DISPLAY::setPixel(int x, int y, Color color) {
     //int index = y * width * 4 + x * 4;
@@ -109,7 +116,8 @@ void DISPLAY::render() {
     //SDL_RenderCopy(renderer, texture, NULL, NULL);
     //SDL_RenderPresent(renderer);
    // SDL_RenderClear(renderer);
-   
+   /* if (displayLock)
+        return;*/
     SDL_RenderCopy(renderer, texture, NULL, NULL);
     SDL_RenderPresent(renderer);
     SDL_UpdateTexture(texture, NULL, pixels, width * sizeof(Uint32));

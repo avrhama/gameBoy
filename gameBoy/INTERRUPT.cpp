@@ -42,6 +42,10 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 			io[0x0f] = value | 0xE0;
 			//printf("opcode:0x0f // IE value:%04x\n", value);
 			break;
+		case 0x40:
+			bus->gpu->lcdCtrlChanged = true;
+			io[0x40] = value ;
+			break;
 		case 0x41:
 			io[0x41] = value | 0x80;
 			break;

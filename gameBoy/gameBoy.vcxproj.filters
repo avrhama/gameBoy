@@ -19,9 +19,6 @@
     <Filter Include="Source Files\CARTRIDGE">
       <UniqueIdentifier>{7f19c1c8-464d-4915-a906-1366c1a29348}</UniqueIdentifier>
     </Filter>
-    <Filter Include="APU">
-      <UniqueIdentifier>{cbc01a1f-7a6b-4a5d-84a1-7e5ad1a7ed32}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\APU">
       <UniqueIdentifier>{68d0b1cf-5dfa-4a1c-a580-fb891e855d37}</UniqueIdentifier>
     </Filter>
@@ -58,7 +55,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="APU.cpp">
-      <Filter>APU</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -18,7 +18,7 @@ private:
 	uint16_t romBankIndex = 0;
 	bool ramEnable = false;
 	bool ramLoaded = false;
-
+	string saveFilePath;
 	
 public:
 	MBC5() {
@@ -43,11 +43,15 @@ public:
 
 	}
 	void loadRam() {
-		string path = "roms\\pokemon.sav";
-		ifstream rf(path, ios::in | ios::binary);
+		string path = "C:\\Users\\Brain\\source\\repos\\gameBoy\\gameBoy\\roms\\Pokemon.sav";
+		saveFilePath = header.romFileFolder + header.romFileName + ".sav";
+		ifstream rf(saveFilePath, ios::in | ios::binary);
 		if (!rf) {
 
-			cout << "Cannot open file!" << endl;
+			cout << "Cannot open saved file!" << endl;
+			ofstream savefile(saveFilePath);
+			savefile.close();
+			return;
 		}
 		else {
 			rf.seekg(0, rf.end);
@@ -71,7 +75,6 @@ public:
 	static int saveRamThread(void* ptr) {
 		MBC5* mbc = (MBC5*)ptr;
 		printf("save ram thread starts\n");
-		string saveFile = "roms\\pokemon.sav";
 		uint8_t wait = 0;
 		do {
 			Sleep(10);
@@ -84,7 +87,7 @@ public:
 			//myFile.write((char*)mbc->ram, mbc->header.ramSize);
 		} while (wait > 0);
 		
-		ofstream myFile(saveFile, ios::out | ios::binary);
+		ofstream myFile(mbc->saveFilePath, ios::out | ios::binary);
 		myFile.write((char*)mbc->ram, mbc->header.ramSize);
 		printf("save ram thread ended\n");
 		return 0;
