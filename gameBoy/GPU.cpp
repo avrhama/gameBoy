@@ -15,7 +15,7 @@ void GPU::connectToBus(BUS* bus)
 }
 bool GPU::checkLCDStatus()
 {
-	bool useLockers = false;
+	bool useLockers = true;
 	
 	if (!((bus->interrupt->io[0x40] >> 7) & 0x1)) {//LCD Display Disable
 		//bus->interrupt->io[0x41] &= 252;//web
@@ -130,6 +130,8 @@ void GPU::tick()
 	cyclesPerScanline -= bus->cpu->lastOpcodeCycles;
 	if (cyclesPerScanline <= 0) {
 		cyclesPerScanline += 456*(bus->cpu->speedMode + 1);
+		//cyclesPerScanline += 456 * (1/(bus->cpu->speedMode + 1));
+		//cyclesPerScanline += 456 * (bus->cpu->speedMode + 1)*4;
 		bus->interrupt->io[0x44]++;
 		uint8_t currScanLine = bus->interrupt->io[0x44];
 		//lastScanline = currScanLine;

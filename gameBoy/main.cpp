@@ -21,69 +21,29 @@
 #include <SDL.h>
 #include <SDL_thread.h>
 
-//#define _CRTDBG_MAP_ALLOC
-//#include<iostream>
-//#include <crtdbg.h>
-//#ifdef _DEBUG
-//#define DEBUG_NEW new(_NORMAL_BLOCK, __FILE__, __LINE__)
-//#define new DEBUG_NEW
-//#endif
-
+//memory leak checking.
+/*
+#define _CRTDBG_MAP_ALLOC
+#include<iostream>
+#include <crtdbg.h>
+#ifdef _DEBUG
+#define DEBUG_NEW new(_NORMAL_BLOCK, __FILE__, __LINE__)
+#define new DEBUG_NEW
+#endif
+*/
 #undef main
 using namespace std;
 
-static Uint8* audio_chunk;
-static Uint32 audio_len;
-static Uint8* audio_pos;
 
-/* The audio function callback takes the following parameters:
-   stream:  A pointer to the audio buffer to be filled
-   len:     The length (in bytes) of the audio buffer
-*/
 
-void fill_audio(void* udata, Uint8* stream, int len)
-{
-	/* Only play if we have data left */
-	/*if (audio_len == 0)
-		return;*/
-	Sint16* buf = (Sint16*)stream;
-	int len_ = len / 2;
-	for (int i = 0;i < len/2;i+=1) {
-		//buf[i] = 0x10;
-		stream[i] = 0x10;
-	}
-	/* Mix as much data as possible */
-	len = (len > audio_len ? audio_len : len);
-	SDL_MixAudio(stream, audio_pos, len, SDL_MIX_MAXVOLUME);
-	audio_pos += len;
-	audio_len -= len;
-}
-std::wstring s2ws(const std::string& s)
-{
-	int len;
-	int slength = (int)s.length() + 1;
-	len = MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, 0, 0);
-	wchar_t* buf = new wchar_t[len];
-	MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, buf, len);
-	std::wstring r(buf);
-	delete[] buf;
-	return r;
-}
 bool openFile(string* romPath) {
 	OPENFILENAME ofn;
-	::memset(&ofn, 0, sizeof(ofn));
-	std::wstring filename(MAX_PATH, L'\0');
+	memset(&ofn, 0, sizeof(ofn));
+	wstring filename(MAX_PATH, L'\0');
 	char f1[MAX_PATH];
 	f1[0] = 0;
 	ofn.lStructSize = sizeof(ofn);
-	string title = "Select A File";
-	std::wstring stemp = s2ws(title);
-	//ofn.lpstrTitle = stemp.c_str();
-	LPCWSTR g = (LPCWSTR)"jjkjkjk";
-	ofn.lpstrTitle = L"Select A File";
-	
-	string filter = "Text Files\0*.txt\0All Files\0*.*\0\0";
-	stemp = s2ws(title);
+	ofn.lpstrTitle = L"Select A Rom File";
 	ofn.lpstrFilter = L"All Roms\0*.gbc;*.gb\0GB Roms\0*.gb\0GBC Roms\0*.gbc\0";
 	ofn.nFilterIndex = 0;
 	ofn.lpstrFile = &filename[0];
@@ -92,10 +52,6 @@ bool openFile(string* romPath) {
 
 	if (::GetOpenFileName(&ofn) != FALSE)
 	{
-		//printf("%s opened", filename);
-		//std::wcout << filename;
-
-		//convert wstring to string
 		const std::wstring ws = filename;
 		const std::locale locale("");
 		typedef std::codecvt<wchar_t, char, std::mbstate_t> converter_type;
@@ -113,61 +69,8 @@ bool openFile(string* romPath) {
 	}
 	return false;
 }
-int sound() {
-	SDL_AudioSpec wanted;
-//	extern void fill_audio(void* udata, Uint8 * stream, int len);
 
-	/* Set the audio format */
-	wanted.freq = 22050;
-	wanted.format = AUDIO_S16;
-	wanted.channels = 2;    /* 1 = mono, 2 = stereo */
-	wanted.samples = 1024;  /* Good low-latency value for callback */
-	wanted.callback = fill_audio;
-	wanted.userdata = NULL;
-
-	/* Open the audio device, forcing the desired format */
-	if (SDL_OpenAudio(&wanted, NULL) < 0) {
-		fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
-		return(-1);
-	}
-
-
-	audio_pos = audio_chunk;
-
-	/* Let the callback function play the audio chunk */
-	SDL_PauseAudio(0);
-
-	/* Do some processing */
-
-
-
-	/* Wait for sound to complete */
-	while (audio_len == 0) {
-		SDL_Delay(10000);         /* Sleep 1/10 second */
-	}
-	SDL_CloseAudio();
-
-	return(0);
-}
-
-
-void displayThreadFunc(DISPLAY* display, bool* running)
-{
-	//while (*running) {
-	//	if (!display->displayLock) {
-	//		display->render();
-	//		//display->update();
-	//		//Sleep(16.6);
-	//		Sleep(16);
-	//	}
-	//	else
-	//		Sleep(5);
-	//}
-	printf("goodbye thread!\n");
-	// do stuff...
-}
-
-
+//debugging func.
 void pipeRecive(BUS* bus, uint16_t opcode, uint16_t lastOpcode, int steps, string funcName) {
 	if (steps == 123176) {
 		int h = 0;
@@ -226,7 +129,7 @@ void pipeRecive(BUS* bus, uint16_t opcode, uint16_t lastOpcode, int steps, strin
 
 	}
 }
-
+//display render thread's func.(currently not in used)
 static int renderDisplay(void* ptr) {
 	DISPLAY* display=(DISPLAY*)ptr;
 	do {
@@ -253,65 +156,15 @@ static int renderDisplay(void* ptr) {
 }
 
 int main(void) {
-	
-	
-	//sound();
-	//return 0;
+	//memory leak checking
+    /*_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);*/
 
-	//_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
-	//_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-	
-	//_CrtMemState s1;
-	
-	
-	//_CrtMemState s1;
-	string romsPaths[36] =
-	{
-	"test\\cpu_instrs\\cpu_instrs.gb",
-	"test\\cpu_instrs\\individual\\01-special.gb",//good//blargg
-	"test\\cpu_instrs\\individual\\02-interrupts.gb" ,//good
-		"test\\cpu_instrs\\individual\\03-op sp,hl.gb",//faild
-	"test\\cpu_instrs\\individual\\04-op r,imm.gb",//good
-	"test\\cpu_instrs\\individual\\05-op rp.gb",//good
-	"test\\cpu_instrs\\individual\\06-ld r,r.gb",//good
-	"test\\cpu_instrs\\individual\\07-jr,jp,call,ret,rst.gb",//no answer-> crashed
-	"test\\cpu_instrs\\individual\\08-misc instrs.gb",//good
-	"test\\cpu_instrs\\individual\\09-op r,r.gb",//good
-	"test\\cpu_instrs\\individual\\10-bit ops.gb",//good
-	"test\\cpu_instrs\\individual\\11-op a,(hl).gb",//good
-	"test2\\daa.gb",
-	"roms\\alleyway.gb",
-	 "roms\\megaman.gb",
-	"roms\\tetris.gb",
-	"test\\instr_timing\\instr_timing.gb",//16
-	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\div_write.gb",
-	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\tima_reload.gb",
-	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\tima_write_reloading.gb",
-	"roms\\mooneye-gb_hwtests\\acceptance\\timer\\tma_write_reloading.gb",
-	"roms\\mooneye-gb_hwtests\\misc\\boot_regs-cgb.gb",
-	"roms\\mooneye-gb_hwtests\\acceptance\\ld_hl_sp_e_timing.gb",
-	"roms\\mooneye-gb_hwtests\\acceptance\\oam_dma_start.gb",//23
-	"test\\halt_bug.gb",
-	"roms\\mario.gb",//25
-	"roms\\zelda.gbc",
-	"roms\\pokemon.gb",//27
-	"roms\\pokemon2.gb",
-	"roms\\pokemon3.gb",
-	"roms\\pokemon4.gbc",//crystal
-	"roms\\pokemon5.gb",
-	"roms\\pokemonSilver.gbc",
-	"roms\\pokemon7.gbc",
-	"roms\\pokemonRed.gb",
-	"roms\\mooneye-gb_hwtests\\acceptance\\oam_dma\\basic.gb",//35
-	};
-	uint8_t romIndex =30;
-	romIndex = 27;
-	romIndex = 14;
+	uint8_t romIndex;
 	string romPath;
-	romPath = romsPaths[romIndex];
 	bool openFileDialog = true;
 	if (openFileDialog&&!openFile(&romPath)) {
-		return 0;
+		return 1;
 	}
 
 	BUS* bus = new BUS();
@@ -326,8 +179,6 @@ int main(void) {
 	DISPLAY* display = new DISPLAY(0, 0, 160, 144, 1);
 	JOYPAD* joypad = new JOYPAD();
 	APU* apu =new APU();
-
-
 
 	bus->connectCPU(cpu);
 	bus->connectMMU(mmu);
@@ -344,29 +195,22 @@ int main(void) {
 	interrupt->reset();
 	apu->start();
 	apu->mute = false;
-	//apu->fs.apu = apu;
 	printf("title:%s\n", cartridge->header.title);
 	printf("rom banks count:%d\n", cartridge->header.romBanksCount);
 	printf("romBank size:%d\n", cartridge->header.romBankSize);
 	printf("ram banks count:%d\n", cartridge->header.ramBanksCount);
 	printf("ram size:%d\n", cartridge->header.ramSize);
 
-
-	//ofstream myfile;
-	//myfile.open("C:\\Users\\Brain\\go\\src\\goboy\\goboy-0.4.2\\cmd\\goboy\\instructions_me.txt");
-
-
-	//gpu.drawTest();
-
-	//return 0;
 	uint16_t opcode;
 	int counter = 270274;
 	char buff[100];
 	unsigned char c = 0;
 	bus->pipeEnable = false;
+	//debugging tool
 	pipeChannel p;
 	bus->p = &p;
 	bool f;
+	//debugging tool.
 	if (bus->pipeEnable) {
 		f = p.createPipe(0, "Pipe", 100, 100);
 
@@ -381,41 +225,14 @@ int main(void) {
 		}
 	}
 
-	int renderTimer = 69905;
 	int renderCounter = 0;
-	bool writeToFile = false;
-	uint8_t last_key = 1;
-	int x = 0;
-	int y = 0;
-	Scalar white = Scalar(255, 255, 255, 0);
-	Scalar black = Scalar(0, 0, 0, 0);
 	bool running = true;
 
-   //std::thread displayThread(displayThreadFunc, display,&running);
 
 	int cyclesInFrameCounter = 0;
 	int framesForSeconds = 60;
 	int cyclesInFrame = cpu->cpuFreq / framesForSeconds;
 	uint16_t lastopcode = 0;
-
-	/*while (cpu->running) {
-		if (SDL_PollEvent(&display->windowEvent))
-			if (SDL_QUIT == display->windowEvent.type)
-			{
-				running = false;
-				bus->cpu->running = false;
-			}
-		if (apu->restart)
-			apu->play();
-		Sleep(100);
-	}
-	display->close();
-	return 0;*/
-
-	int counters[5] = { 3,6,12,15,30 };
-	int sleeps[5] = { 50,100,200,250,500 };
-	int rendersCounter = 0;
-	//steady_clock::time_point start = steady_clock::now();
 	while (true) {
 		if (SDL_PollEvent(&display->windowEvent))
 			if (SDL_QUIT == display->windowEvent.type)
@@ -425,100 +242,37 @@ int main(void) {
 			}
 		int timeBefore = SDL_GetTicks();
 		do {
-
-			//cpu->Execute(opcode);
-			//pipeRecive(bus, opcode, lastopcode, steps,"Execute");
 			if (!cpu->halt) {
 				opcode = cpu->getOpcode();
 				opcode = (opcode == 0xCB) ? 0XCB00 | cpu->getOpcode() : opcode;
-				//cpu->Execute(opcode);
 				cpu->ExecuteOpcode(opcode);
-				//cpu->steps++;
-				//pipeRecive(bus, opcode, lastopcode, cpu->steps, "Execute");
-				//cpu->Execute(opcode);
 			}
 			else {
 				cpu->lastOpcodeCycles = 1;
 			}
-
-	
-
 			cpu->lastOpcodeCycles *= (4 * (cpu->speedMode + 1));
 			cpu->steps+= cpu->lastOpcodeCycles;
-			//apu->fs.tick(cpu->lastOpcodeCycles);
 			apu->tick();
 			gpu->tick();
 			cpu->updateTimers();
 
 
-			joypad->updateKeys();
+		    joypad->updateKeys();
 			cpu->lastOpcodeCycles += interrupt->InterruptsHandler() * (4 * (cpu->speedMode + 1));;
-
-			//pipeRecive(bus, opcode, lastopcode, steps, "InterruptsHandler");
-
 			cyclesInFrameCounter += cpu->lastOpcodeCycles;
-			//printf("speed:%d\n", interrupt->io[0x4D]>>7);
-
-			/*if (renderCounter == renderTimer)
-				gpu->drawTest();*/
-
-				/*if (cpu->cycelsCounter > 4)
-					cpu->cycelsCounter = cpu->cycelsCounter%4;*/
-
-
-					//cpu->cycelsCounter += cpu->lastOpcodeCycles;
-			/*cpu->time.addMCycles(cpu->lastOpcodeCycles / 4);
-			cpu->time.print(2);*/
-		//	if (cpu->time.timeChanged[1]) {
-			//	cpu->time.timeChanged[1] = false;
-			//	Sleep(1);
-			//	//printf("sleep\n");
-			//}
-		
-		} while (cyclesInFrameCounter < cyclesInFrame); //(cpu.PC != 0x100 && counter > 0);//||mmu.biosLoaded);//cpu.PC!=0x100
+		} while (cyclesInFrameCounter < (cyclesInFrame*(cpu->speedMode + 1)));
 		cyclesInFrameCounter = 0;
 
 		display->render();
-		//SDL_Thread* thread = SDL_CreateThread(renderDisplay, "render", (void*)display);
-		//SDL_DetachThread(thread);
 		int timePassed = SDL_GetTicks() - timeBefore;
 		int sleep = 15 - timePassed;
 		if (sleep > 0)
 			Sleep(sleep);
-		rendersCounter++;
-		
-		
-		/*steady_clock::time_point end = steady_clock::now();
-		duration<double> elapsed_seconds = end - start;
-		if (elapsed_seconds.count() > 5)
-			break;*/
-		int i = 4;
-		/*if (rendersCounter == counters[i]) {
-			float factor = 0.5;
-			SDL_PauseAudioDevice(apu->adc.dev, 0);
-			Sleep(sleeps[i]*factor);
-			SDL_PauseAudioDevice(apu->adc.dev, 0);
-			rendersCounter = 0;
-		}*/
-		//double elapse = 1-elapsed_seconds.count();
-		/*if (elapse > 0) {
-			Sleep(elapse * 1000);
-		}*/
-		
-		bool lastState = apu->adc.paused;
-		apu->adc.paused = true;
-		//Sleep(4);
-		apu->adc.paused = lastState;
-		//display->update();
-		//printf("render\n");
-		if (apu->restart)
-			apu->play();
+	
 	}
 	apu->close();
 	display->close(true);
-	//displayThread.join();
 
-	//myfile.close();
 	bus->p->close();
 	delete bus;
 	delete cpu;
@@ -531,7 +285,8 @@ int main(void) {
 	delete joypad;
 	
 	delete apu;
-	
+
+	//memoty leak checking
 	//_CrtDumpMemoryLeaks();
 	
 	return 0;

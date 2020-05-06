@@ -30,7 +30,7 @@ private:
 public:
 	void connectToBus(BUS* bus);
 	bool scanKeys(int start);
-	bool scanKeys2();
+	bool scanKeysExtra();
 	void updateKeys();
 };
 
