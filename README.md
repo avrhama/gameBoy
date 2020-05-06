@@ -28,4 +28,4 @@ This emulator and my emulator, perform comparation and investigate the section w
   https://www.youtube.com/watch?v=nViZg02IMQo&list=PLrOv9FMX8xJHqMvSGB_9G9nZZ_4IgteYf
   
   screenshots:
-  https://github.com/avrhama/gameBoy/blob/master/gameBoy/screenshots/mario.gif
+  <img src=https://github.com/avrhama/gameBoy/blob/master/gameBoy/screenshots/mario.gif></img>
