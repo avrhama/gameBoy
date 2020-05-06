@@ -27,5 +27,5 @@ This emulator and my emulator, perform comparation and investigate the section w
  His nes emulator playlist:
   https://www.youtube.com/watch?v=nViZg02IMQo&list=PLrOv9FMX8xJHqMvSGB_9G9nZZ_4IgteYf
   
-  screenshot:
+  screenshots:
   
