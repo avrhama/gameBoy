@@ -272,8 +272,8 @@ int main(void) {
 			int timePassed = SDL_GetTicks() - timeBefore;
 			int sleep = 15 - timePassed;
 		
-		/*if (sleep > 0)
-			Sleep(sleep);*/
+		if (sleep > 0)
+			Sleep(sleep);
 	
 	}
 	apu->close();
