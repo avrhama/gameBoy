@@ -40,8 +40,6 @@ public:
 	char GB_SGBIndicator = 0;
 	uint8_t romBanksCount = 0;//How many rom banks( in mbc1 each rom bank is 16KB size[0x4000 B])
 	uint8_t ramBanksCount = 0;//How many ram banks( in mbc1 each ram bank is 8KB size[0x2000 B])
-	//int romBankSize = 0x4000;//MBC1
-	//int ramBankSize = 0x2000;//MBC1
 	int romBankSize= 0x4000;
 	int ramSize;
 	string romFileName;
@@ -52,8 +50,6 @@ class CARTRIDGE
 
 public:
 	
-   //rom bank size=16KB(16384 B)
-	//ram bank size=8KB(8192 B)
 	CartridgeHeader header;
 	CARTRIDGE(uint8_t* rom, CartridgeHeader header) {
 		this->rom = rom;

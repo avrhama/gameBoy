@@ -90,8 +90,9 @@ void INTERRUPT::write(uint16_t address, uint8_t value)
 			if (bus->cartridge->header.colorGB) {
 				//bus->display->BGPaletteData[io[0x68]&0x3f] = value;
 				bus->display->setPaletteColor(io[0x68] & 0x3f, value, true);
-				if (io[0x68] >> 7)
+				if (io[0x68] >> 7) {
 					io[0x68] = (io[0x68] & 0x80) | ((io[0x68] + 1) & 0x3f);
+				}
 				break;
 			}
 		case 0x6b:
@@ -432,7 +433,7 @@ void INTERRUPT::reset()
 		break;
 	
 	}
-
+	return;
 	
 	io[0x75] = 0x00;
 	if (bus->consoleModel != ConsoleModel::GBC) {

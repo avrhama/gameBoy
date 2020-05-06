@@ -12,6 +12,8 @@
 #include <ctime>
 #include <iostream>
 #include "APUstructures.h"
+#include <mutex>
+
 using namespace std::chrono;
 class APU
 {
@@ -31,16 +33,6 @@ private:
 	 110: 46.9 ms (6/128Hz)
 	 111: 54.7 ms (7/128Hz)
 	*/
-
-	
-	
-
-
-	
-
-	
-
-	void createAudioDeviceControl(bool closeOld);
 
 	
 public:

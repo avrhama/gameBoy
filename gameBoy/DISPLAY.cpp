@@ -198,30 +198,7 @@ void DISPLAY::setPaletteColor(uint8_t paletteByteIndex, uint8_t value, bool isBG
         h = h % 4;
         palette = BGPlatettes[paletteByteIndex / 8] + (paletteByteIndex / 2) % 4;
 
-       /* if (paletteByteIndex < 8) {
-            palette = BGPlatettes[0];
-        }else if (paletteByteIndex < 16) {
-            palette = BGPlatettes[1];
-        }
-        else if (paletteByteIndex < 24) {
-            palette = BGPlatettes[2];
-        }
-        else if (paletteByteIndex < 32) {
-            palette = BGPlatettes[3];
-        }
-        else if (paletteByteIndex < 40) {
-            palette = BGPlatettes[4];
-        }
-        else if (paletteByteIndex < 48) {
-            palette = BGPlatettes[5];
-        }
-        else if (paletteByteIndex < 56) {
-            palette = BGPlatettes[6];
-        }
-        else {
-            palette = BGPlatettes[7];
-        }
-        palette+=(paletteByteIndex / 2) % 4;*/
+      
     }
     else {
         palatteData = OBPaletteData;
@@ -242,20 +219,6 @@ void DISPLAY::setPaletteColor(uint8_t paletteByteIndex, uint8_t value, bool isBG
     blue = rgb5BitToRbg8Bit[blue];
     
     palette->setRGB(red,green,blue);
-
-    return;
-    uint8_t v = 0xbd;
-    if (value==151){
-        int y = 0;
-    }
-    for (uint8_t paletteIndex = 0;paletteIndex < 8;paletteIndex++) {
-        if (BGPlatettes[paletteIndex][0].getR() == v || BGPlatettes[paletteIndex][1].getR() == v ||
-            BGPlatettes[paletteIndex][2].getR() == v ||BGPlatettes[paletteIndex][3].getR() == v) {
-            int u = 0;
-        }
-      
-    }
- 
 }
 
 void DISPLAY::tick(int cycles)

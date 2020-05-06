@@ -7,15 +7,7 @@ void DMA::connectToBus(BUS* bus)
 
 void DMA::FF46DMATransferStart(uint8_t sourceAddressPrefix)
 {
-	
-	//FF46transfering = true;
-	//bus->interrupt->io[0x55]=
 	FF46sourceAddress = sourceAddressPrefix << 8;
-	/*for (uint8_t i = 0;i < 160;i++)
-		bus->gpu->oam[i] = bus->mmu->read(FF46sourceAddress + i);*/
-	//FF46transfering = false;
-
-	//Sleep(160);
 	transfer = true;
 	FF46DMATransfer();
 }
@@ -25,14 +17,9 @@ void DMA::FF46DMATransfer()
 	if (!transfer)
 		return;
 	transfer = false;
-	//FF46transfering = true;
-	//bus->interrupt->io[0x55]=
-	//FF46sourceAddress = sourceAddressPrefix << 8;
 	for (uint8_t i = 0;i < 160;i++)
 		bus->gpu->oam[i] = bus->mmu->read(FF46sourceAddress + i);
 	FF46transfering = false;
-
-	//Sleep(160);
 }
 
 void DMA::setSourceHi(uint8_t value)
@@ -89,10 +76,6 @@ void DMA::generalPurposeDMA()
 	for (uint16_t i = 0;i < transferLen;i++) {
 		if (destinationAddress + i < 0x1ff0) {
 			bus->gpu->vRam[destinationAddress + i + ((uint16_t)bus->gpu->vRamBank * 0x2000)] = bus->mmu->read(sourceAddress + i);
-			//uint8_t data = bus->mmu->read(sourceAddress + i);
-			//bus->gpu->vRam[destinationAddress + i + vRamBankOffset] = data;
-			//bus->mmu->write(0x8000 + destinationAddress  + i, data);
-			//bus->gpu->vRam[destinationAddress + i] = data;
 		}else {
 			stopHDMATransfer();
 			return;
@@ -113,11 +96,7 @@ void DMA::hBlankDMA()
 	uint16_t address= destinationAddress + offset;
 	for (uint8_t i = 0;i < count;i++) {
 		if (address + i < 0x1ff0) {
-			//uint8_t data = bus->mmu->read(sourceAddress + i + offset);
 			bus->gpu->vRam[address+i + ((uint16_t)bus->gpu->vRamBank * 0x2000)] = bus->mmu->read(sourceAddress + i+ offset);
-			//bus->gpu->vRam[address + i + vRamBankOffset] = data;
-			//bus->mmu->write(0x8000+ address + i, data);
-			//bus->gpu->vRam[address + i] = data;
 		}
 		else {
 			stopHDMATransfer();
@@ -140,5 +119,4 @@ void DMA::stopHDMATransfer()
 {
 	hBlankDMAStep = 0;
 	dmaMode = DMAMode::None;
-	printf("stopped\n");
 }

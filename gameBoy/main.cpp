@@ -154,7 +154,7 @@ static int renderDisplay(void* ptr) {
 	//printf("save ram thread ended\n");
 	return 0;
 }
-
+void freeEmulator(BUS* bus);
 int main(void) {
 	//memory leak checking
     /*_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
@@ -172,8 +172,10 @@ int main(void) {
 	GPU* gpu = new GPU();
 	DMA* dma = new DMA();
 	CARTRIDGE* cartridge = createCartrige(romPath);
-	if (cartridge == NULL)
+	if (cartridge == NULL) {
+		freeEmulator(bus);
 		return 1;
+	}
 	INTERRUPT* interrupt = new INTERRUPT();
 	MMU* mmu = new MMU();
 	DISPLAY* display = new DISPLAY(0, 0, 160, 144, 1);
@@ -250,7 +252,9 @@ int main(void) {
 			else {
 				cpu->lastOpcodeCycles = 1;
 			}
+			//cpu->lastOpcodeCycles *= 4;
 			cpu->lastOpcodeCycles *= (4 * (cpu->speedMode + 1));
+
 			cpu->steps+= cpu->lastOpcodeCycles;
 			apu->tick();
 			gpu->tick();
@@ -258,38 +262,45 @@ int main(void) {
 
 
 		    joypad->updateKeys();
-			cpu->lastOpcodeCycles += interrupt->InterruptsHandler() * (4 * (cpu->speedMode + 1));;
+			cpu->lastOpcodeCycles += interrupt->InterruptsHandler() * (4 * (cpu->speedMode + 1));
+			//cpu->lastOpcodeCycles += interrupt->InterruptsHandler()*4;
 			cyclesInFrameCounter += cpu->lastOpcodeCycles;
-		} while (cyclesInFrameCounter < (cyclesInFrame*(cpu->speedMode + 1)));
+		} while ((cyclesInFrameCounter < (cyclesInFrame * (cpu->speedMode + 1))));
 		cyclesInFrameCounter = 0;
-
-		display->render();
-		int timePassed = SDL_GetTicks() - timeBefore;
-		int sleep = 15 - timePassed;
-		if (sleep > 0)
-			Sleep(sleep);
+		
+			display->render();
+			int timePassed = SDL_GetTicks() - timeBefore;
+			int sleep = 15 - timePassed;
+		
+		/*if (sleep > 0)
+			Sleep(sleep);*/
 	
 	}
 	apu->close();
 	display->close(true);
 
 	bus->p->close();
-	delete bus;
-	delete cpu;
-	delete gpu;
-	delete dma;
-	delete cartridge;
-	delete interrupt;
-	delete mmu;
-	delete display;
-	delete joypad;
-	
-	delete apu;
+
+	freeEmulator(bus);
 
 	//memoty leak checking
 	//_CrtDumpMemoryLeaks();
 	
 	return 0;
 
+}
+void freeEmulator(BUS* bus) {
+	
+	delete bus->cpu;
+	delete  bus->gpu;
+	delete  bus->dma;
+	delete  bus->cartridge;
+	delete  bus->interrupt;
+	delete  bus->mmu;
+	delete  bus->display;
+	delete  bus->joypad;
+
+	delete  bus->apu;
+	delete bus;
 }
 

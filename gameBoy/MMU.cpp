@@ -27,8 +27,6 @@ void MMU::write(uint16_t address, uint8_t value)
 	if (bus->dma->FF46transfering)
 		if (address < 0xff80)
 			return;
-	
-		
 	if (0 <= address &&address <= 0x7fff) {//bios ROM0 and ROM1 (unbanked) (16k)
 		
 		if (biosLoaded)
@@ -109,14 +107,10 @@ uint8_t MMU::read(uint16_t address)
 		if (biosLoaded) {
 			if (address < 0x100)
 				return bios[address];
-				//return bus->cartridge->read(address);
-			//else if (address == 0x100)
 			else if (bus->cpu->PC == 0x100)
-			//else
 				biosLoaded = false;
 		}
 		return bus->cartridge->read(address);
-		//return rom[address];
 	}
 	else if (0x8000<=address &&address <= 0x9fff) {// Graphics: VRAM (8k)
 		if (vRamLock)
@@ -124,7 +118,6 @@ uint8_t MMU::read(uint16_t address)
 		return bus->gpu->vRam[address - 0x8000 + (bus->gpu->vRamBank * 0x2000)];
 	}
 	else if (0xa000<=address&&address<=0xbfff) {// External RAM (8k)
-		//return externalRam[address & 0x1FFF];
 		return bus->cartridge->read(address);
 	}
 	else if (0xc000 <= address && address <= 0xcfff) {// Working RAM 0 (8k)

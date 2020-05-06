@@ -27,6 +27,10 @@ static CARTRIDGE* createCartrige(string path) {
 		header.romFileName = path.substr(index, path.find_last_of('.')- index);
 		header.romFileFolder = path.substr(0, index);
 		memcpy(header.title, (rom + 0x0134), 9);
+		if (rom[0x0143] == 0xc0) {
+			printf("selected game working only on gbc!\n(some games like pokemon crystal working on dmg although they are gbc only)\n");
+			return NULL;
+		}
 		header.colorGB = (rom[0x0143] == 0x80 || rom[0x0143] == 0xc0) ? true : false;
 		header.GB_SGBIndicator = rom[0x0146];
 		header.cartridgeType = (CartridgeType)rom[0x0147];
@@ -39,18 +43,13 @@ static CARTRIDGE* createCartrige(string path) {
 		CARTRIDGE::printCartridgeType(header.cartridgeType);
 	}
 	rf.close();
-	//CARTRIDGE s;
 
-	//CARTRIDGE* gg=new MBC1(rom, header);
 	switch (header.cartridgeType) {
 	case CartridgeType::ROM_ONLY:
 	case CartridgeType::ROM_RAM:
 	case CartridgeType::ROM_RAM_BATTERY:
 		//return new CARTRIDGE(rom, header);
 		return MBC1::create(rom, header);
-		//return new CARTRIDGE();
-
-
 	case CartridgeType::ROM_MBC1:
 	case CartridgeType::ROM_MBC1_RAM:
 	case CartridgeType::ROM_MBC1_RAM_BATT:

@@ -12,6 +12,11 @@ void soundTick(void* user_data, Uint8* stream, int len) {
 
 
 	APU* apu = (APU*)user_data;
+	
+
+
+
+
 
 	/*steady_clock::time_point end = steady_clock::now();
 	duration<double> elapsed_seconds = end - apu->startTimer;
@@ -88,112 +93,6 @@ void soundTick(void* user_data, Uint8* stream, int len) {
 	}
 
 }
-void APU::createAudioDeviceControl(bool closeOld)
-{
-	return;
-	if (bus->pipeEnable) {
-
-
-
-		bus->p->read(20);
-		if (bus->p->rBuffer[0] == 1) {
-			if (closeOld) {
-				SDL_CloseAudioDevice(adc.dev);
-			}
-			uint32_t freq = bus->p->rBuffer[1] << 24 | bus->p->rBuffer[2] << 16 | bus->p->rBuffer[3] << 8 | bus->p->rBuffer[4];
-			uint32_t samples = bus->p->rBuffer[5] << 24 | bus->p->rBuffer[6] << 16 | bus->p->rBuffer[7] << 8 | bus->p->rBuffer[8];
-			uint32_t harmonices = bus->p->rBuffer[9] << 24 | bus->p->rBuffer[10] << 16 | bus->p->rBuffer[11] << 8 | bus->p->rBuffer[12];
-			uint32_t timeFactor = bus->p->rBuffer[13] << 24 | bus->p->rBuffer[14] << 16 | bus->p->rBuffer[15] << 8 | bus->p->rBuffer[16];
-			bool samplesUint = bus->p->rBuffer[17];
-			bool flatWave = bus->p->rBuffer[18];
-			bool skipRest = bus->p->rBuffer[19];
-			printf("freq:%d samples:%d harmonices:%d timeFactor:%d samplesUint:%d flatWave:%d skipRest:d\n", freq, samples, harmonices, timeFactor, samplesUint, flatWave, skipRest);
-
-
-			adc.audioPosition = 0;
-			adc.audioFrequency = 1.0 * adc.FREQ / 2048; /* 1.0 to make it a float */
-			adc.audioVolume = 6000; /* ~1/5 max volume */
-
-			SDL_zero(adc.want);
-
-
-			adc.want.freq = freq;
-			adc.want.format = AUDIO_S8;
-			adc.want.channels = 1;
-			adc.want.samples = samples;
-			adc.H = harmonices;
-			adc.samplesUint = samplesUint;
-			adc.flatWave = flatWave;
-			adc.skipRest = skipRest;
-			adc.want.callback = NULL;
-			adc.want.userdata = this;
-
-			//adc.dev = SDL_OpenAudioDevice(NULL, 0, &adc.want, &adc.have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE | SDL_AUDIO_ALLOW_SAMPLES_CHANGE);
-			adc.dev = SDL_OpenAudioDevice(NULL, 0, &adc.want, &adc.have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
-
-			if (!adc.dev) {
-				printf("[SDL] Failed to open audio device: %s\n", SDL_GetError());
-				SDL_Quit();
-				return;
-			}
-			//SDL_PauseAudioDevice(dev, p); /* play! */
-			SDL_PauseAudioDevice(adc.dev, 0);
-
-
-		}
-
-
-		bus->p->write(1);
-	}
-	else {
-		if (!bus->modified)
-			return;
-		bus->modified = false;
-		int nums[18] = { 1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536,131072 };
-		adc.devOld = adc.dev;
-		adc.wantOld = adc.want;
-		adc.haveOld = adc.have;
-		SDL_AudioDeviceID old = adc.dev;
-		adc.audioPosition = 0;
-		adc.audioFrequency = 1.0 * adc.FREQ / 2048; /* 1.0 to make it a float */
-		adc.audioVolume = 6000; /* ~1/5 max volume */
-
-		SDL_zero(adc.want);
-
-
-		//adc.want.freq = nums[bus->f];
-		adc.want.freq = bus->f;
-		adc.want.format = AUDIO_S8;
-		adc.want.channels = 1;
-		//adc.want.samples = nums[bus->s];
-		adc.want.samples = bus->s;
-		adc.want.callback = adc.want.callback;
-		adc.want.userdata = this;
-
-		//adc.dev = SDL_OpenAudioDevice(NULL, 0, &adc.want, &adc.have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE | SDL_AUDIO_ALLOW_SAMPLES_CHANGE);
-		/*adc.dev = SDL_OpenAudioDevice(NULL, 0, &adc.want, &adc.have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
-		SDL_PauseAudioDevice(adc.dev, 0);
-		if (!adc.dev) {
-			printf("[SDL] Failed to open audio device: %s\n", SDL_GetError());
-			SDL_Quit();
-			return;
-		}*/
-
-		restart = true;
-		//SDL_PauseAudioDevice(dev, p); /* play! */
-		/*if (closeOld) {
-			SDL_CloseAudioDevice(old);
-				adc.devOld = adc.dev;
-		adc.wantOld = adc.want;
-		adc.haveOld = adc.have;
-		}*/
-		//	std::thread displayThread(closeDevice, old);
-
-
-	}
-
-
-}
 
 APU::APU() {
 	for (int i = 0;i < 4;i++) {
@@ -214,11 +113,10 @@ void APU::start() {
 	adc.want.samples = 1024;
 	//adc.want.samples = 128;
 	adc.want.callback = NULL;
+	//adc.want.callback = soundTick;
 	adc.want.userdata = this;
 	adc.dev = SDL_OpenAudioDevice(NULL, 0, &adc.want, &adc.have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
 
-	bus->f = adc.have.freq;
-	bus->s = adc.want.samples;
 	cyclesInSoundFrame = adc.have.freq;
 
 	//cyclesInSoundFrame = 4194304/adc.have.freq;
@@ -379,17 +277,18 @@ void APU::tick()
 {
 	//int i = 2;
 	//chann1->tick(bus->cpu->lastOpcodeCycles);
-	channels[0]->tick(bus->cpu->lastOpcodeCycles);
-	channels[1]->tick(bus->cpu->lastOpcodeCycles);
-	channels[2]->tick(bus->cpu->lastOpcodeCycles);
-	channels[3]->tick(bus->cpu->lastOpcodeCycles);
+	int cpuCycles = bus->cpu->lastOpcodeCycles /(bus->cpu->speedMode + 1);
+	channels[0]->tick(cpuCycles);
+	channels[1]->tick(cpuCycles);
+	channels[2]->tick(cpuCycles);
+	channels[3]->tick(cpuCycles);
 	if (adc.hasSample) {
 		adc.hasSample = false;
 		adc.audioPosition++;
 		adc.sampleCounter++;
 
 		if (adc.sampleCounter == adc.have.samples) {
-			adc.hasSamples = true;
+			
 			adc.sampleCounter = 0;
 			//SDL_QueueAudio(apu->adc.dev, ch->samplesData, apu->adc.have.channels * apu->adc.have.samples);
 			//SDL_QueueAudio(apu->adc.dev, ch->samplesData,  apu->adc.have.samples);
@@ -408,9 +307,9 @@ void APU::tick()
 				channels[3]->leftSamplesData[i] = 0;
 			}
 
-
-			//SDL_QueueAudio(apu->adc.dev, ch->leftSamplesData, apu->adc.have.samples);
-			//SDL_QueueAudio(apu->adc.dev, ch->samplesData, apu->adc.have.channels * apu->adc.have.samples);
+			
+			
+			adc.hasSamples = true;
 		}
 	}
 }
