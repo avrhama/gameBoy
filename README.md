@@ -28,4 +28,7 @@ This emulator and my emulator, perform comparation and investigate the section w
   https://www.youtube.com/watch?v=nViZg02IMQo&list=PLrOv9FMX8xJHqMvSGB_9G9nZZ_4IgteYf
   
   screenshots:
-  <img src=https://github.com/avrhama/gameBoy/blob/master/gameBoy/screenshots/mario.gif></img>
+  
+  <img src=https://github.com/avrhama/gameBoy/blob/master/gameBoy/screenshots/pokemon-yellow.gif></img>
+<img src=https://github.com/avrhama/gameBoy/blob/master/gameBoy/screenshots/megaman.gif></img>
+<img src=https://github.com/avrhama/gameBoy/blob/master/gameBoy/screenshots/mario.gif></img>
