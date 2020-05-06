@@ -7,7 +7,7 @@ So instead investing my time to improve 8-chip I decide to write gameboy emultor
 The most difficult part in this project was to find an reliable and understantable(for me) gameboy documentation, unfortunately
 I did not found it in one place, but fortunately for each component in the gameboy emultor(cpu,gpu,apu and etc)
 I could find a bunch of good documentations, so I forge them together to create my emulator.
-
+# Credits
 Here is the place to give them their credits:
 The main resource I used, mainly for cpu instructions but also for other things.
   https://gbdev.gg8.se/wiki/articles/Pan_Docs
@@ -27,8 +27,7 @@ This emulator and my emulator, perform comparation and investigate the section w
  His nes emulator playlist:
   https://www.youtube.com/watch?v=nViZg02IMQo&list=PLrOv9FMX8xJHqMvSGB_9G9nZZ_4IgteYf
   
-  screenshots:
-  
+  # Screenshots
   <img src=https://github.com/avrhama/gameBoy/blob/master/gameBoy/screenshots/pokemon-yellow.gif></img>
 <img src=https://github.com/avrhama/gameBoy/blob/master/gameBoy/screenshots/megaman.gif></img>
 <img src=https://github.com/avrhama/gameBoy/blob/master/gameBoy/screenshots/mario.gif></img>
