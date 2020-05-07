@@ -8,7 +8,6 @@ The most difficult part in this project was to find an reliable and understantab
 I did not found it in one place, but fortunately for each component in the gameboy emultor(cpu,gpu,apu and etc)
 I could find a bunch of good documentations, so I forge them together to create my emulator.
 # Credits
-Here is the place to give them their credits:
 The main resource I used, mainly for cpu instructions but also for other things.
   https://gbdev.gg8.se/wiki/articles/Pan_Docs
 Gpu:
