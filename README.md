@@ -21,9 +21,9 @@ This emulator and my emulator, perform comparation and investigate the section w
   https://github.com/Humpheh/goboy
   
  And the last credit is for the javidx9 from oneLoneCoder who inspire me in the first place.
- His youtube channel:
+ </br>His youtube channel:
   https://www.youtube.com/channel/UC-yuWVUplUJZvieEligKBkA
- His nes emulator playlist:
+ </br>His nes emulator playlist:
   https://www.youtube.com/watch?v=nViZg02IMQo&list=PLrOv9FMX8xJHqMvSGB_9G9nZZ_4IgteYf
   
   # Screenshots
